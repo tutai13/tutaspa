@@ -9,12 +9,11 @@ using API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
-using System.IdentityModel.Tokens.Jwt;
 using API.DTOs.Auth;
-using FluentValidation;
 using API.Validator;
+using System.Web.WebPages;
+using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
@@ -91,6 +90,8 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IOTPService, OtpService>();
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
 
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<SpeedSms>();
 
 
@@ -99,6 +100,7 @@ builder.Services.AddHttpClient<SpeedSms>();
 builder.Services.AddScoped<IValidator<RegisterDTO>, RegisterValidator>();
 
 var app = builder.Build();
+app.UseCors(policy => policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
 
 
 // Configure the HTTP request pipeline.
@@ -106,7 +108,8 @@ if (app.Environment.IsDevelopment())
 {
 
 }
-
+app.UseSwagger();
+app.UseSwaggerUI();
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseCors();
