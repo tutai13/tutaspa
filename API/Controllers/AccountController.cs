@@ -1,6 +1,8 @@
+
 ﻿using API.DTOs.Auth;
 using API.IService;
 using Microsoft.AspNetCore.Http;
+
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -9,6 +11,7 @@ namespace API.Controllers
     [ApiController]
     public class AccountController : ControllerBase
     {
+
 
         private readonly IAuthService _authService;
         private readonly ILogger<AuthController> _logger;
@@ -106,5 +109,6 @@ namespace API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Đã xảy ra lỗi hệ thống." });
             }
         }
+
     }
 }
