@@ -9,7 +9,10 @@ namespace API.Data
         public DbSet<User> User { get; set; } 
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         // --------------------------
-
+        public DbSet<DichVu> DichVus { get; set; }
+        public DbSet<LoaiDichVu> LoaiDichVus { get; set; }
+        public DbSet<Product> Product { get; set; }
+        public DbSet<Category> Categorys { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
