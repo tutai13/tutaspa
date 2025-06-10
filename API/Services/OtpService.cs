@@ -1,48 +1,71 @@
 ﻿using API.DTOs.Auth;
 using API.IService;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Twilio;
+using Twilio.TwiML.Messaging;
+using Twilio.Types;
+using Twilio.Rest.Api.V2010.Account;
+using Twilio.Rest.Verify.V2.Service;
+using Microsoft.Extensions.Caching.Memory;
+
 
 namespace API.Services
 {
     public class OtpService : IOTPService
     {
 
-        private readonly SpeedSms _sms;
+        private readonly SmsSettings _smsSettings;
+        private readonly IMemoryCache _memoryCache;
+        private readonly HttpClient _httpClient;
 
-        public OtpService(SpeedSms sms)
+        public OtpService(IOptions<SmsSettings> smsOptions, IMemoryCache memoryCache, HttpClient httpClient)
         {
-            _sms = sms;
+            _smsSettings = smsOptions.Value;
+            _memoryCache = memoryCache;
+            _httpClient = httpClient;
         }
 
-        public async Task<OtpResponse> SendAsync(string phoneNumber)
+        public async Task<OtpResponse> SendOtpAsync(string phoneNumber)
         {
+            var otp = GenerateOtp();
+            var url = $"{_smsSettings.ApiUrl}?loginName={_smsSettings.LoginName}" +
+                      $"&sign={_smsSettings.Sign}" +
+                      $"&serviceTypeId={_smsSettings.ServiceTypeId}" +
+                      $"&phoneNumber={phoneNumber}" +
+                      $"&message={otp}" +
+                      $"&brandName={_smsSettings.BrandName}";
 
-            Console.WriteLine("aloooo");
-            var otp = GenerateOTP();
-
-            var json = await _sms.SendSmsAsync(phoneNumber, $"Your OTP is : {otp}");
-
-            var response = JsonSerializer.Deserialize<OtpResponse>(json);
+            var response = await _httpClient.GetAsync(url);
 
 
-            return response; 
-             
+            var jsonString = await response.Content.ReadAsStringAsync();
+            var smsResponse = JsonSerializer.Deserialize<OtpResponse>(jsonString);
+
+            if (smsResponse?.Code == 106) // Success
+            {
+                _memoryCache.Set($"OTP_{phoneNumber}", otp, TimeSpan.FromMinutes(5));
+            }
+
+            return smsResponse;
         }
 
-        public Task<bool> VerificationAsync(string phoneNumber, string Otp)
+        public bool VerifyOtp(string phoneNumber, string otp)
         {
-            throw new NotImplementedException();
+            if (_memoryCache.TryGetValue($"OTP_{phoneNumber}", out string cachedOtp))
+            {
+                return cachedOtp == otp;
+            }
+
+            throw new Exception("OTP đã hết hạn");
         }
 
-        private string GenerateOTP()
+        private string GenerateOtp()
         {
-
-            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            var rd = new Random();
-            return new string(Enumerable.Repeat(chars, 6).Select(s => s[rd.Next(chars.Length)]).ToArray()); ;
-
+            var random = new Random();
+            return random.Next(100000, 999999).ToString();
         }
     }
 }
