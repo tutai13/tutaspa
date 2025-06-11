@@ -14,7 +14,7 @@ namespace API.Validator
         {
             _context = context; 
 
-            RuleFor(x => x.UserName)
+            RuleFor(x => x.Name)
                 .NotEmpty()
                 .WithMessage("Tên khách hàng không được để trống");
 

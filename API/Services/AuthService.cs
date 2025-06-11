@@ -235,7 +235,7 @@ namespace API.Services
             {
                 PhoneNumber = request.PhoneNumber , 
                 UserName = request.PhoneNumber  ,
-                Name = request.UserName , 
+                Name = request.Name , 
                 FisrtLogin = false 
             };
 
