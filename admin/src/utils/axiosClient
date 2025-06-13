@@ -1,0 +1,18 @@
+// src/utils/axiosClient.js
+import axios from "axios";
+
+// Tạo một instance của axios với cấu hình sẵn
+const apiClient = axios.create({
+  baseURL: "http://localhost:5055/api", // Địa chỉ API gốc của bạn
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// (Tuỳ chọn) Thêm interceptors nếu cần xử lý request/response tập trung
+// apiClient.interceptors.request.use(config => {
+//   // Thêm token hoặc xử lý request ở đây nếu cần
+//   return config;
+// });
+
+export default apiClient;
