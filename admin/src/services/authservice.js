@@ -79,7 +79,7 @@ export const authAPI = {
   // Đăng nhập
   login: async (credentials) => {
     try {
-      const response = await apiClient.post('/account/login', credentials)
+      const response = await apiClient.post('/auth/login', credentials)
       
       // Lưu token vào localStorage
       if (response.accessToken) {
@@ -93,44 +93,12 @@ export const authAPI = {
 
       throw error
     }
-  },
-
-  sendOTP: async (phoneNumber) => {
-  try {
-    const response = await apiClient.post(`/otp/send?phoneNumber=${phoneNumber}`)
-    return response
-  } catch(error) {
-    console.log(error)
-    throw error
-  }
 },
-
- verifyOTP: async (phoneNumber , OTP) => {
-  try {
-    const response = await apiClient.post(`/otp/verify` , {
-      phoneNumber : phoneNumber,
-      OTP : OTP
-    })
-    return true
-  } catch(error) {
-    throw error
-  }
-},
-
-  // Đăng ký
-  register: async (userData) => {
-    try {
-      const response = await apiClient.post('/account/register', userData)
-      return true
-    } catch (error) {
-      throw error
-    }
-  },
 
   // Đăng xuất
   logout: async () => {
     try {
-      await apiClient.post('/account/logout')
+      await apiClient.post('/auth/logout')
       localStorage.removeItem('accessToken')
       return true
     } catch (error) {
@@ -144,7 +112,7 @@ export const authAPI = {
   refreshToken: async () => {
     try {
 
-      const response = await apiClient.post('/account/refresh-token')
+      const response = await apiClient.post('/auth/refresh-token')
 
       if(response.status == 200){
         localStorage.setItem('accessToken', response.accessToken)
@@ -234,59 +202,6 @@ export const userAPI = {
   }
 }
 
-// ====================== GENERIC APIs ======================
-
-export const genericAPI = {
-  // GET request
-  get: async (endpoint, params = {}) => {
-    try {
-      const response = await apiClient.get(endpoint, { params })
-      return response
-    } catch (error) {
-      throw error
-    }
-  },
-
-  // POST request
-  post: async (endpoint, data = {}) => {
-    try {
-      const response = await apiClient.post(endpoint, data)
-      return response
-    } catch (error) {
-      throw error
-    }
-  },
-
-  // PUT request
-  put: async (endpoint, data = {}) => {
-    try {
-      const response = await apiClient.put(endpoint, data)
-      return response
-    } catch (error) {
-      throw error
-    }
-  },
-
-  // DELETE request
-  delete: async (endpoint) => {
-    try {
-      const response = await apiClient.delete(endpoint)
-      return response
-    } catch (error) {
-      throw error
-    }
-  },
-
-  // PATCH request
-  patch: async (endpoint, data = {}) => {
-    try {
-      const response = await apiClient.patch(endpoint, data)
-      return response
-    } catch (error) {
-      throw error
-    }
-  }
-}
 
 // ====================== UTILITY FUNCTIONS ======================
 
@@ -329,47 +244,7 @@ export const apiUtils = {
 }
 
 
-// Ví dụ sử dụng trong component Vue:
-/*
-import { authAPI, userAPI, genericAPI } from '@/services/api'
 
-export default {
-  methods: {
-    async login() {
-      try {
-        const response = await authAPI.login({
-          phone: this.phone,
-          password: this.password
-        })
-        console.log('Đăng nhập thành công:', response)
-      } catch (error) {
-        console.error('Lỗi đăng nhập:', error)
-      }
-    },
-
-    async getProfile() {
-      try {
-        const user = await userAPI.getCurrentUser()
-        console.log('Thông tin user:', user)
-      } catch (error) {
-        console.error('Lỗi lấy thông tin:', error)
-      }
-    },
-
-    async fetchData() {
-      try {
-        const data = await genericAPI.get('/products', {
-          page: 1,
-          limit: 10
-        })
-        console.log('Dữ liệu:', data)
-      } catch (error) {
-        console.error('Lỗi lấy dữ liệu:', error)
-      }
-    }
-  }
-}
-*/
 
 // Export axios instance nếu cần sử dụng trực tiếp
 export default apiClient
