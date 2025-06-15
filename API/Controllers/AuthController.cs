@@ -23,14 +23,6 @@ namespace API.Controllers
         }
 
 
-
-        [HttpGet("Test/{message}")]
-        [Authorize(AuthenticationSchemes = "Bearer" ) ]
-        public IActionResult Test([FromRoute] string message)
-        {
-            return Ok(message);
-        }
-
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO request)
         {
@@ -39,11 +31,14 @@ namespace API.Controllers
                 return BadRequest(new { Message = "Tên đăng nhập hoặc mật khẩu không được để trống." });
             }
 
+
+
             var result = await _authService.AdminLogin(request);
             if (!result.IsSuccess)
             {
                 return BadRequest(new { result.Message });
             }
+
 
             if (!result.FirstLogin)
             {
@@ -58,10 +53,9 @@ namespace API.Controllers
                 };
 
                 Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
-
             }
 
-            return Ok(new { FisrtLogin = result.FirstLogin ,  AccessToken = result.Token.Accesstoken });
+            return Ok(new { FisrtLogin = result.FirstLogin, Role = result.Role, AccessToken = result.Token.Accesstoken });
         }
 
         [HttpPost("refresh-token")]
@@ -118,21 +112,21 @@ namespace API.Controllers
 
                 return Ok();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { Message = "Lỗi khi thực hiện yêu cầu: " + ex.Message });
             }
-            
+
         }
 
 
         [HttpPost("reset-password")]
-        [Authorize(AuthenticationSchemes ="Bearer" , Policy = "ChangePasswordOnly")]
+        [Authorize(AuthenticationSchemes = "Bearer", Policy = "ChangePasswordOnly")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPassDTO request)
         {
             try
             {
-                request.UserID = User.GetUserId(); 
+                request.UserID = User.GetUserId();
                 var changePassResult = await _authService.ChangePassword(request);
 
                 if (changePassResult)
@@ -140,7 +134,7 @@ namespace API.Controllers
 
                 return BadRequest(new { message = "Đổi mật khẩu thất bài ,  vui lòng thử lại sau" });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
@@ -148,7 +142,20 @@ namespace API.Controllers
 
 
 
+        [HttpPost("add")]
+        public async Task<IActionResult> Add(string Email, string Pass)
+        {
+            try
+            {
+                await _authService.add(Email, Pass);
+                return Ok(new { message = "Thêm thành công" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Lỗi khi thêm: {ex.Message}");
+                return BadRequest(new { message = "Lỗi khi thêm: " + ex.InnerException.Message });
+            }
 
-
+        }
     }
 }

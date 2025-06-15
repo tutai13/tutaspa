@@ -90,8 +90,9 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IOTPService, OtpService>();
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
 
-builder.Services.AddScoped<ICategoryService, CategoryService>();    
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 
 builder.Services.AddScoped<IValidator<RegisterDTO>, RegisterValidator>();
