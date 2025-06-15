@@ -31,6 +31,7 @@ namespace API.Data
                 .HasIndex(u => u.Email)
                 .IsUnique();
         }
+        public DbSet<API.Models.Voucher> Voucher { get; set; } = default!;
 
     }
 }
