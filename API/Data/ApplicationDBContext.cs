@@ -13,6 +13,8 @@ namespace API.Data
         public DbSet<LoaiDichVu> LoaiDichVus { get; set; }
         public DbSet<Product> Product { get; set; }
         public DbSet<Category> Categorys { get; set; }
+        public DbSet<HoaDon> hoaDons { get; set; }
+        public DbSet<ChiTietHoaDon> chiTietHoaDons { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {

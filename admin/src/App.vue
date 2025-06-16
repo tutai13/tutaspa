@@ -34,11 +34,11 @@
           <i class="fas fa-store"></i> Thống kê
         </router-link>
         <router-link
-          to="/apps/blog"
+          to="/ThuNgan"
           class="menu-item"
           exact-active-class="active"
         >
-          <i class="fas fa-clock"></i> Blog
+          <i class="fa-solid fa-wallet"></i> Thu Ngân
         </router-link>
         <router-link
           to="/apps/profile"
