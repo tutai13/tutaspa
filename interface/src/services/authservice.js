@@ -1,8 +1,13 @@
+
 import axios from "axios";
 import { error } from "../notification";
 
+
+
+
 // Cấu hình base URL cho API
 const API_BASE_URL = import.meta.env.VITE_BASE_URL;
+
 
 console.log("url :" + API_BASE_URL);
 
@@ -81,13 +86,14 @@ export const authAPI = {
   // Đăng nhập
   login: async (credentials) => {
     try {
-      const response = await apiClient.post("/account/login", credentials);
-
-      console.error("alooo", response);
-
+      const response = await apiClient.post('/account/login', credentials)
+      
       // Lưu token vào localStorage
       if (response.accessToken) {
         localStorage.setItem("accessToken", response.accessToken);
+        localStorage.setItem("user-info", JSON.stringify(response.userInfo))
+
+
       }
 
       return response;

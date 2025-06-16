@@ -13,6 +13,7 @@ using API.Models;
 using FluentValidation;
 using Azure.Identity;
 using Microsoft.EntityFrameworkCore;
+using Twilio.Rest.Api.V2010.Account;
 
 namespace API.Services
 {
@@ -23,17 +24,21 @@ namespace API.Services
         private readonly SignInManager<User> _signInManager;
         private readonly ITokenService _tokenService;
         private readonly ILogger<AuthService> _logger;
-        private readonly IValidator<RegisterDTO> _validator; 
+        private readonly IValidator<RegisterDTO> _validator;
+        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IUserRepository _userRepository;
 
 
-        public AuthService(IConfiguration configuration, UserManager<User> userManager, SignInManager<User> signInManager, ITokenService tokenService, ILogger<AuthService> logger, IValidator<RegisterDTO> v )
+        public AuthService(IConfiguration configuration, UserManager<User> userManager, SignInManager<User> signInManager, ITokenService tokenService, ILogger<AuthService> logger, IValidator<RegisterDTO> v, IUserRepository userRepository, RoleManager<IdentityRole> roleManager    )
         {
             _configuration = configuration;
             _userManager = userManager;
             _signInManager = signInManager;
             _tokenService = tokenService;
             _logger = logger;
-            _validator = v; 
+            _validator = v;
+            _userRepository = userRepository;
+            _roleManager = roleManager;
         }
 
         public async Task<bool> ChangePassword(ResetPassDTO resetPassDTO)
@@ -83,7 +88,7 @@ namespace API.Services
                 CheckUserNull(user);
 
                 var roles = await _userManager.GetRolesAsync(user);
-                if (roles.Contains("User"))
+                if (roles.Contains("User") || roles == null)
                     return Failure("Tài khoản không có quyền truy cập");
 
 
@@ -110,8 +115,10 @@ namespace API.Services
                 }
 
                 _logger.LogInformation($"Login successfully user :  {user.Id}");
-                var token = await _tokenService.GenerateToken(user, await GetRoles(user));
-                return Success("Đăng nhập thành công", token);
+
+                
+                var token = await _tokenService.GenerateToken(user, roles);
+                return Success("Đăng nhập thành công", token,Role : roles.FirstOrDefault()  );
             }
             catch (Exception ex)
             {
@@ -141,8 +148,7 @@ namespace API.Services
 
                 _logger.LogInformation($"Login successfully user :  {user.Id}");
                 var token = await _tokenService.GenerateToken(user,await GetRoles(user));
-                Console.WriteLine(token.RefreshToken);
-                return Success("Đăng nhập thành công", token);
+                return Success("Đăng nhập thành công", token,null ,  await _userRepository.GetUserByIdAsync(user.Id));
             }
             catch (Exception ex)
             {
@@ -152,14 +158,16 @@ namespace API.Services
         }
 
 
-        private AuthResponse Success(string Message, TokenDTO token)
+        private AuthResponse Success(string Message, TokenDTO token,string Role , UserInfo? user = null)
         {
+        
             return new AuthResponse
             {
                 IsSuccess = true,
                 Token = token,
-                Message = Message
-
+                Message = Message,
+                User = user,
+                Role = Role 
             };
         }
 
@@ -201,7 +209,7 @@ namespace API.Services
                 var newToken = await _tokenService.GenerateToken(user, await GetRoles(user));
 
 
-                return Success("Đăng nhập thành công", newToken);
+                return Success("Đăng nhập thành công", newToken,null,null);
             }
             catch (Exception ex)
             {
@@ -211,46 +219,72 @@ namespace API.Services
 
         private async Task<IList<string>> GetRoles(User user) => await _userManager.GetRolesAsync(user);
 
-        public async Task add() 
+        public async Task add(string email , string pass) 
         {
             var user = new User()
             {
-                Email = "duonng1203@gmail.com",
-                UserName = "duongu7"
+                Email = email,
+                UserName = "AdminTest",
+                Name = "Testing"
+               
             };
+            await _userManager.CreateAsync(user, pass);
 
-            await _userManager.CreateAsync(user, "Gggggg@124"); 
+            var adminRole = await _roleManager.FindByNameAsync("Admin");
+            if (adminRole == null)
+            {
+                adminRole = new IdentityRole("Admin");
+                await _roleManager.CreateAsync(adminRole);
+            }
 
-            
+            await _userManager.AddToRoleAsync(user, "Admin");
+
         }
 
         public async Task<AuthResponse> Resgister(RegisterDTO request)
         {
-            var valid = await _validator.ValidateAsync(request);
-            if (!valid.IsValid)
-                return Failure(string.Join(", ", valid.Errors));
-
-
-            var newUser = new User
+            try
             {
-                PhoneNumber = request.PhoneNumber , 
-                UserName = request.PhoneNumber  ,
-                Name = request.Name , 
-                FisrtLogin = false 
-            };
+                var valid = await _validator.ValidateAsync(request);
+                if (!valid.IsValid)
+                    return Failure(string.Join(", ", valid.Errors));
 
 
-            var result = await _userManager.CreateAsync(newUser, request.Password).ConfigureAwait(false);
+                var newUser = new User
+                {
+                    PhoneNumber = request.PhoneNumber,
+                    UserName = request.PhoneNumber,
+                    Name = request.Name,
+                    FisrtLogin = false
+                };
 
-            if (!result.Succeeded)
-            {
-                return Failure(string.Join(", ", result.Errors.Select(e => e.Description)));
+
+                var result = await _userManager.CreateAsync(newUser, request.Password).ConfigureAwait(false);
+
+                if (!result.Succeeded)
+                {
+                    return Failure(string.Join(", ", result.Errors.Select(e => e.Description)));
+                }
+
+                // Kiểm tra và tạo vai trò "User" nếu chưa tồn tại
+                var userRole = await _roleManager.FindByNameAsync("User");
+                if (userRole == null)
+                {
+                    userRole = new IdentityRole("User");
+                    await _roleManager.CreateAsync(userRole);
+                }
+
+
+                await _userManager.AddToRoleAsync(newUser, "User").ConfigureAwait(false);
+                _logger.LogInformation($"Đăng kí thành công {newUser.Id}");
+
+                return Success("Đăng kí thành công", null,null);
             }
-
-            await _userManager.AddToRoleAsync(newUser, "User").ConfigureAwait(false);
-            _logger.LogInformation($"Đăng kí thành công {newUser.Id}");
-
-            return Success("Đăng kí thành công",null);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Đã xảy ra lỗi khi đăng kí tài khoản :  {UserName}", request.PhoneNumber + ex.InnerException?.Message);
+                return Failure("Xảy ra lỗi :" + ex.Message);
+            }
         }
     }
 }

@@ -230,6 +230,8 @@ function Logout() {
 
 /* Main Content */
 .main-content {
+  height: 100%;;
+  float: right;
   padding: 20px;
   flex: 1;
   overflow-y: auto;

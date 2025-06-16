@@ -137,7 +137,6 @@ const handleLogin = async () => {
   isLoading.value = true
 
   try {
-    // Gọi API đăng nhập thực tế
     const result = await authAPI.login({
       PhoneNumber: form.phone,
       Password: form.password
@@ -148,8 +147,12 @@ const handleLogin = async () => {
             title : "",
             timer : 1500
         })
+
+        setTimeout(() => {
+            router.push('/')
+        }, 1500)
         
-        await router.push('/')
+        
         return ;    
     }
 

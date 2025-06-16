@@ -11,8 +11,6 @@ namespace API.Controllers
     [ApiController]
     public class AccountController : ControllerBase
     {
-
-
         private readonly IAuthService _authService;
         private readonly ILogger<AuthController> _logger;
 
@@ -69,7 +67,7 @@ namespace API.Controllers
             Response.Cookies.Append("User_refreshToken", refreshToken, cookieOptions);
 
 
-            return Ok(new { FisrtLogin = result.FirstLogin ,   AccessToken = result.Token.Accesstoken });
+            return Ok(new {UserInfo = result.User , AccessToken = result.Token.Accesstoken });
         }
 
 
