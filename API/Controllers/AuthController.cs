@@ -31,8 +31,6 @@ namespace API.Controllers
                 return BadRequest(new { Message = "Tên đăng nhập hoặc mật khẩu không được để trống." });
             }
 
-
-
             var result = await _authService.AdminLogin(request);
             if (!result.IsSuccess)
             {
@@ -42,6 +40,8 @@ namespace API.Controllers
 
             if (!result.FirstLogin)
             {
+                Console.WriteLine("Alooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo");
+                Console.WriteLine("Here");
                 var refreshToken = result.Token.RefreshToken;
                 var cookieOptions = new CookieOptions
                 {
