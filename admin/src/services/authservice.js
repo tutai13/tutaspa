@@ -11,7 +11,8 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
-  }
+  },
+  withCredentials: true 
 })
 
 // Request interceptor - thêm token vào header
@@ -85,7 +86,6 @@ export const authAPI = {
       if (response.accessToken) {
         localStorage.setItem('accessToken', response.accessToken)
         localStorage.setItem("user-info", JSON.stringify(response.userInfo))
-
       }
       
       return response
@@ -118,7 +118,6 @@ export const authAPI = {
         localStorage.setItem('accessToken', response.accessToken)
         return true
       }
-
       return false
 
     } catch (error) {

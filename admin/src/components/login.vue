@@ -118,9 +118,10 @@ import { authAPI } from '../services/authservice'
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 
-const router = useRouter()
 
-// Reactive form data
+const router = useRouter()
+const return_url = router.currentRoute.value.query.return_url || '/'
+
 const loginForm = reactive({
   email: '',
   password: ''
@@ -197,7 +198,7 @@ const handleLogin = async () => {
             timer : 1500
         })
     setTimeout(() => {
-      router.push('/')
+      router.push('/'+return_url)
     },2000)
     }
    catch (error) {

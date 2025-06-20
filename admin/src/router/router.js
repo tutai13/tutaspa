@@ -5,6 +5,7 @@ import dichVu from "../components/dichVu.vue";
 import kho from "../components/kho.vue";
 import ThuNgan from "../components/ThuNgan.vue";
 import login from "../components/login.vue";
+import EmployeeManagerment from "../components/EmployeeManagerment.vue";
 
 const routes = [
   { path: "/", name: "Dashboard", component: Dashboard },
@@ -13,6 +14,7 @@ const routes = [
 
   { path: "/kho", name: "kho", component: kho },
   { path: "/ThuNgan", name: "ThuNgan", component: ThuNgan },
+  { path: "/employees", name: "employees", component: EmployeeManagerment },
 
 
   {path : "/login", name: "login", component: login , meta: {

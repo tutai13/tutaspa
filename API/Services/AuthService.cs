@@ -74,7 +74,7 @@ namespace API.Services
 
         private void CheckUserNull(User user)
         {
-            if (user == null)
+            if (user == null || user.IsDeleted)
                 throw new Exception("User không tồn tại"); 
         }
 
@@ -85,6 +85,10 @@ namespace API.Services
                 _logger.LogInformation("Login attempt for username: {UserName}", request.Email);
 
                 var user = await _userManager.FindByEmailAsync(request.Email);
+
+
+
+
                 CheckUserNull(user);
 
                 var roles = await _userManager.GetRolesAsync(user);
@@ -116,7 +120,7 @@ namespace API.Services
 
                 _logger.LogInformation($"Login successfully user :  {user.Id}");
 
-                
+           
                 var token = await _tokenService.GenerateToken(user, roles);
                 return Success("Đăng nhập thành công", token,Role : roles.FirstOrDefault()  );
             }
