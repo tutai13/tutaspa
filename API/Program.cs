@@ -91,9 +91,13 @@ builder.Services.AddScoped<IOTPService, OtpService>();
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+
+builder.Services.AddScoped<IInventoryService, InventoryService>();
+
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IGmailService, GmailService>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+
 
 
 //Validators
@@ -126,20 +130,38 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient<IOTPService, OtpService>();
+
+
+
+
 var app = builder.Build();
+
+app.UseCors(policy => policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
+
+
+
 
 
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+
+	app.UseSwagger();
+	app.UseSwaggerUI(c =>
+	{
+		c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API v1");
+	});
+
 }
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+
 app.UseCors("AllowFrontend");
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseResponseCaching();

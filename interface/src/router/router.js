@@ -25,7 +25,7 @@ const routes = [
     path : "/register",
     name : "register",
     component :  register
-  }
+  },
 
   // Route động cho chi tiết dịch vụ
   {
