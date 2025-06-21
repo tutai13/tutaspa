@@ -4,6 +4,7 @@ using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20250619040337_update_user-info")]
+    partial class update_userinfo
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -83,7 +86,6 @@ namespace API.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DichVuID"));
 
                     b.Property<decimal>("Gia")
-                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("HinhAnh")
@@ -118,39 +120,6 @@ namespace API.Migrations
 
                     b.ToTable("DichVus");
                 });
-
-
-            modelBuilder.Entity("API.Models.InventoryHistory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ActionType")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Note")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("QuantityChanged")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("InventoryHistories");
 
             modelBuilder.Entity("API.Models.HoaDon", b =>
                 {
@@ -197,7 +166,6 @@ namespace API.Migrations
                     b.HasIndex("UserID");
 
                     b.ToTable("hoaDons");
-
                 });
 
             modelBuilder.Entity("API.Models.LoaiDichVu", b =>
@@ -571,17 +539,6 @@ namespace API.Migrations
                     b.Navigation("LoaiDichVu");
                 });
 
-
-            modelBuilder.Entity("API.Models.InventoryHistory", b =>
-                {
-                    b.HasOne("API.Models.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-
             modelBuilder.Entity("API.Models.HoaDon", b =>
                 {
                     b.HasOne("API.Models.User", "User")
@@ -591,7 +548,6 @@ namespace API.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-
                 });
 
             modelBuilder.Entity("API.Models.Product", b =>

@@ -5,6 +5,8 @@ namespace API.Models
     public class User : IdentityUser
     {
         public string Name { get; set; }
-        public bool FisrtLogin { get; set;  } = true ; 
+        public string Address { get; set; }
+        public bool FisrtLogin { get; set;  } = true ;
+        public bool IsDeleted { get; internal set; }
     }
 }

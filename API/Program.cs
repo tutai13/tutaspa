@@ -14,6 +14,8 @@ using API.DTOs.Auth;
 using API.Validator;
 using System.Web.WebPages;
 using FluentValidation;
+using API.DTOs.Employee;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
@@ -83,23 +85,52 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 
 
 builder.Services.AddSingleton<OtpService>();
-
-
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IOTPService, OtpService>();
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
-
-builder.Services.AddScoped<ICategoryService, CategoryService>();    
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IGmailService, GmailService>();
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+
+
+
+//Validators
 builder.Services.AddScoped<IValidator<RegisterDTO>, RegisterValidator>();
+builder.Services.AddScoped<IValidator<CreateEmployeeDTO>, CreateEmployValidator>();
 
 
+//config
+builder.Services.Configure<GmailSettings>(builder.Configuration.GetSection("GmailSettings"));
 builder.Services.Configure<SmsSettings>(builder.Configuration.GetSection("SmsSettings"));
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
+
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowCredentials()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
+
+
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient<IOTPService, OtpService>();
+
 
 
 
@@ -108,20 +139,28 @@ var app = builder.Build();
 app.UseCors(policy => policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
 
 
+
+
+
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+
 	app.UseSwagger();
 	app.UseSwaggerUI(c =>
 	{
 		c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API v1");
 	});
+
 }
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();

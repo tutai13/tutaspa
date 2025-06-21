@@ -13,7 +13,12 @@ namespace API.Data
         public DbSet<LoaiDichVu> LoaiDichVus { get; set; }
         public DbSet<Product> Product { get; set; }
         public DbSet<Category> Categorys { get; set; }
+
 		public DbSet<InventoryHistory> InventoryHistories { get; set; }
+
+        public DbSet<HoaDon> hoaDons { get; set; }
+        public DbSet<ChiTietHoaDon> chiTietHoaDons { get; set; }
+
 
 		public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
@@ -31,12 +36,17 @@ namespace API.Data
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Email)
                 .IsUnique();
+
 			modelBuilder.Entity<DichVu>(entity =>
 			{
 				entity.Property(e => e.Gia)
 					  .HasColumnType("decimal(18,2)"); 
 			});
 		}
+
+        }
+        public DbSet<API.Models.Voucher> Voucher { get; set; } = default!;
+
 
     }
 }

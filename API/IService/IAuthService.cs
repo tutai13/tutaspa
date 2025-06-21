@@ -14,7 +14,7 @@ namespace API.IService
 
         public Task<AuthResponse> RefreshToken(string refreshToken);
 
-        public Task add(); 
+        public Task add(string email, string pass); 
 
         public Task<bool> ChangePassword(ResetPassDTO resetPassDTO);
         public Task Logout(string refreshToken);

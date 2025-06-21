@@ -24,6 +24,9 @@
         <router-link to="/kho" class="menu-item" exact-active-class="active">
           <i class="fas fa-columns"></i> Quản lý kho
         </router-link>
+        <router-link to="/employees" class="menu-item" exact-active-class="active">
+          <i class="fas fa-columns"></i> Quản lý nhân viên
+        </router-link>
 
         <div class="menu-title">APPS</div>
         <router-link
@@ -34,11 +37,11 @@
           <i class="fas fa-store"></i> Thống kê
         </router-link>
         <router-link
-          to="/apps/blog"
+          to="/ThuNgan"
           class="menu-item"
           exact-active-class="active"
         >
-          <i class="fas fa-clock"></i> Blog
+          <i class="fa-solid fa-wallet"></i> Thu Ngân
         </router-link>
         <router-link
           to="/apps/profile"
@@ -230,6 +233,8 @@ function Logout() {
 
 /* Main Content */
 .main-content {
+  height: 100%;;
+  float: right;
   padding: 20px;
   flex: 1;
   overflow-y: auto;
