@@ -259,7 +259,7 @@ namespace API.Services
                     PhoneNumber = request.PhoneNumber,
                     UserName = request.PhoneNumber,
                     Name = request.Name,
-                    FisrtLogin = false
+                    FisrtLogin = false ,
                 };
 
 
