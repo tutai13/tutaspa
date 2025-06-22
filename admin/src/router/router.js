@@ -6,7 +6,8 @@ import kho from "../components/kho.vue";
 import ThuNgan from "../components/ThuNgan.vue";
 import login from "../components/login.vue";
 import EmployeeManagerment from "../components/EmployeeManagerment.vue";
-
+import QuanLyLoaiSanPham from '../components/LoaiSanPham.vue';
+import QuanLySanPham from '../components/QuanLySanPham.vue';
 const routes = [
   { path: "/", name: "Dashboard", component: Dashboard },
   { path: "/khuyenMai", name: "khuyenMai", component: khuyenMai },
@@ -21,6 +22,10 @@ const routes = [
       layout: false, // Không sử dụng layout chung
       requiresAuth: false
     }},
+  
+
+{ path: "/categories", name: "QuanLyLoaiSanPham", component: QuanLyLoaiSanPham },
+{ path: "/Products", name: "QuanLySanPham", component: QuanLySanPham },
 
 ];
 const router = createRouter({

@@ -52,6 +52,12 @@ namespace API.Controllers
             if (!success) return NotFound();
             return NoContent();
         }
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchByName([FromQuery] string ten)
+        {
+            var result = await _categoryService.SearchByNameAsync(ten);
+            return Ok(result);
+        }
 
     }
 }

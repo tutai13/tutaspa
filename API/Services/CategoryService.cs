@@ -73,6 +73,17 @@ namespace API.Services
 
             return true;
         }
+        public async Task<IEnumerable<CategoryDTO>> SearchByNameAsync(string ten)
+        {
+            return await _context.Categorys
+                .Where(c => c.CategoryName.Contains(ten))
+                .Select(c => new CategoryDTO
+                {
+                    LoaiSanPhamId = c.CategoryId,
+                    TenLoai = c.CategoryName
+                }).ToListAsync();
+        }
+
 
     }
 }
