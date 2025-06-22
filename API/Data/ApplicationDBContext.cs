@@ -44,7 +44,7 @@ namespace API.Data
 			});
 		}
 
-        }
+        
         public DbSet<API.Models.Voucher> Voucher { get; set; } = default!;
 
 
