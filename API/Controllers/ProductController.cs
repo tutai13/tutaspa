@@ -36,15 +36,20 @@ namespace API.Controllers
 
         // POST: api/Product
         [HttpPost]
-        public async Task<IActionResult> Create(ProductDTO dto)
+        public async Task<IActionResult> Create([FromForm] ProductCreateDTO dto)
         {
             var result = await _productService.CreateAsync(dto);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             return CreatedAtAction(nameof(GetById), new { id = result.SanPhamId }, result);
         }
 
         // PUT: api/Product/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, ProductDTO dto)
+        public async Task<IActionResult> Update(int id, [FromForm] ProductCreateDTO dto)
         {
             var success = await _productService.UpdateAsync(id, dto);
             if (!success)
@@ -63,6 +68,21 @@ namespace API.Controllers
 
             return NoContent();
         }
+        // GET: api/Product/name?ten=abc
+        [HttpGet("name")]
+        public async Task<IActionResult> SearchByName([FromQuery] string ten)
+        {
+            var result = await _productService.SearchByNameAsync(ten);
+            return Ok(result);
+        }
+        // GET: api/Product/filter-by-price?min=1000&max=2000
+        [HttpGet("filter-by-price")]
+        public async Task<IActionResult> FilterByPrice([FromQuery] decimal min, [FromQuery] decimal max)
+        {
+            var result = await _productService.FilterByPriceAsync(min, max);
+            return Ok(result);
+        }
+
 
     }
 }

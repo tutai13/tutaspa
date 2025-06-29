@@ -18,9 +18,9 @@ namespace API.Data
 
         public DbSet<HoaDon> hoaDons { get; set; }
         public DbSet<ChiTietHoaDon> chiTietHoaDons { get; set; }
+        public DbSet<API.Models.Voucher> Voucher { get; set; } = default!;
 
-
-		public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
 
         }
@@ -43,10 +43,7 @@ namespace API.Data
 					  .HasColumnType("decimal(18,2)"); 
 			});
 		}
-
-        
-        public DbSet<API.Models.Voucher> Voucher { get; set; } = default!;
-
-
     }
+
 }
+

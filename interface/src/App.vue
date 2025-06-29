@@ -1,57 +1,56 @@
 <template>
   <div id="app">
-   <!-- Navbar -->
-  <nav class="navbar" :class="{ hidden: isNavbarHidden }" ref="navbar">
-    <div class="logo animated-logo">
-      <router-link to="/">
-        <img
-          src="/src/assets/img/logo.png"
-          alt="TutaSpa Logo"
-          class="logo-image"
-        />
-      </router-link>
-    </div>
-
-    <ul class="nav-links">
-      <li>
+    <!-- Navbar -->
+    <nav class="navbar" :class="{ hidden: isNavbarHidden }" ref="navbar">
+      <div class="logo animated-logo">
         <router-link to="/">
-          <i class="fa-solid fa-house"></i> Trang Chủ
+          <img
+            src="/src/assets/img/logo.png"
+            alt="TutaSpa Logo"
+            class="logo-image"
+          />
         </router-link>
-      </li>
-      <li>
-        <router-link to="/DichVu">
-          <i class="fa-solid fa-briefcase"></i> Dịch Vụ
-        </router-link>
-      </li>
-      <li>
-        <router-link to="/dat-lich">
-          <i class="fa-regular fa-calendar-check"></i> Đặt Lịch
-        </router-link>
-      </li>
-      <li>
-        <router-link to="/GioiThieu">
-          <i class="fa-solid fa-circle-info"></i> Giới Thiệu
-        </router-link>
-      </li>
-      <li>
-        <router-link to="/LienHe">
-          <i class="fa-solid fa-envelope"></i> Liên Hệ
-        </router-link>
-      </li>
-    </ul>
+      </div>
 
-    <div class="user-icon">
-  <router-link to="/tai-khoan" class="user-link">
-    <i class="fa-solid fa-circle-user"></i>
-    <span>Đăng nhập</span>
-  </router-link>
-  <router-link to="/lich-hen" class="calendar-link">
-    <i class="fa-regular fa-calendar-check"></i>
-    <span>Xem lịch</span>
-  </router-link>
-</div>
+      <ul class="nav-links">
+        <li>
+          <router-link to="/">
+            <i class="fa-solid fa-house"></i> Trang Chủ
+          </router-link>
+        </li>
+        <li>
+          <router-link to="/DichVu">
+            <i class="fa-solid fa-briefcase"></i> Dịch Vụ
+          </router-link>
+        </li>
+        <li>
+          <router-link to="/dat-lich">
+            <i class="fa-regular fa-calendar-check"></i> Đặt Lịch
+          </router-link>
+        </li>
+        <li>
+          <router-link to="/GioiThieu">
+            <i class="fa-solid fa-circle-info"></i> Giới Thiệu
+          </router-link>
+        </li>
+        <li>
+          <router-link to="/LienHe">
+            <i class="fa-solid fa-envelope"></i> Liên Hệ
+          </router-link>
+        </li>
+      </ul>
 
-  </nav>
+      <div class="user-icon">
+        <router-link to="/tai-khoan" class="user-link">
+          <i class="fa-solid fa-circle-user"></i>
+          <span>Đăng nhập</span>
+        </router-link>
+        <router-link to="/lich-hen" class="calendar-link">
+          <i class="fa-regular fa-calendar-check"></i>
+          <span>Xem lịch</span>
+        </router-link>
+      </div>
+    </nav>
 
     <main class="main-content">
       <!-- Carousel -->
@@ -113,37 +112,36 @@
 
   <!-- footer -->
 
-   <!-- Footer -->
-<footer class="footer bg-dark-red text-white py-5">
-  <div class="footer-container container grid grid-cols-1 md:grid-cols-4 gap-8">
-    <!-- Cột 1: Logo & giới thiệu -->
-    <div class="footer-section about">
-      <img src="/src/assets/img/logo.png" alt="TutaSpa Logo" class="footer-logo mb-4 w-32" />
-      <p>
-        <strong>Tuta Spa</strong> – Nơi tôn vinh vẻ đẹp tự nhiên. Dịch vụ chăm sóc da chuyên nghiệp, hiện đại và tận tâm.
-      </p>
-    </div>
+  <!-- Footer -->
+  <footer class="footer bg-dark-red text-white py-5">
+    <div
+      class="footer-container container grid grid-cols-1 md:grid-cols-4 gap-8"
+    >
+      <!-- Cột 1: Logo & giới thiệu -->
+      <div class="footer-section about">
+        <img
+          src="/src/assets/img/logo.png"
+          alt="TutaSpa Logo"
+          class="footer-logo mb-4 w-32"
+        />
+        <p>
+          <strong>Tuta Spa</strong> – Nơi tôn vinh vẻ đẹp tự nhiên. Dịch vụ chăm
+          sóc da chuyên nghiệp, hiện đại và tận tâm.
+        </p>
+      </div>
 
-    <!-- Cột 2: Liên kết nhanh -->
-    <div class="footer-section links">
-      <h3 class="text-lg font-semibold mb-3">Liên kết nhanh</h3>
-      <ul class="space-y-2">
-        <li><router-link to="/">Trang chủ</router-link></li>
-        <li><router-link to="/DichVu">Dịch vụ</router-link></li>
-        <li><router-link to="/dat-lich">Đặt lịch</router-link></li>
-        <li><router-link to="/GioiThieu">Giới thiệu</router-link></li>
-        <li><router-link to="/LienHe">Liên hệ</router-link></li>
-      </ul>
-    </div>
+      <!-- Cột 2: Liên kết nhanh -->
+      <div class="footer-section links">
+        <h3 class="text-lg font-semibold mb-3">Liên kết nhanh</h3>
+        <ul class="space-y-2">
+          <li><router-link to="/">Trang chủ</router-link></li>
+          <li><router-link to="/DichVu">Dịch vụ</router-link></li>
+          <li><router-link to="/dat-lich">Đặt lịch</router-link></li>
+          <li><router-link to="/GioiThieu">Giới thiệu</router-link></li>
+          <li><router-link to="/LienHe">Liên hệ</router-link></li>
+        </ul>
+      </div>
 
-    <!-- Cột 3: Thông tin liên hệ -->
-    <div class="footer-section contact">
-      <h3 class="text-lg font-semibold mb-3">Liên hệ</h3>
-      <p><i class="fa-solid fa-location-dot"></i> 31 Nguyễn Mộng Tuân, Q. Liên Chiểu, Đà Nẵng</p>
-      <p><i class="fa-solid fa-phone"></i> 0901 234 567</p>
-      <p><i class="fa-solid fa-envelope"></i> info@tutaspa.vn</p>
-      <p><i class="fa-solid fa-clock"></i> Thứ 2 - CN: 8:00 - 20:00</p>
-    </div>
 
     <!-- Cột 4: MXH & Fanpage -->
     <div class="footer-section social">
@@ -160,16 +158,80 @@
         <img src="D:\DATNNN\tutaspa\interface\src\assets\img\Logo_MB_new.png.webp" alt="MBBank" class="w-10 h-6" width="50" height="35" />
         <img src="D:\DATNNN\tutaspa\interface\src\assets\img\Techcombank_logo.png" alt="Techcombank" class="w-10 h-6" width="50" height="35" />
         <img src="D:\DATNNN\tutaspa\interface\src\assets\img\LOGO-VIB-Blue.png" alt="VIB" class="w-10 h-6" width="50" height="35" /> -->
+
+      <!-- Cột 3: Thông tin liên hệ -->
+      <div class="footer-section contact">
+        <h3 class="text-lg font-semibold mb-3">Liên hệ</h3>
+        <p>
+          <i class="fa-solid fa-location-dot"></i> 31 Nguyễn Mộng Tuân, Q. Liên
+          Chiểu, Đà Nẵng
+        </p>
+        <p><i class="fa-solid fa-phone"></i> 0901 234 567</p>
+        <p><i class="fa-solid fa-envelope"></i> info@tutaspa.vn</p>
+        <p><i class="fa-solid fa-clock"></i> Thứ 2 - CN: 8:00 - 20:00</p>
+      </div>
+
+      <!-- Cột 4: MXH & Fanpage -->
+      <div class="footer-section social">
+        <h3 class="text-lg font-semibold mb-3">Kết nối với chúng tôi</h3>
+        <div class="flex space-x-4 mb-4">
+          <a href="https://facebook.com/tutaspa.vn" target="_blank"
+            ><i class="fa-brands fa-facebook fa-lg"></i
+          ></a>
+          <a href="https://instagram.com/tutaspa" target="_blank"
+            ><i class="fa-brands fa-instagram fa-lg"></i
+          ></a>
+          <a href="https://zalo.me/0901234567" target="_blank"
+            ><img
+              src="\src\assets\img\zalo.png"
+              alt="Zalo"
+              class="w-5 h-5"
+              width="15"
+              height="15"
+          /></a>
+        </div>
+
+        <h3 class="text-lg font-semibold mb-2">Hỗ trợ thanh toán</h3>
+        <div class="flex space-x-3">
+          <img
+            src="\src\assets\img\Logo-Vietcombank.webp"
+            alt="VCB"
+            class="w-10 h-6"
+            width="50"
+            height="35"
+          />
+          <img
+            src="\src\assets\img\Logo_MB_new.png.webp"
+            alt="MBBank"
+            class="w-10 h-6"
+            width="50"
+            height="35"
+          />
+          <img
+            src="\src\assets\img\Techcombank_logo.png"
+            alt="Techcombank"
+            class="w-10 h-6"
+            width="50"
+            height="35"
+          />
+          <img
+            src="\src\assets\img\LOGO-VIB-Blue.png"
+            alt="VIB"
+            class="w-10 h-6"
+            width="50"
+            height="35"
+          />
+        </div>
+
       </div>
     </div>
-  </div>
 
-  <div class="footer-bottom mt-8 border-t border-white/20 pt-4 text-center text-sm">
-    &copy; 2025 Tuta Spa. Phát triển bởi đội ngũ yêu cái đẹp.
-  </div>
-</footer>
-
-
+    <div
+      class="footer-bottom mt-8 border-t border-white/20 pt-4 text-center text-sm"
+    >
+      &copy; 2025 Tuta Spa. Phát triển bởi đội ngũ yêu cái đẹp.
+    </div>
+  </footer>
 </template>
 
 <script setup>
@@ -500,7 +562,7 @@ body {
   background-color: #a80032; /* Đỏ mận sang trọng */
   color: #fff;
   padding: 40px 20px 20px;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: "Segoe UI", sans-serif;
 }
 
 .footer-container {
@@ -586,7 +648,8 @@ body {
   align-items: center;
 }
 
-.user-link, .calendar-link {
+.user-link,
+.calendar-link {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -595,8 +658,8 @@ body {
   font-weight: 500;
 }
 
-.user-link:hover, .calendar-link:hover {
+.user-link:hover,
+.calendar-link:hover {
   color: #007bff;
 }
-
 </style>

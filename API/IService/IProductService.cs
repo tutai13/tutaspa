@@ -5,9 +5,14 @@ namespace API.IService
     {
         Task<IEnumerable<ProductDTO>> GetAllAsync();
         Task<ProductDTO> GetByIdAsync(int id);
-        Task<ProductDTO> CreateAsync(ProductDTO dto);
-        Task<bool> UpdateAsync(int id, ProductDTO dto);
+        Task<ProductDTO> CreateAsync(ProductCreateDTO dto);
+        Task<bool> UpdateAsync(int id, ProductCreateDTO dto);
+
         Task<bool> DeleteAsync(int id);
+        Task<IEnumerable<ProductDTO>> SearchByNameAsync(string name);
+        Task<IEnumerable<ProductDTO>> FilterByPriceAsync(decimal min, decimal max);
+
+
 
     }
 }

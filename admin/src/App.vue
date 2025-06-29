@@ -11,7 +11,7 @@
         <router-link to="/" class="menu-item" exact-active-class="active">
           <i class="fas fa-th-large"></i> Dashboard
         </router-link>
-        <router-link to="/dichVu" class="menu-item" exact-active-class="active">
+        <router-link to="/QlDichVu" class="menu-item" exact-active-class="active">
           <i class="fas fa-globe"></i> Quản lý dịch vụ
         </router-link>
         <router-link
@@ -23,6 +23,9 @@
         </router-link>
         <router-link to="/kho" class="menu-item" exact-active-class="active">
           <i class="fas fa-columns"></i> Quản lý kho
+        </router-link>
+        <router-link to="/QuanLySanPham" class="menu-item" exact-active-class="active">
+          <i class="fas fa-columns"></i> Quản lý Sản Phẩm
         </router-link>
         <router-link to="/employees" class="menu-item" exact-active-class="active">
           <i class="fas fa-columns"></i> Quản lý nhân viên
@@ -233,7 +236,7 @@ function Logout() {
 
 /* Main Content */
 .main-content {
-  height: 100%;;
+  height: 100%;
   float: right;
   padding: 20px;
   flex: 1;

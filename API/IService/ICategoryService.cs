@@ -8,6 +8,8 @@ namespace API.IService
         Task<CategoryDTO> CreateAsync(CategoryDTO dto);
         Task<bool> UpdateAsync(int id, CategoryDTO dto);
         Task<bool> DeleteAsync(int id);
+        Task<IEnumerable<CategoryDTO>> SearchByNameAsync(string ten);
+
 
     }
 }

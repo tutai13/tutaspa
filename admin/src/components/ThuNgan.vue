@@ -2,7 +2,6 @@
   <div class="container-fluid mt-4">
     <div class="row">
       <!-- Danh sách đã chọn -->
-      <!-- Danh sách đã chọn (Card style) -->
       <div class="col-md-9" style="font-size: 19px">
         <div class="card shadow-sm mb-3">
           <div

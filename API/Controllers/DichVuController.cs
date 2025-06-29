@@ -20,12 +20,35 @@ namespace API.Controllers
         {
             _context = context;
         }
-
-        // GET: api/DichVus
         [HttpGet]
         public async Task<ActionResult<IEnumerable<DichVu>>> GetDichVus()
         {
-            return await _context.DichVus.ToListAsync();
+            return await _context.DichVus
+                .Where(dv => dv.TrangThai == 1)
+                .ToListAsync();
+        }
+        // ✅ (Tùy chọn) Trả về tất cả dịch vụ (admin dùng)
+        [HttpGet("all")]
+        public async Task<ActionResult<IEnumerable<object>>> GetAllDichVus()
+        {
+            var dichVus = await _context.DichVus
+                .Include(dv => dv.LoaiDichVu) // Join với bảng LoaiDichVu
+                .Select(dv => new
+                {
+                    dv.DichVuID,
+                    dv.TenDichVu,
+                    dv.Gia,
+                    dv.ThoiGian,
+                    dv.MoTa,
+                    dv.HinhAnh,
+                    dv.NgayTao,
+                    dv.TrangThai,
+                    dv.LoaiDichVuID,
+                    dv.LoaiDichVu.TenLoai // Lấy tên loại
+                })
+                .ToListAsync();
+
+            return Ok(dichVus);
         }
 
         // GET: api/DichVus/5
@@ -41,7 +64,19 @@ namespace API.Controllers
 
             return dichVu;
         }
+        // GET: api/DichVu/loai
+        [HttpGet("loai")]
+        public async Task<ActionResult<IEnumerable<object>>> GetLoaiDichVus()
+        {
+            var loaiList = await _context.LoaiDichVus
+                .Select(ldv => new {
+                    ldv.LoaiDichVuID,
+                    ldv.TenLoai
+                })
+                .ToListAsync();
 
+            return Ok(loaiList);
+        }
         // PUT: api/DichVus/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
@@ -84,23 +119,6 @@ namespace API.Controllers
 
             return CreatedAtAction("GetDichVu", new { id = dichVu.DichVuID }, dichVu);
         }
-
-        // DELETE: api/DichVus/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteDichVu(int id)
-        {
-            var dichVu = await _context.DichVus.FindAsync(id);
-            if (dichVu == null)
-            {
-                return NotFound();
-            }
-
-            _context.DichVus.Remove(dichVu);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-        // GET: api/DichVu/search-by-name?ten=giatoc
         [HttpGet("name")]
         public async Task<ActionResult<IEnumerable<DichVu>>> SearchByName(string ten)
         {
