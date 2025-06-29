@@ -151,12 +151,72 @@ namespace API.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("InventoryHistories");
+                });
+
 
                     modelBuilder.Entity("API.Models.HoaDon", b =>
+
                         {
                             b.Property<int>("HoaDonID")
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("int");
+
+
+                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HoaDonID"));
+
+                            b.Property<string>("HinhThucThanhToan")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b.Property<string>("MaGiamGia")
+                                .HasColumnType("nvarchar(max)");
+
+                            b.Property<DateTime>("NgayTao")
+                                .HasColumnType("datetime2");
+
+                            b.Property<int>("NhanVienID")
+                                .HasColumnType("int");
+
+                            b.Property<decimal?>("TienKhachDua")
+                                .HasColumnType("decimal(18,2)");
+
+                            b.Property<decimal?>("TienThoiLai")
+                                .HasColumnType("decimal(18,2)");
+
+                            b.Property<decimal>("TongTien")
+                                .HasColumnType("decimal(18,2)");
+
+                            b.Property<decimal?>("TongTienSauGiamGia")
+                                .HasColumnType("decimal(18,2)");
+
+                            b.Property<byte>("TrangThai")
+                                .HasColumnType("tinyint");
+
+                            b.Property<string>("UserID")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(450)");
+
+                            b.HasKey("HoaDonID");
+
+                            b.HasIndex("UserID");
+
+                            b.ToTable("hoaDons");
+
+                        });
+
+            modelBuilder.Entity("API.Models.LoaiDichVu", b =>
+                {
+                    b.Property<int>("LoaiDichVuID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LoaiDichVuID"));
+
+                    b.Property<string>("TenLoai")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
 
                             SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HoaDonID"));
 
@@ -499,14 +559,13 @@ namespace API.Migrations
                             b.HasKey("LoginProvider", "ProviderKey");
 
                             b.HasIndex("UserId");
-
-                            b.ToTable("AspNetUserLogins", (string)null);
+                               b.ToTable("AspNetUserLogins", (string)null);
                         });
-
-                    modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+                        modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                         {
                             b.Property<string>("UserId")
                                 .HasColumnType("nvarchar(450)");
+
 
                             b.Property<string>("RoleId")
                                 .HasColumnType("nvarchar(450)");
@@ -581,7 +640,7 @@ namespace API.Migrations
                                 .IsRequired();
 
                             b.Navigation("Product");
-
+                          });
                             modelBuilder.Entity("API.Models.HoaDon", b =>
                         {
                             b.HasOne("API.Models.User", "User")
@@ -591,8 +650,8 @@ namespace API.Migrations
                                 .IsRequired();
 
                             b.Navigation("User");
-
-                        });
+  });
+                       
 
                             modelBuilder.Entity("API.Models.Product", b =>
                         {
@@ -681,6 +740,7 @@ namespace API.Migrations
                         {
                             b.Navigation("DichVus");
                         });
+
 #pragma warning restore 612, 618
                         });
                 });
