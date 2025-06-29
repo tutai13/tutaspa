@@ -24,6 +24,9 @@
         <router-link to="/kho" class="menu-item" exact-active-class="active">
           <i class="fas fa-columns"></i> Quản lý kho
         </router-link>
+        <router-link to="/QuanLySanPham" class="menu-item" exact-active-class="active">
+          <i class="fas fa-columns"></i> Quản lý Sản Phẩm
+        </router-link>
         <router-link to="/employees" class="menu-item" exact-active-class="active">
           <i class="fas fa-columns"></i> Quản lý nhân viên
         </router-link>
