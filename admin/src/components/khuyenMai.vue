@@ -24,7 +24,7 @@
               <label class="form-label">Kiểu giảm giá</label>
               <select v-model="voucher.kieuGiamGia" class="form-select">
                 <option :value="0">%</option>
-                <option :value="1">VNĐ</option>
+                <option :value="1">$</option>
               </select>
             </div>
             <div class="col-md-4">
@@ -37,7 +37,7 @@
             </div>
             <div class="col-md-4">
               <label class="form-label">Số lượng</label>
-              <input v-model.number="voucher.soLuong" type="number" class="form-control" />
+              <input v-model.number="voucher.soLuong" type="number" class="form-control" min="1" />
             </div>
           </div>
 
@@ -56,8 +56,7 @@
       <div class="col-md-3">
         <label class="form-label fw-bold small text-muted">🔍 Tìm theo mã</label>
         <div class="input-group">
-          <input v-model="searchCode" type="text" class="form-control" placeholder="VD: VIP" />
-          <button class="btn btn-outline-primary" @click="searchByCode">Tìm</button>
+          <input v-model="searchCode"@input="searchByCode" type="text" class="form-control" placeholder="VD: VIP" />
         </div>
       </div>
 
@@ -75,7 +74,7 @@
         <select v-model="selectedType" class="form-select" @change="filterByType">
           <option value="">Tất cả</option>
           <option value="0">%</option>
-          <option value="1">VNĐ</option>
+          <option value="1">$</option>
         </select>
       </div>
 
@@ -91,7 +90,6 @@
       <table class="table table-bordered table-hover text-center align-middle">
         <thead class="table-primary">
           <tr>
-            <th>ID</th>
             <th>Mã code</th>
             <th>Giá trị</th>
             <th>Kiểu</th>
@@ -103,12 +101,11 @@
         </thead>
         <tbody>
           <tr v-for="v in vouchers" :key="v.voucherID">
-            <td>{{ v.voucherID }}</td>
             <td>{{ v.maCode }}</td>
             <td>{{ v.giaTriGiam }}</td>
-            <td>{{ v.kieuGiamGia === 0 ? "%" : "VNĐ" }}</td>
-            <td>{{ v.ngayBatDau }}</td>
-            <td>{{ v.ngayKetThuc }}</td>
+            <td>{{ v.kieuGiamGia === 0 ? "%" : "$" }}</td>
+            <td>{{ formatDate(v.ngayBatDau) }}</td>
+            <td>{{ formatDate(v.ngayKetThuc) }}</td>
             <td>{{ v.soLuong }}</td>
             <td>
               <button class="btn btn-warning btn-sm me-1" @click="editVoucher(v)">Sửa</button>
@@ -126,7 +123,7 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import apiClient from "../utils/axiosClient"; // axios đã cấu hình baseURL
+import apiClient from "../utils/axiosClient";
 
 const vouchers = ref([]);
 const isEditing = ref(false);
@@ -135,22 +132,33 @@ const minValue = ref(0);
 const maxValue = ref(100);
 const selectedType = ref("");
 
+// Định dạng ngày bỏ phần giờ
+const formatDate = (isoDate) => {
+  if (!isoDate) return "";
+  return isoDate.split("T")[0];
+};
+
+const getTodayDate = () => {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+};
+
 const voucher = ref({
   voucherID: 0,
   maCode: "",
   giaTriGiam: 0,
   kieuGiamGia: 0,
-  ngayBatDau: "",
+  ngayBatDau: getTodayDate(),
   ngayKetThuc: "",
-  soLuong: 0,
+  soLuong: 1,
 });
 
-const formatDate = (dateStr) => {
-  return new Date(dateStr).toLocaleDateString("vi-VN");
-};
-
 const formatDateForApi = (dateStr) => {
-  return new Date(dateStr).toISOString();
+  const d = new Date(dateStr);
+  return d.toISOString();
 };
 
 const fetchVouchers = async () => {
@@ -163,6 +171,24 @@ const fetchVouchers = async () => {
 };
 
 const saveVoucher = async () => {
+  const ngayBatDauDate = new Date(voucher.value.ngayBatDau);
+  const ngayKetThucDate = new Date(voucher.value.ngayKetThuc);
+
+  if (!voucher.value.ngayBatDau || !voucher.value.ngayKetThuc) {
+    alert("❌ Vui lòng nhập đủ ngày bắt đầu và ngày kết thúc.");
+    return;
+  }
+
+  if (ngayBatDauDate > ngayKetThucDate) {
+    alert("❌ Ngày bắt đầu không được lớn hơn ngày kết thúc.");
+    return;
+  }
+
+  if (voucher.value.soLuong < 1) {
+    alert("❌ Số lượng phải lớn hơn hoặc bằng 1.");
+    return;
+  }
+
   try {
     const payload = {
       ...voucher.value,
@@ -208,9 +234,9 @@ const resetForm = () => {
     maCode: "",
     giaTriGiam: 0,
     kieuGiamGia: 0,
-    ngayBatDau: "",
+    ngayBatDau: getTodayDate(),
     ngayKetThuc: "",
-    soLuong: 0,
+    soLuong: 1,
   };
 };
 
@@ -248,7 +274,6 @@ const filterByType = async () => {
 
 onMounted(fetchVouchers);
 </script>
-
 
 <style scoped>
 .container {

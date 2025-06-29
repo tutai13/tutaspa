@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using API.Data;
@@ -35,22 +34,17 @@ namespace API.Controllers
             var voucher = await _context.Voucher.FindAsync(id);
 
             if (voucher == null)
-            {
                 return NotFound();
-            }
 
             return voucher;
         }
 
         // PUT: api/Vouchers/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutVoucher(int id, Voucher voucher)
         {
             if (id != voucher.VoucherID)
-            {
                 return BadRequest();
-            }
 
             _context.Entry(voucher).State = EntityState.Modified;
 
@@ -61,24 +55,18 @@ namespace API.Controllers
             catch (DbUpdateConcurrencyException)
             {
                 if (!VoucherExists(id))
-                {
                     return NotFound();
-                }
                 else
-                {
                     throw;
-                }
             }
 
             return NoContent();
         }
 
         // POST: api/Vouchers
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Voucher>> PostVoucher(Voucher voucher)
         {
-            // Viết hoa mã code
             voucher.MaCode = voucher.MaCode?.ToUpper() ?? string.Empty;
 
             _context.Voucher.Add(voucher);
@@ -87,21 +75,51 @@ namespace API.Controllers
             return CreatedAtAction("GetVoucher", new { id = voucher.VoucherID }, voucher);
         }
 
-
         // DELETE: api/Vouchers/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteVoucher(int id)
         {
             var voucher = await _context.Voucher.FindAsync(id);
             if (voucher == null)
-            {
                 return NotFound();
-            }
 
             _context.Voucher.Remove(voucher);
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        // ✅ Tìm kiếm theo mã code
+        // GET: api/Vouchers/code?ma=VIP
+        [HttpGet("code")]
+        public async Task<ActionResult<IEnumerable<Voucher>>> SearchByCode([FromQuery] string ma)
+        {
+            if (string.IsNullOrWhiteSpace(ma))
+                return await _context.Voucher.ToListAsync();
+
+            return await _context.Voucher
+                .Where(v => v.MaCode.ToLower().Contains(ma.ToLower()))
+                .ToListAsync();
+        }
+
+        // ✅ Lọc theo giá trị giảm
+        // GET: api/Vouchers/filter-value?min=10&max=100
+        [HttpGet("filter-value")]
+        public async Task<ActionResult<IEnumerable<Voucher>>> FilterByValue([FromQuery] float min, [FromQuery] float max)
+        {
+            return await _context.Voucher
+                .Where(v => v.GiaTriGiam >= min && v.GiaTriGiam <= max)
+                .ToListAsync();
+        }
+
+        // ✅ Lọc theo kiểu giảm giá
+        // GET: api/Vouchers/filter-type?type=0
+        [HttpGet("filter-type")]
+        public async Task<ActionResult<IEnumerable<Voucher>>> FilterByType([FromQuery] byte type)
+        {
+            return await _context.Voucher
+                .Where(v => v.KieuGiamGia == type)
+                .ToListAsync();
         }
 
         private bool VoucherExists(int id)
