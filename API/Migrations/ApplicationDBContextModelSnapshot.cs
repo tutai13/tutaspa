@@ -152,8 +152,7 @@ namespace API.Migrations
                 b.ToTable("InventoryHistories");
             });
 
-
-  modelBuilder.Entity("API.Models.HoaDon", b =>
+            modelBuilder.Entity("API.Models.HoaDon", b =>
             {
             b.Property<int>("HoaDonID")
                 .ValueGeneratedOnAdd()
@@ -595,13 +594,10 @@ namespace API.Migrations
             modelBuilder.Entity("API.Models.Product", b =>
             {
                 b.HasOne("API.Models.Category", "Category")
-
                                 .WithMany("Products")
                                 .HasForeignKey("CategoryId")
                                 .OnDelete(DeleteBehavior.Cascade)
                                 .IsRequired();
-
-
 
                 b.Navigation("Category");
             });
@@ -682,11 +678,7 @@ namespace API.Migrations
             {
                 b.Navigation("DichVus");
             });
-
 #pragma warning restore 612, 618
-                    });
-            });
         }
-
     }
 }
