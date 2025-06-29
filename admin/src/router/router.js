@@ -6,6 +6,9 @@ import kho from "../components/kho.vue";
 import ThuNgan from "../components/ThuNgan.vue";
 import login from "../components/login.vue";
 import EmployeeManagerment from "../components/EmployeeManagerment.vue";
+import QuanLySanPham from "../components/QuanLySanPham.vue";
+import LoaiSanPham from '../components/LoaiSanPham.vue';
+import SanPham from '../components/sanpham.vue';
 
 const routes = [
   { path: "/", name: "Dashboard", component: Dashboard },
@@ -15,7 +18,9 @@ const routes = [
   { path: "/kho", name: "kho", component: kho },
   { path: "/ThuNgan", name: "ThuNgan", component: ThuNgan },
   { path: "/employees", name: "employees", component: EmployeeManagerment },
-
+ { path: "/QuanLySanPham", name: "QuanLySanPham", component: QuanLySanPham },
+{ path: "/categories", name: "LoaiSanPham", component: LoaiSanPham },
+{ path: "/Products", name: "sanpham", component: SanPham },
 
   {path : "/login", name: "login", component: login , meta: {
       layout: false, // Không sử dụng layout chung
