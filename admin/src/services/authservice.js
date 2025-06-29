@@ -11,7 +11,9 @@ const apiClient = axios.create({
     "Content-Type": "application/json",
     Accept: "application/json",
   },
+
 });
+
 
 // Request interceptor - thêm token vào header
 apiClient.interceptors.request.use(
@@ -35,7 +37,9 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error.response) {
       // Server trả về error status
+
       const { status, data } = error.response;
+
 
       switch (status) {
         case 401:
@@ -60,7 +64,9 @@ apiClient.interceptors.response.use(
           console.error("Lỗi không xác định:", data?.message || error.message);
       }
 
+
       return Promise.reject(data || error.response);
+
     } else if (error.request) {
       // Network error
       console.error("Lỗi kết nối mạng");
@@ -78,13 +84,16 @@ export const authAPI = {
   // Đăng nhập
   login: async (credentials) => {
     try {
+
       const response = await apiClient.post("/auth/login", credentials);
+
 
       // Lưu token vào localStorage
       if (response.accessToken) {
         localStorage.setItem("accessToken", response.accessToken);
         localStorage.setItem("user-info", JSON.stringify(response.userInfo));
       }
+
 
       return response;
     } catch (error) {
@@ -110,9 +119,11 @@ export const authAPI = {
     try {
       const response = await apiClient.post("/auth/refresh-token");
 
+
       if (response.status == 200) {
         localStorage.setItem("accessToken", response.accessToken);
         return true;
+
       }
       return false;
     } catch (error) {

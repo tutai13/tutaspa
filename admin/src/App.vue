@@ -11,7 +11,7 @@
         <router-link to="/" class="menu-item" exact-active-class="active">
           <i class="fas fa-th-large"></i> Dashboard
         </router-link>
-        <router-link to="/dichVu" class="menu-item" exact-active-class="active">
+        <router-link to="/QlDichVu" class="menu-item" exact-active-class="active">
           <i class="fas fa-globe"></i> Quản lý dịch vụ
         </router-link>
         <router-link
