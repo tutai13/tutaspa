@@ -84,21 +84,21 @@ namespace API.Controllers
             return CreatedAtAction("GetLoaiDichVu", new { id = loaiDichVu.LoaiDichVuID }, loaiDichVu);
         }
 
-        // DELETE: api/LoaiDichVus/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteLoaiDichVu(int id)
-        {
-            var loaiDichVu = await _context.LoaiDichVus.FindAsync(id);
-            if (loaiDichVu == null)
-            {
-                return NotFound();
-            }
+        //// DELETE: api/LoaiDichVus/5
+        //[HttpDelete("{id}")]
+        //public async Task<IActionResult> DeleteLoaiDichVu(int id)
+        //{
+        //    var loaiDichVu = await _context.LoaiDichVus.FindAsync(id);
+        //    if (loaiDichVu == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            _context.LoaiDichVus.Remove(loaiDichVu);
-            await _context.SaveChangesAsync();
+        //    _context.LoaiDichVus.Remove(loaiDichVu);
+        //    await _context.SaveChangesAsync();
 
-            return NoContent();
-        }
+        //    return NoContent();
+        //}
 
         private bool LoaiDichVuExists(int id)
         {
