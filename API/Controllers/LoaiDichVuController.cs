@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using API.Data;
 using API.Models;
+using ClosedXML.Excel;
 
 namespace API.Controllers
 {
@@ -103,6 +104,42 @@ namespace API.Controllers
         private bool LoaiDichVuExists(int id)
         {
             return _context.LoaiDichVus.Any(e => e.LoaiDichVuID == id);
+        }
+        [HttpPost("import")]
+        public async Task<IActionResult> ImportLoaiDichVu(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("Chưa chọn file.");
+
+            if (!Path.GetExtension(file.FileName).Equals(".xlsx", StringComparison.OrdinalIgnoreCase))
+                return BadRequest("File không hợp lệ, chỉ hỗ trợ .xlsx");
+
+            var loaiDVList = new List<LoaiDichVu>();
+
+            using (var stream = new MemoryStream())
+            {
+                await file.CopyToAsync(stream);
+                using (var workbook = new XLWorkbook(stream))
+                {
+                    var worksheet = workbook.Worksheet("loaiDV");
+                    if (worksheet == null)
+                        return BadRequest("Không tìm thấy sheet tên 'loaiDV'.");
+
+                    foreach (var row in worksheet.RowsUsed().Skip(1)) // Bỏ qua dòng tiêu đề
+                    {
+                        var tenLoai = row.Cell(1).GetString()?.Trim();
+                        if (!string.IsNullOrEmpty(tenLoai))
+                        {
+                            loaiDVList.Add(new LoaiDichVu { TenLoai = tenLoai });
+                        }
+                    }
+                }
+            }
+
+            _context.LoaiDichVus.AddRange(loaiDVList);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true, count = loaiDVList.Count });
         }
     }
 }
