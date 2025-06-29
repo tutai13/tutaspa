@@ -3,23 +3,35 @@
     <div class="container">
       <!-- Logo + Slogan -->
       <div class="text-center mb-5 fade-in">
-        <img src="D:\DATNNN\tutaspa\interface\src\assets\img\logo.png" alt="Logo TutaSpa" class="mb-3 logo-img" />
+        <img
+          src="\src\assets\img\logo.png"
+          alt="Logo TutaSpa"
+          class="mb-3 logo-img"
+        />
         <h2 class="fw-bold text-uppercase text-maroon"></h2>
-        <p class="fst-italic text-muted">"Nơi vẻ đẹp được đánh thức bằng sự tinh tế và yêu thương."</p>
+        <p class="fst-italic text-muted">
+          "Nơi vẻ đẹp được đánh thức bằng sự tinh tế và yêu thương."
+        </p>
       </div>
 
       <!-- Về Chúng Tôi -->
       <div class="row align-items-center mb-5 fade-in-up">
         <div class="col-md-6">
-          <img src="D:\DATNNN\tutaspa\interface\src\assets\img\spa1.jpg" alt="Về TutaSpa" class="img-fluid rounded-4 shadow-lg" />
+          <img
+            src="\src\assets\img\spa1.jpg"
+            alt="Về TutaSpa"
+            class="img-fluid rounded-4 shadow-lg"
+          />
         </div>
         <div class="col-md-6">
           <h3 class="fw-bold text-maroon mb-3">
             <i class="fas fa-leaf me-2"></i>Về Chúng Tôi
           </h3>
           <p class="text-muted lead">
-            TutaSpa là điểm đến lý tưởng để thư giãn và làm đẹp, nơi bạn tìm thấy sự bình yên, sắc đẹp và sự phục hồi cả thể chất lẫn tinh thần.
-            Với đội ngũ chuyên viên tận tâm và không gian sang trọng, chúng tôi cam kết mang đến trải nghiệm tuyệt vời cho từng khách hàng.
+            TutaSpa là điểm đến lý tưởng để thư giãn và làm đẹp, nơi bạn tìm
+            thấy sự bình yên, sắc đẹp và sự phục hồi cả thể chất lẫn tinh thần.
+            Với đội ngũ chuyên viên tận tâm và không gian sang trọng, chúng tôi
+            cam kết mang đến trải nghiệm tuyệt vời cho từng khách hàng.
           </p>
         </div>
       </div>
@@ -32,7 +44,9 @@
               <i class="fas fa-eye text-maroon fs-3"></i>
             </div>
             <h5 class="text-maroon fw-bold mb-2">Tầm Nhìn</h5>
-            <p class="text-muted">Trở thành spa được yêu thích và tin tưởng nhất tại Việt Nam.</p>
+            <p class="text-muted">
+              Trở thành spa được yêu thích và tin tưởng nhất tại Việt Nam.
+            </p>
           </div>
         </div>
         <div class="col-md-4 mb-3">
@@ -41,7 +55,10 @@
               <i class="fas fa-users text-maroon fs-3"></i>
             </div>
             <h5 class="text-maroon fw-bold mb-2">Đội Ngũ</h5>
-            <p class="text-muted">Chuyên viên tay nghề cao, đào tạo chuyên nghiệp và luôn phục vụ bằng trái tim.</p>
+            <p class="text-muted">
+              Chuyên viên tay nghề cao, đào tạo chuyên nghiệp và luôn phục vụ
+              bằng trái tim.
+            </p>
           </div>
         </div>
         <div class="col-md-4 mb-3">
@@ -50,7 +67,10 @@
               <i class="fas fa-hand-holding-heart text-maroon fs-3"></i>
             </div>
             <h5 class="text-maroon fw-bold mb-2">Cam Kết</h5>
-            <p class="text-muted">TutaSpa luôn đặt sự hài lòng và trải nghiệm của khách hàng lên hàng đầu.</p>
+            <p class="text-muted">
+              TutaSpa luôn đặt sự hài lòng và trải nghiệm của khách hàng lên
+              hàng đầu.
+            </p>
           </div>
         </div>
       </div>
@@ -58,15 +78,21 @@
       <!-- Ý Nghĩa Logo -->
       <div class="row align-items-center fade-in-up delay-2">
         <div class="col-md-6 order-md-2">
-          <img src="D:\DATNNN\tutaspa\interface\src\assets\img\logo.png" alt="Ý nghĩa logo" class="img-fluid rounded-4 shadow-lg" />
+          <img
+            src="\src\assets\img\logo.png"
+            alt="Ý nghĩa logo"
+            class="img-fluid rounded-4 shadow-lg"
+          />
         </div>
         <div class="col-md-6 order-md-1">
           <h4 class="fw-bold text-maroon mb-3">
             <i class="fas fa-gem me-2"></i>Ý Nghĩa Logo
           </h4>
           <p class="text-muted lead">
-            Logo của TutaSpa là sự kết hợp hài hòa giữa thiên nhiên và con người, biểu trưng cho sự cân bằng, thư thái và vẻ đẹp thuần khiết.
-            Mỗi đường nét được thiết kế tinh tế nhằm tôn vinh vẻ đẹp bên trong lẫn bên ngoài.
+            Logo của TutaSpa là sự kết hợp hài hòa giữa thiên nhiên và con
+            người, biểu trưng cho sự cân bằng, thư thái và vẻ đẹp thuần khiết.
+            Mỗi đường nét được thiết kế tinh tế nhằm tôn vinh vẻ đẹp bên trong
+            lẫn bên ngoài.
           </p>
         </div>
       </div>

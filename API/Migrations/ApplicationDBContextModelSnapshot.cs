@@ -151,54 +151,55 @@ namespace API.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("InventoryHistories");
+                });
 
             modelBuilder.Entity("API.Models.HoaDon", b =>
-                {
-                    b.Property<int>("HoaDonID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        {
+                            b.Property<int>("HoaDonID")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HoaDonID"));
+                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HoaDonID"));
 
-                    b.Property<string>("HinhThucThanhToan")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                            b.Property<string>("HinhThucThanhToan")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("MaGiamGia")
-                        .HasColumnType("nvarchar(max)");
+                            b.Property<string>("MaGiamGia")
+                                .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("NgayTao")
-                        .HasColumnType("datetime2");
+                            b.Property<DateTime>("NgayTao")
+                                .HasColumnType("datetime2");
 
-                    b.Property<int>("NhanVienID")
-                        .HasColumnType("int");
+                            b.Property<int>("NhanVienID")
+                                .HasColumnType("int");
 
-                    b.Property<decimal?>("TienKhachDua")
-                        .HasColumnType("decimal(18,2)");
+                            b.Property<decimal?>("TienKhachDua")
+                                .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal?>("TienThoiLai")
-                        .HasColumnType("decimal(18,2)");
+                            b.Property<decimal?>("TienThoiLai")
+                                .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("TongTien")
-                        .HasColumnType("decimal(18,2)");
+                            b.Property<decimal>("TongTien")
+                                .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal?>("TongTienSauGiamGia")
-                        .HasColumnType("decimal(18,2)");
+                            b.Property<decimal?>("TongTienSauGiamGia")
+                                .HasColumnType("decimal(18,2)");
 
-                    b.Property<byte>("TrangThai")
-                        .HasColumnType("tinyint");
+                            b.Property<byte>("TrangThai")
+                                .HasColumnType("tinyint");
 
-                    b.Property<string>("UserID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                            b.Property<string>("UserID")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("HoaDonID");
+                            b.HasKey("HoaDonID");
 
-                    b.HasIndex("UserID");
+                            b.HasIndex("UserID");
 
-                    b.ToTable("hoaDons");
+                            b.ToTable("hoaDons");
 
-                });
+                        });
 
             modelBuilder.Entity("API.Models.LoaiDichVu", b =>
                 {
@@ -581,7 +582,7 @@ namespace API.Migrations
                         .IsRequired();
 
                     b.Navigation("Product");
-
+                });
             modelBuilder.Entity("API.Models.HoaDon", b =>
                 {
                     b.HasOne("API.Models.User", "User")
@@ -595,92 +596,94 @@ namespace API.Migrations
                 });
 
             modelBuilder.Entity("API.Models.Product", b =>
-                {
-                    b.HasOne("API.Models.Category", "Category")
-                        .WithMany("Products")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+            {
+                b.HasOne("API.Models.Category", "Category")
+                            .WithMany("Products")
+                            .HasForeignKey("CategoryId")
+                            .OnDelete(DeleteBehavior.Cascade)
+                            .IsRequired();
 
-                    b.Navigation("Category");
-                });
+                b.Navigation("Category");
+            });
 
             modelBuilder.Entity("API.Models.RefreshToken", b =>
-                {
-                    b.HasOne("API.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+        {
+            b.HasOne("API.Models.User", "User")
+                .WithMany()
+                .HasForeignKey("UserId")
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
 
-                    b.Navigation("User");
-                });
+            b.Navigation("User");
+        });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
+        {
+            b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                .WithMany()
+                .HasForeignKey("RoleId")
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
+        });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
-                {
-                    b.HasOne("API.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
+        {
+            b.HasOne("API.Models.User", null)
+                .WithMany()
+                .HasForeignKey("UserId")
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
+        });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
-                {
-                    b.HasOne("API.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
+        {
+            b.HasOne("API.Models.User", null)
+                .WithMany()
+                .HasForeignKey("UserId")
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
+        });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+        {
+            b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                .WithMany()
+                .HasForeignKey("RoleId")
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
 
-                    b.HasOne("API.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
+            b.HasOne("API.Models.User", null)
+                .WithMany()
+                .HasForeignKey("UserId")
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
+        });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
-                {
-                    b.HasOne("API.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
+        {
+            b.HasOne("API.Models.User", null)
+                .WithMany()
+                .HasForeignKey("UserId")
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
+        });
 
             modelBuilder.Entity("API.Models.Category", b =>
-                {
-                    b.Navigation("Products");
-                });
+        {
+            b.Navigation("Products");
+        });
 
             modelBuilder.Entity("API.Models.HoaDon", b =>
-                {
-                    b.Navigation("ChiTietHoaDons");
-                });
+        {
+            b.Navigation("ChiTietHoaDons");
+        });
 
             modelBuilder.Entity("API.Models.LoaiDichVu", b =>
-                {
-                    b.Navigation("DichVus");
-                });
+        {
+            b.Navigation("DichVus");
+        });
+
+
 #pragma warning restore 612, 618
         }
     }

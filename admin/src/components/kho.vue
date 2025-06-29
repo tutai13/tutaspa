@@ -2,24 +2,38 @@
   <div class="warehouse-container">
     <!-- Tabs Xuất/Nhập hàng -->
     <div class="section switch-section">
-      <button @click="formTab = 'import'" :class="{ active: formTab === 'import' }">Nhập hàng</button>
-      <button @click="formTab = 'export'" :class="{ active: formTab === 'export' }">Xuất hàng</button>
+      <button
+        @click="formTab = 'import'"
+        :class="{ active: formTab === 'import' }"
+      >
+        Nhập hàng
+      </button>
+      <button
+        @click="formTab = 'export'"
+        :class="{ active: formTab === 'export' }"
+      >
+        Xuất hàng
+      </button>
     </div>
 
     <!-- Form Nhập/Xuất hàng -->
     <div class="section input-section">
-      <h2>{{ formTab === 'import' ? 'Nhập Hàng' : 'Xuất Hàng' }}</h2>
+      <h2>{{ formTab === "import" ? "Nhập Hàng" : "Xuất Hàng" }}</h2>
       <div class="form-row">
         <select v-model="formProductId">
           <option disabled value="">-- Chọn sản phẩm --</option>
-          <option v-for="p in productList" :key="p.sanPhamId" :value="p.sanPhamId">
+          <option
+            v-for="p in productList"
+            :key="p.sanPhamId"
+            :value="p.sanPhamId"
+          >
             {{ p.tenSP }}
           </option>
         </select>
         <input type="number" v-model="formQuantity" placeholder="Số lượng" />
         <input type="text" v-model="formNote" placeholder="Ghi chú" />
         <button class="action-button" @click="handleSubmit">
-          {{ formTab === 'import' ? 'Nhập hàng' : 'Xuất hàng' }}
+          {{ formTab === "import" ? "Nhập hàng" : "Xuất hàng" }}
         </button>
       </div>
     </div>
@@ -28,8 +42,18 @@
     <div class="section history-section">
       <h2>Lịch sử Xuất Nhập Hàng</h2>
       <div class="history-tabs">
-        <button @click="activeTab = 'import'" :class="{ active: activeTab === 'import' }">Lịch sử Nhập</button>
-        <button @click="activeTab = 'export'" :class="{ active: activeTab === 'export' }">Lịch sử Xuất</button>
+        <button
+          @click="activeTab = 'import'"
+          :class="{ active: activeTab === 'import' }"
+        >
+          Lịch sử Nhập
+        </button>
+        <button
+          @click="activeTab = 'export'"
+          :class="{ active: activeTab === 'export' }"
+        >
+          Lịch sử Xuất
+        </button>
       </div>
 
       <!-- Thanh tìm kiếm -->
@@ -42,7 +66,7 @@
 
       <!-- Bảng Lịch sử -->
       <div class="history-table">
-        <h3>{{ activeTab === 'import' ? 'Lịch sử Nhập' : 'Lịch sử Xuất' }}</h3>
+        <h3>{{ activeTab === "import" ? "Lịch sử Nhập" : "Lịch sử Xuất" }}</h3>
         <table>
           <thead>
             <tr>
@@ -55,7 +79,13 @@
           <tbody>
             <tr v-for="item in filteredHistory" :key="item.id">
               <td>{{ item.product.productName }}</td>
-              <td>{{ activeTab === 'import' ? item.quantityChanged : -item.quantityChanged }}</td>
+              <td>
+                {{
+                  activeTab === "import"
+                    ? item.quantityChanged
+                    : -item.quantityChanged
+                }}
+              </td>
               <td>{{ new Date(item.timestamp).toLocaleString() }}</td>
               <td>{{ item.note }}</td>
             </tr>
@@ -92,10 +122,12 @@ export default {
   computed: {
     filteredHistory() {
       const keyword = this.searchTerm.toLowerCase();
-      const list = this.activeTab === "import" ? this.importHistory : this.exportHistory;
-      return list.filter(item =>
-        item.product.productName.toLowerCase().includes(keyword) ||
-        (item.note && item.note.toLowerCase().includes(keyword))
+      const list =
+        this.activeTab === "import" ? this.importHistory : this.exportHistory;
+      return list.filter(
+        (item) =>
+          item.product.productName.toLowerCase().includes(keyword) ||
+          (item.note && item.note.toLowerCase().includes(keyword))
       );
     },
   },
@@ -110,7 +142,9 @@ export default {
     },
     async fetchImportHistory() {
       try {
-        const res = await axios.get(`${this.baseUrl}/inventory/history/imports`);
+        const res = await axios.get(
+          `${this.baseUrl}/inventory/history/imports`
+        );
         this.importHistory = res.data;
       } catch (err) {
         console.error("Lỗi khi lấy lịch sử nhập:", err);
@@ -118,7 +152,9 @@ export default {
     },
     async fetchExportHistory() {
       try {
-        const res = await axios.get(`${this.baseUrl}/inventory/history/exports`);
+        const res = await axios.get(
+          `${this.baseUrl}/inventory/history/exports`
+        );
         this.exportHistory = res.data;
       } catch (err) {
         console.error("Lỗi khi lấy lịch sử xuất:", err);
@@ -152,7 +188,9 @@ export default {
         this.formNote = "";
       } catch (err) {
         console.error("Lỗi xử lý:", err);
-        alert("Lỗi: " + (err.response?.data || err.message || "Không thể xử lý"));
+        alert(
+          "Lỗi: " + (err.response?.data || err.message || "Không thể xử lý")
+        );
       }
     },
   },
@@ -164,7 +202,7 @@ export default {
   max-width: 1000px;
   margin: 40px auto;
   padding: 20px;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: "Segoe UI", sans-serif;
   background: #f9f9f9;
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
@@ -194,7 +232,8 @@ export default {
   gap: 12px;
   margin-bottom: 24px;
 }
-input, select {
+input,
+select {
   padding: 10px;
   border-radius: 8px;
   border: 1px solid #ccc;
@@ -246,7 +285,8 @@ thead {
   background-color: #007bff;
   color: white;
 }
-th, td {
+th,
+td {
   padding: 12px 16px;
   border-bottom: 1px solid #ddd;
 }
