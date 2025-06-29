@@ -151,15 +151,15 @@
       <div class="flex space-x-4 mb-4">
         <a href="https://facebook.com/tutaspa.vn" target="_blank"><i class="fa-brands fa-facebook fa-lg"></i></a>
         <a href="https://instagram.com/tutaspa" target="_blank"><i class="fa-brands fa-instagram fa-lg"></i></a>
-        <a href="https://zalo.me/0901234567" target="_blank"><img src="D:\DATNNN\tutaspa\interface\src\assets\img\zalo.png" alt="Zalo" class="w-5 h-5" width="15" height="15" /></a>
+        <a href="https://zalo.me/0901234567" target="_blank"><img  alt="Zalo" class="w-5 h-5" width="15" height="15" /></a>
       </div>
 
       <h3 class="text-lg font-semibold mb-2">Hỗ trợ thanh toán</h3>
       <div class="flex space-x-3">
-        <img src="D:\DATNNN\tutaspa\interface\src\assets\img\Logo-Vietcombank.webp" alt="VCB" class="w-10 h-6" width="50" height="35"/>
+        <!-- <img src="D:\DATNNN\tutaspa\interface\src\assets\img\Logo-Vietcombank.webp" alt="VCB" class="w-10 h-6" width="50" height="35"/>
         <img src="D:\DATNNN\tutaspa\interface\src\assets\img\Logo_MB_new.png.webp" alt="MBBank" class="w-10 h-6" width="50" height="35" />
         <img src="D:\DATNNN\tutaspa\interface\src\assets\img\Techcombank_logo.png" alt="Techcombank" class="w-10 h-6" width="50" height="35" />
-        <img src="D:\DATNNN\tutaspa\interface\src\assets\img\LOGO-VIB-Blue.png" alt="VIB" class="w-10 h-6" width="50" height="35" />
+        <img src="D:\DATNNN\tutaspa\interface\src\assets\img\LOGO-VIB-Blue.png" alt="VIB" class="w-10 h-6" width="50" height="35" /> -->
       </div>
     </div>
   </div>

@@ -1,4 +1,5 @@
 import axios from 'axios'
+import router from '../router/router';
 
 
 // Cấu hình base URL cho API
@@ -12,7 +13,6 @@ const apiClient = axios.create({
     'Content-Type': 'application/json',
     'Accept': 'application/json'
   },
-  withCredentials: true 
 })
 
 // Request interceptor - thêm token vào header
@@ -113,14 +113,11 @@ export const authAPI = {
     try {
 
       const response = await apiClient.post('/auth/refresh-token')
-
-      if(response.status == 200){
-        localStorage.setItem('accessToken', response.accessToken)
-        return true
-      }
-      return false
+      localStorage.setItem('accessToken', response.accessToken)
+      return true
 
     } catch (error) {
+      router.push('/login?return_url=employees')
       localStorage.removeItem('accessToken')
       throw error
     }
