@@ -142,6 +142,23 @@
         </ul>
       </div>
 
+
+    <!-- Cột 4: MXH & Fanpage -->
+    <div class="footer-section social">
+      <h3 class="text-lg font-semibold mb-3">Kết nối với chúng tôi</h3>
+      <div class="flex space-x-4 mb-4">
+        <a href="https://facebook.com/tutaspa.vn" target="_blank"><i class="fa-brands fa-facebook fa-lg"></i></a>
+        <a href="https://instagram.com/tutaspa" target="_blank"><i class="fa-brands fa-instagram fa-lg"></i></a>
+        <a href="https://zalo.me/0901234567" target="_blank"><img  alt="Zalo" class="w-5 h-5" width="15" height="15" /></a>
+      </div>
+
+      <h3 class="text-lg font-semibold mb-2">Hỗ trợ thanh toán</h3>
+      <div class="flex space-x-3">
+        <!-- <img src="D:\DATNNN\tutaspa\interface\src\assets\img\Logo-Vietcombank.webp" alt="VCB" class="w-10 h-6" width="50" height="35"/>
+        <img src="D:\DATNNN\tutaspa\interface\src\assets\img\Logo_MB_new.png.webp" alt="MBBank" class="w-10 h-6" width="50" height="35" />
+        <img src="D:\DATNNN\tutaspa\interface\src\assets\img\Techcombank_logo.png" alt="Techcombank" class="w-10 h-6" width="50" height="35" />
+        <img src="D:\DATNNN\tutaspa\interface\src\assets\img\LOGO-VIB-Blue.png" alt="VIB" class="w-10 h-6" width="50" height="35" /> -->
+
       <!-- Cột 3: Thông tin liên hệ -->
       <div class="footer-section contact">
         <h3 class="text-lg font-semibold mb-3">Liên hệ</h3>
@@ -205,6 +222,7 @@
             height="35"
           />
         </div>
+
       </div>
     </div>
 

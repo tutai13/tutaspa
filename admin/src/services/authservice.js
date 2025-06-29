@@ -1,4 +1,8 @@
+
+import router from '../router/router';
+
 import axios from "axios";
+
 
 // Cấu hình base URL cho API
 const API_BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -12,7 +16,9 @@ const apiClient = axios.create({
     Accept: "application/json",
   },
 
+
 });
+
 
 
 // Request interceptor - thêm token vào header
@@ -120,15 +126,19 @@ export const authAPI = {
       const response = await apiClient.post("/auth/refresh-token");
 
 
-      if (response.status == 200) {
-        localStorage.setItem("accessToken", response.accessToken);
-        return true;
+     
+      localStorage.setItem('accessToken', response.accessToken)
+      return true;
+
 
       }
       return false;
     } catch (error) {
-      localStorage.removeItem("accessToken");
+
+      router.push('/login?return_url=employees');
+      localStorage.removeItem('accessToken');
       throw error;
+
     }
   },
 

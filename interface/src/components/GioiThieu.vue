@@ -3,11 +3,13 @@
     <div class="container">
       <!-- Logo + Slogan -->
       <div class="text-center mb-5 fade-in">
+
         <img
           src="\src\assets\img\logo.png"
           alt="Logo TutaSpa"
           class="mb-3 logo-img"
         />
+
         <h2 class="fw-bold text-uppercase text-maroon"></h2>
         <p class="fst-italic text-muted">
           "Nơi vẻ đẹp được đánh thức bằng sự tinh tế và yêu thương."
@@ -17,11 +19,13 @@
       <!-- Về Chúng Tôi -->
       <div class="row align-items-center mb-5 fade-in-up">
         <div class="col-md-6">
+
           <img
             src="\src\assets\img\spa1.jpg"
             alt="Về TutaSpa"
             class="img-fluid rounded-4 shadow-lg"
           />
+
         </div>
         <div class="col-md-6">
           <h3 class="fw-bold text-maroon mb-3">
@@ -78,11 +82,13 @@
       <!-- Ý Nghĩa Logo -->
       <div class="row align-items-center fade-in-up delay-2">
         <div class="col-md-6 order-md-2">
+
           <img
             src="\src\assets\img\logo.png"
             alt="Ý nghĩa logo"
             class="img-fluid rounded-4 shadow-lg"
           />
+
         </div>
         <div class="col-md-6 order-md-1">
           <h4 class="fw-bold text-maroon mb-3">

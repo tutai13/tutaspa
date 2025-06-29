@@ -152,6 +152,7 @@ namespace API.Migrations
                 b.ToTable("InventoryHistories");
             });
 
+
   modelBuilder.Entity("API.Models.HoaDon", b =>
             {
             b.Property<int>("HoaDonID")
@@ -601,6 +602,7 @@ namespace API.Migrations
                                 .IsRequired();
 
 
+
                 b.Navigation("Category");
             });
 
@@ -685,5 +687,6 @@ namespace API.Migrations
                     });
             });
         }
+
     }
 }
