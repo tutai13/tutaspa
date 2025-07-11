@@ -11,6 +11,11 @@
         <button class="btn btn-lg btn-outline-success d-flex align-items-center gap-2" @click="LoaiDichVu">
           <i class="fa fa-list-alt"></i> Loại dịch vụ
         </button>
+        <button class="btn btn-lg btn-warning text-white d-flex align-items-center gap-2" @click="Banggiadichvu">
+  <i class="fa fa-money-bill-wave"></i> Bảng giá 
+</button>
+
+
       </div>
     </div>
   </template>
@@ -26,6 +31,10 @@
   
   const LoaiDichVu = () => {
     router.push("/Loaidichvu");
+  };
+
+  const Banggiadichvu = () => {
+    router.push("/Banggiadichvu");
   };
   </script>
   

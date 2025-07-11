@@ -7,8 +7,10 @@ import DichVu from "../components/DichVu.vue";
 import GioiThieu from "../components/GioiThieu.vue";
 import LienHe from "../components/LienHe.vue";
 import ChiTietDichVu from "../components/ChiTietDichVu.vue";
+import DichVuChiTiet from "../components/DichVuChiTiet.vue";
 import login from "../components/login.vue";
 import register from "../components/register.vue";
+import DanhGia from "../components/DanhGia.vue";
 
 const routes = [
   { path: "/", name: "Home", component: Home },
@@ -16,6 +18,13 @@ const routes = [
   { path: "/GioiThieu", name: "GioiThieu", component: GioiThieu },
   { path: "/LienHe", name: "LienHe", component: LienHe },
   {path: "/ChiTietDichVu", name: "ChiTietDichVu", component: ChiTietDichVu},
+  {path: "/Danhgia", name: "DanhGia", component: DanhGia},
+  {
+  path: '/DichVuChiTiet/:id',
+  name: 'DichVuChiTiet',
+  component: DichVuChiTiet
+},
+
   {
     path : "/login",
     name : "login",

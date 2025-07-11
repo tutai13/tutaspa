@@ -11,7 +11,8 @@ import EmployeeManagerment from "../components/EmployeeManagerment.vue";
 import QuanLySanPham from "../components/QuanLySanPham.vue";
 import LoaiSanPham from '../components/LoaiSanPham.vue';
 import SanPham from '../components/sanpham.vue';
-
+import DanhGiaKhachHang from '../components/DanhGiaKhachHang.vue';
+import Banggiadichvu from '../components/Banggiadichvu.vue';
 const routes = [
   { path: "/", name: "Dashboard", component: Dashboard },
   { path: "/khuyenMai", name: "khuyenMai", component: khuyenMai },
@@ -24,7 +25,8 @@ const routes = [
  { path: "/QuanLySanPham", name: "QuanLySanPham", component: QuanLySanPham },
 { path: "/categories", name: "LoaiSanPham", component: LoaiSanPham },
 { path: "/Products", name: "sanpham", component: SanPham },
-
+{ path: "/DanhGiaKhachHang", name: "DanhGiaKhachHang", component: DanhGiaKhachHang },
+{ path: "/Banggiadichvu", name: "Banggiadichvu", component: Banggiadichvu },
   {
     path: "/login", name: "login", component: login, meta: {
       layout: false, // Không sử dụng layout chung
