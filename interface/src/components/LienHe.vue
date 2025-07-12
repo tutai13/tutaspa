@@ -1,9 +1,9 @@
 <template>
-  <section class="contact-section py-5" style="background-color: #fff4f5;">
+  <section class="contact-section py-5" style="background-color: #F6FFF8;">
     <div class="container">
       <!-- Tiêu đề -->
       <div class="text-center mb-5">
-        <h2 class="display-5 fw-bold text-marron text-uppercase">Liên hệ với TuTa Spa</h2>
+        <h2 class="display-5 fw-bold text-primary-green text-uppercase">Liên hệ với TuTa Spa</h2>
         <p class="text-muted">Hãy để chúng tôi chăm sóc vẻ đẹp và sự thư giãn của bạn!</p>
       </div>
 
@@ -12,10 +12,10 @@
         <!-- Thông tin liên hệ -->
         <div class="col-lg-4">
           <div class="bg-white p-4 rounded-4 shadow h-100">
-            <h5 class="fw-bold mb-4 text-marron"><i class="fa-solid fa-spa me-2"></i>Thông tin liên hệ</h5>
+            <h5 class="fw-bold mb-4 text-primary-green"><i class="fa-solid fa-spa me-2"></i>Thông tin liên hệ</h5>
             <ul class="list-unstyled fs-6">
               <li class="mb-3">
-                <i class="fa-solid fa-location-dot me-2 text-marron"></i>
+                <i class="fa-solid fa-location-dot me-2 text-primary-green"></i>
                 31 Nguyễn Mộng Tuân, phường Hòa Minh, quận Liên Chiểu, TP.Đà Nẵng
               </li>
               <li class="mb-3">
@@ -42,7 +42,7 @@
         <!-- Form liên hệ -->
         <div class="col-lg-4">
           <form class="bg-white p-4 rounded-4 shadow h-100" @submit.prevent="submitForm">
-            <h5 class="fw-bold text-marron mb-4"><i class="fa-solid fa-pen-nib me-2"></i>Gửi lời nhắn</h5>
+            <h5 class="fw-bold text-primary-green mb-4"><i class="fa-solid fa-pen-nib me-2"></i>Gửi lời nhắn</h5>
             <div class="row g-3">
               <div class="col-md-6">
                 <input type="text" class="form-control" placeholder="Họ tên" v-model="form.name" required />
@@ -57,7 +57,7 @@
                 <textarea class="form-control" rows="4" placeholder="Nội dung tin nhắn..." v-model="form.message" required></textarea>
               </div>
               <div class="col-12 text-end">
-                <button class="btn btn-marron px-4 py-2 rounded-pill" type="submit">
+                <button class="btn btn-primary-green px-4 py-2 rounded-pill" type="submit">
                   <i class="fa-solid fa-paper-plane me-2"></i>Gửi liên hệ
                 </button>
               </div>
@@ -69,7 +69,7 @@
         <div class="col-lg-4">
           <div class="map-wrapper rounded-4 overflow-hidden shadow h-100">
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.5106201460623!2d106.70042327481844!3d10.77272725922164!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752f45c6c9f7a3%3A0xd5d2a360e1be45d4!2zMTIzIMSQxrDhu51uZyBTcGEgLCBRdeG6rW4gMSwgSOG7kyBDaMOidSwgVMOibiBUaOG7iyBUaOG7iyBN4bu5LCBIw7JhIE5hbmc!5e0!3m2!1svi!2s!4v1683959479821!5m2!1svi!2s"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3833.8431527113336!2d108.15316157509418!3d16.07004663927869!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3142183b64871e63%3A0x3787ef456db7903b!2zMzEgTmd1eeG7hW4gTeG7mW5nIFThuqd1biwgSG_DoCBNaW5oLCBMaeG7h24gQ2hp4buDbiwgxJDhuqFpIE5hbmcsIFZpZXRuYW0!5e0!3m2!1svi!2s!4v1720420000000!5m2!1svi!2s"
               width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"
               referrerpolicy="no-referrer-when-downgrade"></iframe>
           </div>
@@ -107,16 +107,16 @@ export default {
 </script>
 
 <style scoped>
-.text-marron {
-  color: #800020;
+.text-primary-green {
+  color: #007E5A;
 }
-.btn-marron {
-  background-color: #800020;
+.btn-primary-green {
+  background-color: #007E5A;
   color: white;
   border: none;
 }
-.btn-marron:hover {
-  background-color: #a12735;
+.btn-primary-green:hover {
+  background-color: #0a8d68;
 }
 .map-wrapper {
   height: 100%;
