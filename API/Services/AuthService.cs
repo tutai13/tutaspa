@@ -86,9 +86,6 @@ namespace API.Services
 
                 var user = await _userManager.FindByEmailAsync(request.Email);
 
-
-
-
                 CheckUserNull(user);
 
                 var roles = await _userManager.GetRolesAsync(user);
@@ -104,19 +101,19 @@ namespace API.Services
                 }
 
 
-                //Nếu đăng nhập lần đầu , trả về token để đổi pass
-                if (user.FisrtLogin)
-                {
-                    var changePassToken = _tokenService.GenerateChangePasswordToken(user);
-                    return new AuthResponse
-                    {
-                        IsSuccess = true,
-                        FirstLogin = user.FisrtLogin,
-                        Message = "Đăng nhập lần đầu, vui lòng đổi mật khẩu để tiếp tục",
-                        Token = changePassToken
+                ////Nếu đăng nhập lần đầu , trả về token để đổi pass
+                //if (user.FisrtLogin)
+                //{
+                //    var changePassToken = _tokenService.GenerateChangePasswordToken(user);
+                //    return new AuthResponse
+                //    {
+                //        IsSuccess = true,
+                //        FirstLogin = user.FisrtLogin,
+                //        Message = "Đăng nhập lần đầu, vui lòng đổi mật khẩu để tiếp tục",
+                //        Token = changePassToken
 
-                    };
-                }
+                //    };
+                //}
 
                 _logger.LogInformation($"Login successfully user :  {user.Id}");
 
@@ -228,7 +225,7 @@ namespace API.Services
             var user = new User()
             {
                 Email = email,
-                UserName = "AdminTest",
+                UserName = email.Replace("@gmail.com",""),
                 Name = "Testing"
                
             };

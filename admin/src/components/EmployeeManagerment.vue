@@ -99,7 +99,7 @@
               :disabled="loading"
             >
               <i class="fas fa-save"></i>
-              {{ loading ? 'Đang tạo...' : 'Tạo nhân viên' }}
+              {{ add_loading ? 'Đang tạo...' : 'Tạo nhân viên' }}
             </button>
             <button 
               type="button" 
@@ -211,7 +211,7 @@
                   <div class="action-buttons">
                     <button 
                       @click="openEditModal(employee)" 
-                      class="btn btn-sm btn-warning"
+                      class="btn btn-sm btn-info"
                       title="Chỉnh sửa"
                     >
                       <i class="fas fa-edit"></i>
@@ -348,7 +348,7 @@ import EmployeeService from '../services/employeeService'
     const maxPage = ref() 
     const toasts = ref([])
     const searchQuery = ref('')
-    
+    const add_loading =  ref(false)
     // Tracking arrays for optimistic updates
     const updatingStatusIds = ref([])
     const updatingRoleIds = ref([])
@@ -437,17 +437,17 @@ import EmployeeService from '../services/employeeService'
 
     const createEmployee = async () => {
       try {
-        loading.value = true
+        add_loading.value =true
         await EmployeeService.createEmployee(newEmployee)
         showToast('Tạo nhân viên thành công!', 'success')
         resetForm()
         showAddForm.value = false
-        await loadEmployees()
+        
       } catch (error) {
         showToast(error.message, 'error')
         console.error('Error creating employee:', error)
       } finally {
-        loading.value = false
+        add_loading.value = false
       }
     }
 

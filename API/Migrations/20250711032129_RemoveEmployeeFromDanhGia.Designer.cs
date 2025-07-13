@@ -4,6 +4,7 @@ using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20250711032129_RemoveEmployeeFromDanhGia")]
+    partial class RemoveEmployeeFromDanhGia
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,34 +24,6 @@ namespace API.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("API.Models.Banggiadichvu", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("DichVuID")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("Gia")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("KieuTinhGia")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("ThoiLuong")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DichVuID");
-
-                    b.ToTable("BangGiaDichVus");
-                });
 
             modelBuilder.Entity("API.Models.Category", b =>
                 {
@@ -100,44 +75,6 @@ namespace API.Migrations
                     b.HasIndex("SanPhamID");
 
                     b.ToTable("chiTietHoaDons");
-                });
-
-            modelBuilder.Entity("API.Models.DatLich", b =>
-                {
-                    b.Property<int>("DatLichID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DatLichID"));
-
-                    b.Property<bool>("DaThanhToan")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("DichVuID")
-                        .HasColumnType("int");
-
-                    b.Property<string>("GhiChu")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SoDienThoai")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("ThoiGian")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("ThoiLuong")
-                        .HasColumnType("int");
-
-                    b.Property<string>("TrangThai")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("DatLichID");
-
-                    b.HasIndex("DichVuID");
-
-                    b.ToTable("datLiches");
                 });
 
             modelBuilder.Entity("API.Models.DichVu", b =>
@@ -322,7 +259,6 @@ namespace API.Migrations
                 });
 
             modelBuilder.Entity("API.Models.RefreshToken", b =>
-
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -355,6 +291,7 @@ namespace API.Migrations
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
+
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
@@ -481,9 +418,6 @@ namespace API.Migrations
                         .HasColumnType("bit");
 
                     b.Property<bool>("DaDuyet")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<int>("MaDichVu")
@@ -644,17 +578,6 @@ namespace API.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("API.Models.Banggiadichvu", b =>
-                {
-                    b.HasOne("API.Models.DichVu", "DichVu")
-                        .WithMany()
-                        .HasForeignKey("DichVuID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("DichVu");
-                });
-
             modelBuilder.Entity("API.Models.ChiTietHoaDon", b =>
                 {
                     b.HasOne("API.Models.DichVu", "DichVu")
@@ -677,14 +600,7 @@ namespace API.Migrations
 
                     b.Navigation("SanPham");
                 });
- modelBuilder.Entity("API.Models.DatLich", b =>
-     {
-         b.HasOne("API.Models.DichVu", "DichVu")
-             .WithMany()
-             .HasForeignKey("DichVuID");
 
-         b.Navigation("DichVu");
-     });
             modelBuilder.Entity("API.Models.DichVu", b =>
                 {
                     b.HasOne("API.Models.LoaiDichVu", "LoaiDichVu")
@@ -755,6 +671,7 @@ namespace API.Migrations
                         .IsRequired();
 
                     b.Navigation("DichVu");
+
                     b.Navigation("User");
                 });
 

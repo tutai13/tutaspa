@@ -86,6 +86,8 @@ namespace API.Services
                 await _mail.SendEmailAsync(dto.Email, "Chào mừng đến với Tuta Spa",
                     $"<h1>Welcome {dto.Name}</h1><p>Tài khoản của bạn đã được tạo.</p><p>Mật khẩu của bạn là: <strong>{radPass}</strong></p>");
 
+
+
                 _logger.LogInformation("Employee created successfully with ID: {UserId}", user.Id);
                 return Success("Thêm nhân viên thành công", new { userId = user.Id });
             }
@@ -227,15 +229,15 @@ namespace API.Services
         {
             try
             {
-                var cacheKey = $"employees_list_page_{page}_keyword_{keyword ?? "empty"}";
+                //var cacheKey = $"employees_list_page_{page}_keyword_{keyword ?? "empty"}";
 
-                // Try to get from cache first
-                var cachedResult = _cache.Get<PagedResult<EmployeeDTO>>(cacheKey);
-                if (cachedResult != null)
-                {
-                    _logger.LogDebug("Returning cached employee list for page {Page}, keyword: {Keyword}", page, keyword);
-                    return cachedResult;
-                }
+                //// Try to get from cache first
+                //var cachedResult = _cache.Get<PagedResult<EmployeeDTO>>(cacheKey);
+                //if (cachedResult != null)
+                //{
+                //    _logger.LogDebug("Returning cached employee list for page {Page}, keyword: {Keyword}", page, keyword);
+                //    return cachedResult;
+                //}
 
                 // Get employees with roles in one go to avoid N+1 problem
                 var employeesWithRoles = await GetEmployeesWithRolesAsync();
@@ -275,7 +277,7 @@ namespace API.Services
                 };
 
                 // Cache the result for 5 minutes
-                _cache.Set(cacheKey, result, TimeSpan.FromMinutes(5));
+                //_cache.Set(cacheKey, result, TimeSpan.FromMinutes(5));
 
                 _logger.LogDebug("Employee list cached for page {Page}, keyword: {Keyword}", page, keyword);
                 return result;
