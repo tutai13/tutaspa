@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
 
-
 // Import các component
 import Home from "../components/home.vue";
 import DichVu from "../components/DichVu.vue";
@@ -10,14 +9,20 @@ import ChiTietDichVu from "../components/ChiTietDichVu.vue";
 import DichVuChiTiet from "../components/DichVuChiTiet.vue";
 import login from "../components/login.vue";
 import register from "../components/register.vue";
+
+import DatLich from "../components/DatLich.vue";
+
 import DanhGia from "../components/DanhGia.vue";
+
 
 const routes = [
   { path: "/", name: "Home", component: Home },
   { path: "/DichVu", name: "DichVu", component: DichVu },
   { path: "/GioiThieu", name: "GioiThieu", component: GioiThieu },
   { path: "/LienHe", name: "LienHe", component: LienHe },
-  {path: "/ChiTietDichVu", name: "ChiTietDichVu", component: ChiTietDichVu},
+
+  { path: "/DatLich", name: "DatLich", component: DatLich },
+  { path: "/ChiTietDichVu", name: "ChiTietDichVu", component: ChiTietDichVu },
   {path: "/Danhgia", name: "DanhGia", component: DanhGia},
   {
   path: '/DichVuChiTiet/:id',
@@ -25,15 +30,16 @@ const routes = [
   component: DichVuChiTiet
 },
 
+
   {
-    path : "/login",
-    name : "login",
-    component :  login
+    path: "/login",
+    name: "login",
+    component: login,
   },
   {
-    path : "/register",
-    name : "register",
-    component :  register
+    path: "/register",
+    name: "register",
+    component: register,
   },
 
   // Route động cho chi tiết dịch vụ
@@ -45,11 +51,9 @@ const routes = [
   },
 ];
 
-
 const router = createRouter({
   history: createWebHistory(),
   routes,
 });
 
 export default router;
-

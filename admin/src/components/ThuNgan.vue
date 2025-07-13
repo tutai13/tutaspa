@@ -325,7 +325,7 @@ const taoThanhToan = async () => {
     tienKhachDua: tienKhach,
     tienThoiLai: tienThoi,
     nhanVienID: 2,
-    userID: "555cd045-8676-4a93-8021-4685218d9f61",
+    userID: "6c5dad3a-b67c-4ad7-9ac5-ba64b0aabd5f",
     chiTietHoaDon: danhSachChon.value.map((item) => ({
       sanPhamID: item.sanPhamID || null,
       dichVuID: item.dichVuID || null,
