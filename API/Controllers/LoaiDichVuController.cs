@@ -121,9 +121,9 @@ namespace API.Controllers
                 await file.CopyToAsync(stream);
                 using (var workbook = new XLWorkbook(stream))
                 {
-                    var worksheet = workbook.Worksheet("loaiDV");
+                    var worksheet = workbook.Worksheet("LoaiDichVu");
                     if (worksheet == null)
-                        return BadRequest("Không tìm thấy sheet tên 'loaiDV'.");
+                        return BadRequest("Không tìm thấy sheet tên 'LoaiDichVu'.");
 
                     foreach (var row in worksheet.RowsUsed().Skip(1)) // Bỏ qua dòng tiêu đề
                     {

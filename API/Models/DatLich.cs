@@ -16,15 +16,12 @@ namespace API.Models
 
         [Required]
         public int ThoiLuong { get; set; }
-
-        public int? DichVuID { get; set; } 
-
         public string? GhiChu { get; set; }
 
         public string TrangThai { get; set; } = "Chưa đến";
         public bool DaThanhToan { get; set; } = false;
-        [ForeignKey("DichVuID")]
-        [JsonIgnore]
-        public DichVu? DichVu { get; set; }
+        
+        public ICollection<ChiTietDatLich>? ChiTietDichVus { get; set; }
+
     }
 }
