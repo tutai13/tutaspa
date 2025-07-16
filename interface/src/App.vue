@@ -4,11 +4,7 @@
     <nav class="navbar" :class="{ hidden: isNavbarHidden }" ref="navbar">
       <div class="logo animated-logo">
         <router-link to="/">
-          <img
-            src="/src/assets/img/logo.png"
-            alt="TutaSpa Logo"
-            class="logo-image"
-          />
+          <img src="/src/assets/img/logo.png" alt="TutaSpa Logo" class="logo-image" />
         </router-link>
       </div>
 
@@ -68,11 +64,7 @@
     </button>
 
     <!-- Menu các chức năng -->
-    <div
-      class="menu-items"
-      :class="{ 'show-menu': isMenuVisible }"
-      id="menuItems"
-    >
+    <div class="menu-items" :class="{ 'show-menu': isMenuVisible }" id="menuItems">
       <div class="menu-item">
         <a href="https://zalo.me" target="_blank">
           <i class="fa-brands fa-zalo"></i>
@@ -114,16 +106,10 @@
 
   <!-- Footer -->
   <footer class="footer bg-dark-red text-white py-5">
-    <div
-      class="footer-container container grid grid-cols-1 md:grid-cols-4 gap-8"
-    >
+    <div class="footer-container container grid grid-cols-1 md:grid-cols-4 gap-8">
       <!-- Cột 1: Logo & giới thiệu -->
       <div class="footer-section about">
-        <img
-          src="/src/assets/img/logo.png"
-          alt="TutaSpa Logo"
-          class="footer-logo mb-4 w-32"
-        />
+        <img src="/src/assets/img/logo.png" alt="TutaSpa Logo" class="footer-logo mb-4 w-32" />
         <p>
           <strong>Tuta Spa</strong> – Nơi tôn vinh vẻ đẹp tự nhiên. Dịch vụ chăm
           sóc da chuyên nghiệp, hiện đại và tận tâm.
@@ -143,93 +129,60 @@
       </div>
 
 
-    <!-- Cột 4: MXH & Fanpage -->
-    <div class="footer-section social">
-      <h3 class="text-lg font-semibold mb-3">Kết nối với chúng tôi</h3>
-      <div class="flex space-x-4 mb-4">
-        <a href="https://facebook.com/tutaspa.vn" target="_blank"><i class="fa-brands fa-facebook fa-lg"></i></a>
-        <a href="https://instagram.com/tutaspa" target="_blank"><i class="fa-brands fa-instagram fa-lg"></i></a>
-        <a href="https://zalo.me/0901234567" target="_blank"><img  alt="Zalo" class="w-5 h-5" width="15" height="15" /></a>
-      </div>
-
-      <h3 class="text-lg font-semibold mb-2">Hỗ trợ thanh toán</h3>
-      <div class="flex space-x-3">
-        <!-- <img src="D:\DATNNN\tutaspa\interface\src\assets\img\Logo-Vietcombank.webp" alt="VCB" class="w-10 h-6" width="50" height="35"/>
-        <img src="D:\DATNNN\tutaspa\interface\src\assets\img\Logo_MB_new.png.webp" alt="MBBank" class="w-10 h-6" width="50" height="35" />
-        <img src="D:\DATNNN\tutaspa\interface\src\assets\img\Techcombank_logo.png" alt="Techcombank" class="w-10 h-6" width="50" height="35" />
-        <img src="D:\DATNNN\tutaspa\interface\src\assets\img\LOGO-VIB-Blue.png" alt="VIB" class="w-10 h-6" width="50" height="35" /> -->
-
-      <!-- Cột 3: Thông tin liên hệ -->
-      <div class="footer-section contact">
-        <h3 class="text-lg font-semibold mb-3">Liên hệ</h3>
-        <p>
-          <i class="fa-solid fa-location-dot"></i> 31 Nguyễn Mộng Tuân, Q. Liên
-          Chiểu, Đà Nẵng
-        </p>
-        <p><i class="fa-solid fa-phone"></i> 0901 234 567</p>
-        <p><i class="fa-solid fa-envelope"></i> info@tutaspa.vn</p>
-        <p><i class="fa-solid fa-clock"></i> Thứ 2 - CN: 8:00 - 20:00</p>
-      </div>
-
       <!-- Cột 4: MXH & Fanpage -->
       <div class="footer-section social">
         <h3 class="text-lg font-semibold mb-3">Kết nối với chúng tôi</h3>
         <div class="flex space-x-4 mb-4">
-          <a href="https://facebook.com/tutaspa.vn" target="_blank"
-            ><i class="fa-brands fa-facebook fa-lg"></i
-          ></a>
-          <a href="https://instagram.com/tutaspa" target="_blank"
-            ><i class="fa-brands fa-instagram fa-lg"></i
-          ></a>
-          <a href="https://zalo.me/0901234567" target="_blank"
-            ><img
-              src="\src\assets\img\zalo.png"
-              alt="Zalo"
-              class="w-5 h-5"
-              width="15"
-              height="15"
-          /></a>
+          <a href="https://facebook.com/tutaspa.vn" target="_blank"><i class="fa-brands fa-facebook fa-lg"></i></a>
+          <a href="https://instagram.com/tutaspa" target="_blank"><i class="fa-brands fa-instagram fa-lg"></i></a>
+          <a href="https://zalo.me/0901234567" target="_blank"><img alt="Zalo" class="w-5 h-5" width="15"
+              height="15" /></a>
         </div>
 
         <h3 class="text-lg font-semibold mb-2">Hỗ trợ thanh toán</h3>
         <div class="flex space-x-3">
-          <img
-            src="\src\assets\img\Logo-Vietcombank.webp"
-            alt="VCB"
-            class="w-10 h-6"
-            width="50"
-            height="35"
-          />
-          <img
-            src="\src\assets\img\Logo_MB_new.png.webp"
-            alt="MBBank"
-            class="w-10 h-6"
-            width="50"
-            height="35"
-          />
-          <img
-            src="\src\assets\img\Techcombank_logo.png"
-            alt="Techcombank"
-            class="w-10 h-6"
-            width="50"
-            height="35"
-          />
-          <img
-            src="\src\assets\img\LOGO-VIB-Blue.png"
-            alt="VIB"
-            class="w-10 h-6"
-            width="50"
-            height="35"
-          />
+          <!-- <img src="D:\DATNNN\tutaspa\interface\src\assets\img\Logo-Vietcombank.webp" alt="VCB" class="w-10 h-6" width="50" height="35"/>
+        <img src="D:\DATNNN\tutaspa\interface\src\assets\img\Logo_MB_new.png.webp" alt="MBBank" class="w-10 h-6" width="50" height="35" />
+        <img src="D:\DATNNN\tutaspa\interface\src\assets\img\Techcombank_logo.png" alt="Techcombank" class="w-10 h-6" width="50" height="35" />
+        <img src="D:\DATNNN\tutaspa\interface\src\assets\img\LOGO-VIB-Blue.png" alt="VIB" class="w-10 h-6" width="50" height="35" /> -->
+
+          <!-- Cột 3: Thông tin liên hệ -->
+          <div class="footer-section contact">
+            <h3 class="text-lg font-semibold mb-3">Liên hệ</h3>
+            <p>
+              <i class="fa-solid fa-location-dot"></i> 31 Nguyễn Mộng Tuân, Q. Liên
+              Chiểu, Đà Nẵng
+            </p>
+            <p><i class="fa-solid fa-phone"></i> 0901 234 567</p>
+            <p><i class="fa-solid fa-envelope"></i> info@tutaspa.vn</p>
+            <p><i class="fa-solid fa-clock"></i> Thứ 2 - CN: 8:00 - 20:00</p>
+          </div>
+
+          <!-- Cột 4: MXH & Fanpage -->
+          <div class="footer-section social">
+            <h3 class="text-lg font-semibold mb-3">Kết nối với chúng tôi</h3>
+            <div class="flex space-x-4 mb-4">
+              <a href="https://facebook.com/tutaspa.vn" target="_blank"><i class="fa-brands fa-facebook fa-lg"></i></a>
+              <a href="https://instagram.com/tutaspa" target="_blank"><i class="fa-brands fa-instagram fa-lg"></i></a>
+              <a href="https://zalo.me/0901234567" target="_blank"><img src="\src\assets\img\zalo.png" alt="Zalo"
+                  class="w-5 h-5" width="15" height="15" /></a>
+            </div>
+
+            <h3 class="text-lg font-semibold mb-2">Hỗ trợ thanh toán</h3>
+            <div class="flex space-x-3">
+              <img src="\src\assets\img\Logo-Vietcombank.webp" alt="VCB" class="w-10 h-6" width="50" height="35" />
+              <img src="\src\assets\img\Logo_MB_new.png.webp" alt="MBBank" class="w-10 h-6" width="50" height="35" />
+              <img src="\src\assets\img\Techcombank_logo.png" alt="Techcombank" class="w-10 h-6" width="50"
+                height="35" />
+              <img src="\src\assets\img\LOGO-VIB-Blue.png" alt="VIB" class="w-10 h-6" width="50" height="35" />
+            </div>
+
+          </div>
         </div>
-
       </div>
-    </div>
-
-    <div
-      class="footer-bottom mt-8 border-t border-white/20 pt-4 text-center text-sm"
-    >
-      &copy; 2025 Tuta Spa. Phát triển bởi đội ngũ yêu cái đẹp.
+      <div class="footer-bottom mt-8 border-t border-white/20 pt-4 text-center text-sm">
+        &copy; 2025 Tuta Spa. Phát triển bởi đội ngũ yêu cái đẹp.
+      </div>
     </div>
   </footer>
 </template>
@@ -280,9 +233,11 @@ body {
   transition: transform 0.4s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
+
 .navbar.hidden {
   transform: translateY(-100%);
 }
+
 .nav-links {
   list-style: none;
   display: flex;
@@ -291,9 +246,11 @@ body {
   padding: 0;
   font-size: 21px;
 }
+
 .nav-links li a {
   position: relative;
-  color: #8e0d3c; /* Màu mặc định */
+  color: #8e0d3c;
+  /* Màu mặc định */
   text-decoration: none;
   transition: color 0.3s;
   font-size: 21px;
@@ -307,7 +264,8 @@ body {
   left: 0;
   width: 0%;
   height: 2px;
-  background-color: #8e0d3c; /* Màu gạch dưới */
+  background-color: #8e0d3c;
+  /* Màu gạch dưới */
   transition: width 0.3s ease;
 }
 
@@ -323,20 +281,24 @@ body {
 .nav-links i {
   margin-right: 6px;
 }
+
 .user-icon i {
   font-size: 24px;
-  color: #8e0d3c; /* màu mận đỏ như ảnh */
+  color: #8e0d3c;
+  /* màu mận đỏ như ảnh */
   margin-left: 10px;
   cursor: pointer;
   transition: transform 0.3s ease;
 }
+
 .user-icon i:hover {
   transform: scale(1.1);
 }
 
 /* Logo Animation */
 .logo-image {
-  height: 75px; /* hoặc kích thước bạn muốn */
+  height: 75px;
+  /* hoặc kích thước bạn muốn */
   animation: fadeInDown 1s ease-in-out;
 }
 
@@ -346,6 +308,7 @@ body {
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -356,6 +319,7 @@ body {
 .main-content {
   padding: 20px;
 }
+
 .carousel-inner img {
   object-fit: cover;
   height: 400px;
@@ -423,6 +387,7 @@ body {
   outline: none;
   font-size: 16px;
 }
+
 .btn-custom {
   padding: 12px 20px;
   background-color: #fff;
@@ -433,6 +398,7 @@ body {
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
+
 .btn-custom:hover {
   background-color: #f1f1f1;
 }
@@ -442,9 +408,11 @@ body {
   .input-group-custom {
     flex-direction: column;
   }
+
   .form-control-custom {
     border-radius: 8px 8px 0 0;
   }
+
   .btn-custom {
     border-radius: 0 0 8px 8px;
   }
@@ -452,28 +420,34 @@ body {
 
 /* ⭐ Hiệu ứng sao động */
 .custom-star {
-  font-size: 36px; /* giống ảnh */
+  font-size: 36px;
+  /* giống ảnh */
   color: white;
   transition: color 0.6s ease;
 }
 
 .star-yellow {
-  color: #ffd700; /* vàng gold */
+  color: #ffd700;
+  /* vàng gold */
 }
 
 .animated-stars .star-animate {
   color: white;
   animation: glowStar 1.5s ease-in-out infinite;
 }
+
 .animated-stars .delay-1 {
   animation-delay: 0.2s;
 }
+
 .animated-stars .delay-2 {
   animation-delay: 0.4s;
 }
+
 .animated-stars .delay-3 {
   animation-delay: 0.6s;
 }
+
 .animated-stars .delay-4 {
   animation-delay: 0.8s;
 }
@@ -483,15 +457,18 @@ body {
     color: white;
     transform: scale(1);
   }
+
   50% {
     color: #ffd700;
     transform: scale(1.1);
   }
+
   100% {
     color: white;
     transform: scale(1);
   }
 }
+
 /* phần thêm bên phải */
 .floating-menu {
   position: fixed;
@@ -556,10 +533,12 @@ body {
 .show-menu {
   display: flex !important;
 }
+
 /* footer */
 
 .footer {
-  background-color: #a80032; /* Đỏ mận sang trọng */
+  background-color: #a80032;
+  /* Đỏ mận sang trọng */
   color: #fff;
   padding: 40px 20px 20px;
   font-family: "Segoe UI", sans-serif;
@@ -607,7 +586,8 @@ body {
 }
 
 .footer-section ul li a:hover {
-  color: #ffd4e1; /* Hồng nhạt nổi bật */
+  color: #ffd4e1;
+  /* Hồng nhạt nổi bật */
 }
 
 .footer-bottom {
@@ -634,8 +614,10 @@ body {
     border: none;
   }
 }
+
 .bg-dark-red {
-  background-color: #7d1d1d; /* Đỏ mận sang trọng */
+  background-color: #7d1d1d;
+  /* Đỏ mận sang trọng */
 }
 
 .footer-logo {

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using API.Data;
 using API.Models;
+using Microsoft.AspNetCore.Hosting;
 
 namespace API.Controllers
 {
@@ -15,10 +16,11 @@ namespace API.Controllers
     public class DichVuController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-
-        public DichVuController(ApplicationDbContext context)
+        private readonly IWebHostEnvironment _env;
+        public DichVuController(ApplicationDbContext context, IWebHostEnvironment env)
         {
             _context = context;
+            _env = env;
         }
         [HttpGet]
         public async Task<ActionResult<IEnumerable<DichVu>>> GetDichVus()
@@ -180,6 +182,36 @@ namespace API.Controllers
             {
                 return StatusCode(500, new { Message = "Lỗi khi cập nhật trạng thái.", Error = ex.Message });
             }
+        }
+        [HttpPost("image")]
+        public async Task<IActionResult> UploadImage(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest(new { message = "Không có file ảnh." });
+
+            var uploadsFolder = Path.Combine(_env.WebRootPath, "images");
+
+            // Nếu file trùng tên thì tự động thêm hậu tố - copy
+            string originalFileName = Path.GetFileNameWithoutExtension(file.FileName);
+            string extension = Path.GetExtension(file.FileName);
+            string fileName = $"{originalFileName}{extension}";
+            string filePath = Path.Combine(uploadsFolder, fileName);
+
+            int count = 1;
+            while (System.IO.File.Exists(filePath))
+            {
+                fileName = $"{originalFileName}_{count}{extension}";
+                filePath = Path.Combine(uploadsFolder, fileName);
+                count++;
+            }
+
+            // Lưu ảnh vào thư mục
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            return Ok(new { fileName });
         }
         private bool DichVuExists(int id)
         {

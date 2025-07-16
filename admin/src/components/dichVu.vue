@@ -11,7 +11,8 @@
         <label class="form-label fw-medium">
           <i class="fa fa-search me-1"></i> Tìm theo tên
         </label>
-        <input v-model="searchName" @input="searchByName" type="text" class="form-control" placeholder="Nhập tên dịch vụ..." />
+        <input v-model="searchName" @input="searchByName" type="text" class="form-control"
+          placeholder="Nhập tên dịch vụ..." />
       </div>
 
       <div class="col-md-5">
@@ -58,7 +59,7 @@
                 </div>
                 <div class="col-md-6 mb-3">
                   <label class="form-label">Hình ảnh</label>
-                  <input v-model="dichVu.hinhAnh" class="form-control" placeholder="image-name" />
+                  <input type="file" class="form-control" @change="handleFileChange" accept="image/*" />
                 </div>
                 <div class="col-md-12 mb-3">
                   <label class="form-label">Mô tả</label>
@@ -104,16 +105,24 @@
             <table class="table table-bordered table-hover align-middle mb-0 text-center">
               <thead class="table-light">
                 <tr>
-                  <th>Tên</th><th>Giá</th><th>Thời gian</th><th>Ảnh</th><th>Ngày tạo</th><th>Loại</th><th>Trạng thái</th><th>Hành động</th>
+                  <th>Tên</th>
+                  <th>Giá</th>
+                  <th>Thời gian</th>
+                  <th>Ảnh</th>
+                  <th>Ngày tạo</th>
+                  <th>Loại</th>
+                  <th>Trạng thái</th>
+                  <th>Hành động</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="dv in paginatedDichVus" :key="dv.dichVuID">
-            
+
                   <td>{{ dv.tenDichVu }}</td>
                   <td class="text-success fw-medium">{{ dv.gia.toLocaleString() }} vnđ</td>
                   <td>{{ dv.thoiGian }} phút</td>
-                  <td><img :src="'http://localhost:5055/images/' + dv.hinhAnh + '.jpg'" class="img-thumbnail" style="width: 80px; height: 60px; object-fit: cover;" /></td>
+                  <td><img :src="'http://localhost:5055/images/' + dv.hinhAnh " class="img-thumbnail"
+                      style="width: 80px; height: 60px; object-fit: cover;" /></td>
                   <td>{{ new Date(dv.ngayTao).toLocaleDateString() }}</td>
                   <td>{{ dv.tenLoai }}</td>
                   <td>
@@ -122,8 +131,11 @@
                     </span>
                   </td>
                   <td>
-                    <button class="btn btn-warning btn-sm me-2" @click="editDichVu(dv)"><i class="fa fa-edit"></i></button>
-                    <button class="btn btn-sm" :class="dv.trangThai === 1 ? 'btn-outline-secondary' : 'btn-outline-success'" @click="toggleTrangThai(dv)">
+                    <button class="btn btn-warning btn-sm me-2" @click="editDichVu(dv)"><i
+                        class="fa fa-edit"></i></button>
+                    <button class="btn btn-sm"
+                      :class="dv.trangThai === 1 ? 'btn-outline-secondary' : 'btn-outline-success'"
+                      @click="toggleTrangThai(dv)">
                       <i class="fa" :class="dv.trangThai === 1 ? 'fa-pause' : 'fa-play'"></i>
                     </button>
                   </td>
@@ -136,11 +148,15 @@
           <div class="d-flex justify-content-between align-items-center p-3">
             <div>Trang {{ currentPage }} / {{ totalPages }}</div>
             <div class="btn-group">
-              <button class="btn btn-outline-secondary btn-sm" :disabled="currentPage === 1" @click="goToPage(currentPage - 1)">
+              <button class="btn btn-outline-secondary btn-sm" :disabled="currentPage === 1"
+                @click="goToPage(currentPage - 1)">
                 <i class="fa fa-angle-left"></i>
               </button>
-              <button v-for="page in totalPages" :key="page" class="btn btn-sm" :class="page === currentPage ? 'btn-primary' : 'btn-outline-secondary'" @click="goToPage(page)">{{ page }}</button>
-              <button class="btn btn-outline-secondary btn-sm" :disabled="currentPage === totalPages" @click="goToPage(currentPage + 1)">
+              <button v-for="page in totalPages" :key="page" class="btn btn-sm"
+                :class="page === currentPage ? 'btn-primary' : 'btn-outline-secondary'" @click="goToPage(page)">{{ page
+                }}</button>
+              <button class="btn btn-outline-secondary btn-sm" :disabled="currentPage === totalPages"
+                @click="goToPage(currentPage + 1)">
                 <i class="fa fa-angle-right"></i>
               </button>
             </div>
@@ -172,7 +188,11 @@ const isEditing = ref(false);
 const searchName = ref("");
 const priceMin = ref(0);
 const priceMax = ref(1000000);
+const selectedImage = ref(null);
 
+const handleFileChange = (e) => {
+  selectedImage.value = e.target.files[0];
+};
 const currentPage = ref(1);
 const pageSize = ref(5);
 const totalItems = ref(0);
@@ -231,15 +251,29 @@ const filterByPrice = async () => {
     console.error("Lỗi lọc giá:", error);
   }
 };
-
 const saveDichVu = async () => {
   try {
-    const payload = { ...dichVu.value };
+    let imageName = dichVu.value.hinhAnh; // fallback
+
+    // Nếu có chọn file ảnh thì upload ảnh trước
+    if (selectedImage.value) {
+      const formData = new FormData();
+      formData.append("file", selectedImage.value);
+
+      const uploadRes = await apiClient.post("/DichVu/image", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      imageName = uploadRes.data.fileName; // Giả sử API trả về tên file
+    }
+    const payload = { ...dichVu.value, hinhAnh: imageName };
+
     if (isEditing.value) {
       await apiClient.put(`/DichVu/${payload.dichVuID}`, payload);
     } else {
       await apiClient.post("DichVu", payload);
     }
+
     resetForm();
     fetchDichVus();
   } catch (error) {

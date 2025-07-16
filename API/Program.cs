@@ -157,7 +157,6 @@ app.UseResponseCaching();
 app.UseEndpoints(enpoints =>
 {
     enpoints.MapControllers();
-}
-);
+});
 
 app.Run();
