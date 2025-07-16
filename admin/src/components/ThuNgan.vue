@@ -165,6 +165,56 @@
             </div>
           </div>
         </div>
+
+        <div class="container mt-4">
+          <h3 class="text-primary mb-3">📅 Danh sách đặt lịch</h3>
+
+          <table class="table table-bordered table-hover">
+            <thead class="table-info text-center">
+              <tr>
+                <th>ID</th>
+                <th>SĐT</th>
+                <th>Thời gian</th>
+                <th>Thời lượng (phút)</th>
+                <th>Dịch vụ ID</th>
+                <th>Ghi chú</th>
+                <th>Trạng thái</th>
+                <th>Đã thanh toán</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="lich in datLichList"
+                :key="lich.datLichID"
+                class="text-center align-middle"
+              >
+                <td>{{ lich.datLichID }}</td>
+                <td>{{ lich.soDienThoai }}</td>
+                <td>{{ formatThoiGian(lich.thoiGian) }}</td>
+                <td>{{ lich.thoiLuong }}</td>
+                <td>{{ lich.dichVuID }}</td>
+                <td>{{ lich.ghiChu ?? "Không có" }}</td>
+                <td>
+                  <span
+                    :class="{
+                      'text-success': lich.trangThai === 'Đã đến',
+                      'text-warning': lich.trangThai === 'Chưa đến',
+                    }"
+                  >
+                    {{ lich.trangThai }}
+                  </span>
+                </td>
+                <td>
+                  <span
+                    :class="lich.daThanhToan ? 'text-success' : 'text-danger'"
+                  >
+                    {{ lich.daThanhToan ? "✔️" : "❌" }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <!-- Tabs: Dịch vụ / Sản phẩm -->
@@ -250,7 +300,8 @@ const sanPhams = ref([]);
 const danhSachChon = ref([]);
 const hinhThuc = ref("Tiền mặt");
 const tienKhachDua = ref(0); // số thực dùng tính toán
-const tienKhachDuaHienThi = ref(""); // hiển thị định dạng 1.000.000
+const tienKhachDuaHienThi = ref("");
+const datLichList = ref([]);
 
 const xuLyNhapTienKhach = () => {
   const so = parseInt(tienKhachDuaHienThi.value.replace(/\D/g, ""));
@@ -386,6 +437,16 @@ const taoMaChuyenKhoan = async () => {
   }
 };
 
+const formatThoiGian = (datetime) => {
+  const date = new Date(datetime);
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+  const day = date.getDate(); // không cần padStart vì bạn muốn `14` thay vì `14`
+  const month = date.getMonth() + 1;
+  const year = date.getFullYear();
+  return `${hours}:${minutes} - ${day}/${month}/${year}`;
+};
+
 onMounted(async () => {
   try {
     const resDV = await axios.get("http://localhost:5055/api/DichVu");
@@ -393,6 +454,9 @@ onMounted(async () => {
 
     const resSP = await axios.get("http://localhost:5055/api/Product");
     sanPhams.value = resSP.data;
+
+    const res = await axios.get("http://localhost:5055/api/DatLich");
+    datLichList.value = res.data;
 
     const status = route.query.status;
 

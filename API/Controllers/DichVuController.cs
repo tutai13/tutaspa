@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using API.Data;
 using API.Models;
+using ClosedXML.Excel;
 
 namespace API.Controllers
 {
@@ -185,5 +186,70 @@ namespace API.Controllers
         {
             return _context.DichVus.Any(e => e.DichVuID == id);
         }
+        [HttpPost("import")]
+        public async Task<IActionResult> ImportDichVu(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("Chưa chọn file.");
+
+            if (!Path.GetExtension(file.FileName).Equals(".xlsx", StringComparison.OrdinalIgnoreCase))
+                return BadRequest("File không hợp lệ, chỉ hỗ trợ .xlsx");
+
+            var dichVuList = new List<DichVu>();
+
+            using (var stream = new MemoryStream())
+            {
+                await file.CopyToAsync(stream);
+                using (var workbook = new XLWorkbook(stream))
+                {
+                    var worksheet = workbook.Worksheet("DichVu");
+                    if (worksheet == null)
+                        return BadRequest("Không tìm thấy sheet tên 'DichVu'.");
+
+                    foreach (var row in worksheet.RowsUsed().Skip(1)) 
+                    {
+                        try
+                        {
+                            var tenDichVu = row.Cell(1).GetString()?.Trim();
+                            var gia = row.Cell(2).GetValue<decimal>();
+                            var thoiGian = row.Cell(3).GetValue<int>();
+                            var moTa = row.Cell(4).GetString()?.Trim();
+                            var hinhAnh = row.Cell(5).GetString()?.Trim();
+                            var trangThai = row.Cell(6).GetValue<int>();
+                            var ngayTao = row.Cell(7).GetDateTime();
+                            var loaiDichVuID = row.Cell(8).GetValue<int>();
+
+                            
+                            if (string.IsNullOrEmpty(tenDichVu) || gia < 0 || thoiGian <= 0)
+                                continue;
+
+                            var dv = new DichVu
+                            {
+                                TenDichVu = tenDichVu,
+                                Gia = gia,
+                                ThoiGian = thoiGian,
+                                MoTa = moTa,
+                                HinhAnh = hinhAnh,
+                                TrangThai = trangThai,
+                                NgayTao = ngayTao,
+                                LoaiDichVuID = loaiDichVuID
+                            };
+
+                            dichVuList.Add(dv);
+                        }
+                        catch (Exception ex)
+                        {
+                            continue;
+                        }
+                    }
+                }
+            }
+
+            _context.DichVus.AddRange(dichVuList);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true, count = dichVuList.Count });
+        }
+
     }
 }

@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
@@ -68,6 +68,29 @@ namespace API.Migrations
                     b.ToTable("Categorys");
                 });
 
+            modelBuilder.Entity("API.Models.ChiTietDatLich", b =>
+                {
+                    b.Property<int>("ChiTietDatLichID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ChiTietDatLichID"));
+
+                    b.Property<int>("DatLichID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DichVuID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ChiTietDatLichID");
+
+                    b.HasIndex("DatLichID");
+
+                    b.HasIndex("DichVuID");
+
+                    b.ToTable("chiTietDatLiches");
+                });
+
             modelBuilder.Entity("API.Models.ChiTietHoaDon", b =>
                 {
                     b.Property<int>("ChiTietHoaDonID")
@@ -113,9 +136,6 @@ namespace API.Migrations
                     b.Property<bool>("DaThanhToan")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("DichVuID")
-                        .HasColumnType("int");
-
                     b.Property<string>("GhiChu")
                         .HasColumnType("nvarchar(max)");
 
@@ -134,8 +154,6 @@ namespace API.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("DatLichID");
-
-                    b.HasIndex("DichVuID");
 
                     b.ToTable("datLiches");
                 });
@@ -322,7 +340,6 @@ namespace API.Migrations
                 });
 
             modelBuilder.Entity("API.Models.RefreshToken", b =>
-
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -355,6 +372,7 @@ namespace API.Migrations
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
+
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
@@ -655,6 +673,25 @@ namespace API.Migrations
                     b.Navigation("DichVu");
                 });
 
+            modelBuilder.Entity("API.Models.ChiTietDatLich", b =>
+                {
+                    b.HasOne("API.Models.DatLich", "DatLich")
+                        .WithMany("ChiTietDichVus")
+                        .HasForeignKey("DatLichID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("API.Models.DichVu", "DichVu")
+                        .WithMany()
+                        .HasForeignKey("DichVuID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DatLich");
+
+                    b.Navigation("DichVu");
+                });
+
             modelBuilder.Entity("API.Models.ChiTietHoaDon", b =>
                 {
                     b.HasOne("API.Models.DichVu", "DichVu")
@@ -677,14 +714,7 @@ namespace API.Migrations
 
                     b.Navigation("SanPham");
                 });
- modelBuilder.Entity("API.Models.DatLich", b =>
-     {
-         b.HasOne("API.Models.DichVu", "DichVu")
-             .WithMany()
-             .HasForeignKey("DichVuID");
 
-         b.Navigation("DichVu");
-     });
             modelBuilder.Entity("API.Models.DichVu", b =>
                 {
                     b.HasOne("API.Models.LoaiDichVu", "LoaiDichVu")
@@ -755,6 +785,7 @@ namespace API.Migrations
                         .IsRequired();
 
                     b.Navigation("DichVu");
+
                     b.Navigation("User");
                 });
 
@@ -812,6 +843,11 @@ namespace API.Migrations
             modelBuilder.Entity("API.Models.Category", b =>
                 {
                     b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("API.Models.DatLich", b =>
+                {
+                    b.Navigation("ChiTietDichVus");
                 });
 
             modelBuilder.Entity("API.Models.HoaDon", b =>

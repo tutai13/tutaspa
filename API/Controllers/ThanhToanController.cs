@@ -1,7 +1,6 @@
 ﻿using API.Data;
 using API.DTOs.HoaDon;
 using API.DTOs.ThongKe;
-using API.Migrations;
 using API.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -74,9 +73,6 @@ namespace API.Controllers
             {
                 var tongTien = request.ChiTietHoaDon.Sum(x => x.ThanhTien);
                 
-
-                // Nếu có mã giảm giá, bạn có thể xử lý logic tính giảm tại đây
-
                 var hoaDon = new HoaDon
                 {
                     NgayTao = request.NgayTao,

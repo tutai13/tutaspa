@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250615163001_createVoucher")]
-    partial class createVoucher
+    [Migration("20250713084431_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,34 @@ namespace API.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("API.Models.Banggiadichvu", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DichVuID")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Gia")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("KieuTinhGia")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ThoiLuong")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DichVuID");
+
+                    b.ToTable("BangGiaDichVus");
+                });
 
             modelBuilder.Entity("API.Models.Category", b =>
                 {
@@ -43,6 +71,78 @@ namespace API.Migrations
                     b.ToTable("Categorys");
                 });
 
+            modelBuilder.Entity("API.Models.ChiTietHoaDon", b =>
+                {
+                    b.Property<int>("ChiTietHoaDonID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ChiTietHoaDonID"));
+
+                    b.Property<int?>("DichVuID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("HoaDonID")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SanPhamID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SoLuongSP")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("ThanhTien")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("ChiTietHoaDonID");
+
+                    b.HasIndex("DichVuID");
+
+                    b.HasIndex("HoaDonID");
+
+                    b.HasIndex("SanPhamID");
+
+                    b.ToTable("chiTietHoaDons");
+                });
+
+            modelBuilder.Entity("API.Models.DatLich", b =>
+                {
+                    b.Property<int>("DatLichID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DatLichID"));
+
+                    b.Property<bool>("DaThanhToan")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("DichVuID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("GhiChu")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SoDienThoai")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ThoiGian")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ThoiLuong")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TrangThai")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("DatLichID");
+
+                    b.HasIndex("DichVuID");
+
+                    b.ToTable("datLiches");
+                });
+
             modelBuilder.Entity("API.Models.DichVu", b =>
                 {
                     b.Property<int>("DichVuID")
@@ -52,6 +152,7 @@ namespace API.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DichVuID"));
 
                     b.Property<decimal>("Gia")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("HinhAnh")
@@ -85,6 +186,86 @@ namespace API.Migrations
                     b.HasIndex("LoaiDichVuID");
 
                     b.ToTable("DichVus");
+                });
+
+            modelBuilder.Entity("API.Models.HoaDon", b =>
+                {
+                    b.Property<int>("HoaDonID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HoaDonID"));
+
+                    b.Property<string>("HinhThucThanhToan")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MaGiamGia")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("NgayTao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("NhanVienID")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("TienKhachDua")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("TienThoiLai")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TongTien")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("TongTienSauGiamGia")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<byte>("TrangThai")
+                        .HasColumnType("tinyint");
+
+                    b.Property<string>("UserID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("HoaDonID");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("hoaDons");
+                });
+
+            modelBuilder.Entity("API.Models.InventoryHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ActionType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("QuantityChanged")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("InventoryHistories");
                 });
 
             modelBuilder.Entity("API.Models.LoaiDichVu", b =>
@@ -180,6 +361,10 @@ namespace API.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
@@ -192,6 +377,9 @@ namespace API.Migrations
                         .HasColumnType("bit");
 
                     b.Property<bool>("FisrtLogin")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<bool>("LockoutEnabled")
@@ -282,6 +470,48 @@ namespace API.Migrations
                     b.HasKey("VoucherID");
 
                     b.ToTable("Voucher");
+                });
+
+            modelBuilder.Entity("DanhGia", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("AnDanh")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("DaDuyet")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MaDichVu")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("NgayTao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("NoiDung")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SoSao")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MaDichVu");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("DanhGiass");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -417,6 +647,49 @@ namespace API.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("API.Models.Banggiadichvu", b =>
+                {
+                    b.HasOne("API.Models.DichVu", "DichVu")
+                        .WithMany()
+                        .HasForeignKey("DichVuID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DichVu");
+                });
+
+            modelBuilder.Entity("API.Models.ChiTietHoaDon", b =>
+                {
+                    b.HasOne("API.Models.DichVu", "DichVu")
+                        .WithMany()
+                        .HasForeignKey("DichVuID");
+
+                    b.HasOne("API.Models.HoaDon", "HoaDon")
+                        .WithMany("ChiTietHoaDons")
+                        .HasForeignKey("HoaDonID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("API.Models.Product", "SanPham")
+                        .WithMany()
+                        .HasForeignKey("SanPhamID");
+
+                    b.Navigation("DichVu");
+
+                    b.Navigation("HoaDon");
+
+                    b.Navigation("SanPham");
+                });
+
+            modelBuilder.Entity("API.Models.DatLich", b =>
+                {
+                    b.HasOne("API.Models.DichVu", "DichVu")
+                        .WithMany()
+                        .HasForeignKey("DichVuID");
+
+                    b.Navigation("DichVu");
+                });
+
             modelBuilder.Entity("API.Models.DichVu", b =>
                 {
                     b.HasOne("API.Models.LoaiDichVu", "LoaiDichVu")
@@ -426,6 +699,28 @@ namespace API.Migrations
                         .IsRequired();
 
                     b.Navigation("LoaiDichVu");
+                });
+
+            modelBuilder.Entity("API.Models.HoaDon", b =>
+                {
+                    b.HasOne("API.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("API.Models.InventoryHistory", b =>
+                {
+                    b.HasOne("API.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("API.Models.Product", b =>
@@ -446,6 +741,25 @@ namespace API.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("DanhGia", b =>
+                {
+                    b.HasOne("API.Models.DichVu", "DichVu")
+                        .WithMany()
+                        .HasForeignKey("MaDichVu")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("API.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DichVu");
 
                     b.Navigation("User");
                 });
@@ -504,6 +818,11 @@ namespace API.Migrations
             modelBuilder.Entity("API.Models.Category", b =>
                 {
                     b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("API.Models.HoaDon", b =>
+                {
+                    b.Navigation("ChiTietHoaDons");
                 });
 
             modelBuilder.Entity("API.Models.LoaiDichVu", b =>

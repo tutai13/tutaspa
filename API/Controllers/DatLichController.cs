@@ -3,6 +3,7 @@ using API.DTOs.DatLich;
 using API.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers
 {
@@ -10,29 +11,46 @@ namespace API.Controllers
     [ApiController]
     public class DatLichController : ControllerBase
     {
+
         private readonly ApplicationDbContext _context;
         public DatLichController(ApplicationDbContext context)
         {
             _context = context;
         }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<DatLich>>> GetDatLich()
+        {
+            var result = await _context.datLiches
+                    .Include(dl => dl.ChiTietDichVus)
+                    .ThenInclude(ct => ct.DichVu)
+                    .ToListAsync();
+
+            return Ok(result);
+        }
+
         [HttpPost]
         public IActionResult DatLich([FromBody] DatLichDTO request)
         {
-            int thoiLuong = 30;
+            int thoiLuong = 30; // Mặc định nếu không có dịch vụ
+            List<DichVu> danhSachDichVu = new();
 
-            if (request.DichVuID.HasValue)
+            if (request.DichVuIDs != null && request.DichVuIDs.Any())
             {
-                var dv = _context.DichVus.Find(request.DichVuID.Value);
-                if (dv == null)
-                    return NotFound("Dịch vụ không tồn tại");
+                danhSachDichVu = _context.DichVus
+                    .Where(d => request.DichVuIDs.Contains(d.DichVuID))
+                    .ToList();
 
-                thoiLuong = dv.ThoiGian;
+                if (danhSachDichVu.Count != request.DichVuIDs.Count)
+                    return BadRequest("Một hoặc nhiều dịch vụ không tồn tại");
+
+                thoiLuong = danhSachDichVu.Sum(d => d.ThoiGian);
             }
 
-            int soKhung = thoiLuong / 30;
+            int soKhung = (int)Math.Ceiling(thoiLuong / 30.0);
             DateTime startTime = request.ThoiGian;
 
-            // Kiểm tra từng khung giờ bị chiếm
+            // Kiểm tra từng khung giờ
             for (int i = 0; i < soKhung; i++)
             {
                 var khung = startTime.AddMinutes(i * 30);
@@ -44,24 +62,38 @@ namespace API.Controllers
                     );
 
                 if (count >= 5)
-                {
-                    return BadRequest($"Khung giờ {khung:HH:mm} đã đầy");
-                }
+                    return BadRequest($"Khung giờ {khung:HH:mm} đã đầy. Vui lòng chọn khung giờ khác.");
             }
 
+            // Tạo bản ghi đặt lịch
             var datLich = new DatLich
             {
                 SoDienThoai = request.SoDienThoai,
                 ThoiGian = request.ThoiGian,
                 ThoiLuong = thoiLuong,
-                DichVuID = request.DichVuID,
-                TrangThai = "Chưa đến"
+                TrangThai = "Chưa đến",
+                DaThanhToan = false
             };
 
             _context.datLiches.Add(datLich);
             _context.SaveChanges();
 
-            return Ok("Đặt lịch thành công");
+            // Nếu có dịch vụ, lưu ChiTietDatLich
+            if (danhSachDichVu.Any())
+            {
+                foreach (var dv in danhSachDichVu)
+                {
+                    _context.chiTietDatLiches.Add(new ChiTietDatLich
+                    {
+                        DatLichID = datLich.DatLichID,
+                        DichVuID = dv.DichVuID
+                    });
+                }
+
+                _context.SaveChanges();
+            }
+
+            return Ok("🎉 Đặt lịch thành công!");
         }
 
         [HttpGet("slots")]
@@ -71,7 +103,6 @@ namespace API.Controllers
             var endHour = 17;
             var result = new List<object>();
 
-            // Tạo danh sách khung giờ
             var khungGioList = new List<DateTime>();
             for (int h = startHour; h <= endHour; h++)
             {
@@ -79,7 +110,6 @@ namespace API.Controllers
                 khungGioList.Add(new DateTime(ngay.Year, ngay.Month, ngay.Day, h, 30, 0));
             }
 
-            // Lấy tất cả lịch trong ngày
             var lich = _context.datLiches
                 .Where(x => x.ThoiGian.Date == ngay.Date)
                 .ToList();
@@ -100,6 +130,6 @@ namespace API.Controllers
 
             return Ok(result);
         }
-        
     }
 }
+

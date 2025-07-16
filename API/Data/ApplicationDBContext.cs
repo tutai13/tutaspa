@@ -21,6 +21,8 @@ namespace API.Data
         public DbSet<ChiTietHoaDon> chiTietHoaDons { get; set; }
         public DbSet<API.Models.Voucher> Voucher { get; set; } = default!;
         public DbSet<DatLich> datLiches { get; set; }
+        public DbSet<ChiTietDatLich> chiTietDatLiches { get; set; }
+
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
