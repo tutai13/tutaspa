@@ -54,7 +54,8 @@ namespace API.Services
         public async Task<ProductDTO> CreateAsync(ProductCreateDTO dto)
         {
             var baseUrl = "https://localhost:7183/images/";
-            var imageName = await SaveImageAsync(dto.Image);
+            var imageName = await SaveImageAsync(dto.Image, dto.ProductName);
+
 
             var product = new Product
             {
@@ -96,7 +97,8 @@ namespace API.Services
 
             if (dto.Image != null)
             {
-                var imageName = await SaveImageAsync(dto.Image);
+                var imageName = await SaveImageAsync(dto.Image, dto.ProductName);
+
                 product.Images = imageName;
             }
 
@@ -115,7 +117,7 @@ namespace API.Services
             await _context.SaveChangesAsync();
             return true;
         }
-        private async Task<string> SaveImageAsync(IFormFile image)
+        private async Task<string> SaveImageAsync(IFormFile image, string productName)
         {
             if (image == null || image.Length == 0) return null;
 
@@ -123,7 +125,14 @@ namespace API.Services
             if (!Directory.Exists(uploadsFolder))
                 Directory.CreateDirectory(uploadsFolder);
 
-            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(image.FileName);
+            // Loại bỏ ký tự đặc biệt trong tên sản phẩm
+            var safeProductName = string.Concat(productName
+                .Where(c => !Path.GetInvalidFileNameChars().Contains(c)))
+                .Replace(" ", "_")
+                .ToLower();
+
+            var fileExt = Path.GetExtension(image.FileName);
+            var fileName = $"{safeProductName}{fileExt}";
             var filePath = Path.Combine(uploadsFolder, fileName);
 
             using (var stream = new FileStream(filePath, FileMode.Create))
