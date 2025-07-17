@@ -15,11 +15,9 @@ namespace API.Models
         public decimal? TienKhachDua { get; set; }
         public decimal? TienThoiLai { get; set; }
 
-        public int NhanVienID { get; set; }
-        [ForeignKey("User")]
+        public string NhanVienID { get; set; }
         public string UserID { get; set; }
-        [JsonIgnore]
-        public User User { get; set; }
+        
 
         public virtual ICollection<ChiTietHoaDon> ChiTietHoaDons { get; set; }
     }

@@ -1,4 +1,4 @@
-<script setup>
+<!-- <script setup>
 import {
   Chart as ChartJS,
   BarElement,
@@ -12,7 +12,7 @@ import { Bar } from "vue-chartjs";
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 defineProps(["data", "options"]);
-</script>
+</script>-->
 
 <template>
   <Bar :data="data" :options="options" />
