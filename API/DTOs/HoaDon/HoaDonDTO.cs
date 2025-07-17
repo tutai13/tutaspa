@@ -8,7 +8,7 @@
         public byte TrangThai { get; set; }
         public decimal? TienKhachDua { get; set; }
         public decimal? TienThoiLai { get; set; }
-        public int NhanVienID { get; set; }
+        public string NhanVienID { get; set; }
         public string UserID { get; set; }
 
         public List<ChiTietHoaDonDTO> ChiTietHoaDon { get; set; }
