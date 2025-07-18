@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
@@ -322,7 +322,6 @@ namespace API.Migrations
                 });
 
             modelBuilder.Entity("API.Models.RefreshToken", b =>
-
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -355,6 +354,7 @@ namespace API.Migrations
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
+
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
@@ -677,14 +677,16 @@ namespace API.Migrations
 
                     b.Navigation("SanPham");
                 });
- modelBuilder.Entity("API.Models.DatLich", b =>
-     {
-         b.HasOne("API.Models.DichVu", "DichVu")
-             .WithMany()
-             .HasForeignKey("DichVuID");
 
-         b.Navigation("DichVu");
-     });
+            modelBuilder.Entity("API.Models.DatLich", b =>
+                {
+                    b.HasOne("API.Models.DichVu", "DichVu")
+                        .WithMany()
+                        .HasForeignKey("DichVuID");
+
+                    b.Navigation("DichVu");
+                });
+
             modelBuilder.Entity("API.Models.DichVu", b =>
                 {
                     b.HasOne("API.Models.LoaiDichVu", "LoaiDichVu")
@@ -755,6 +757,7 @@ namespace API.Migrations
                         .IsRequired();
 
                     b.Navigation("DichVu");
+
                     b.Navigation("User");
                 });
 

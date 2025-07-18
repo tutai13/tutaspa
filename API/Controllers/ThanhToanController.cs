@@ -1,7 +1,7 @@
 ﻿using API.Data;
 using API.DTOs.HoaDon;
 using API.DTOs.ThongKe;
-using API.Migrations;
+
 using API.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
