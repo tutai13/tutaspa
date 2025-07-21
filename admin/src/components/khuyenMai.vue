@@ -1,9 +1,9 @@
 <template>
   <div class="container mt-4">
-    <h2 class="text-center mb-4">
-      <i class="bi bi-ticket-perforated-fill"></i> Quản Lý Voucher
-    </h2>
-
+<h2 class="voucher-title text-center mb-4">
+  <i class="bi bi-ticket-perforated-fill me-2 text-primary"></i>
+  Quản Lý Voucher
+</h2>
     <!-- Form Thêm mới Voucher -->
     <div class="card shadow-sm mb-4">
       <div class="card-header bg-primary text-white fw-bold">
@@ -13,7 +13,7 @@
         <form @submit.prevent="saveVoucher">
           <div class="row g-3">
             <div class="col-md-4">
-              <label class="form-label">Mã code</label>
+              <label class="form-label">🔑Mã code</label>
               <input
                 v-model="voucher.maCode"
                 class="form-control"
@@ -22,11 +22,11 @@
               />
             </div>
             <div class="col-md-4">
-              <label class="form-label">Giá trị giảm</label>
+              <label class="form-label">💸Giá trị giảm</label>
               <input v-model.number="voucher.giaTriGiam" type="number" class="form-control" required min="1" />
             </div>
             <div class="col-md-4">
-              <label class="form-label">Kiểu giảm giá</label>
+              <label class="form-label">📉Kiểu giảm giá</label>
               <select v-model="voucher.kieuGiamGia" class="form-select">
                 <option :value="0">%</option>
                 <option :value="1">$</option>
@@ -34,16 +34,16 @@
             </div>
 
             <div class="col-md-4">
-              <label class="form-label">Ngày bắt đầu</label>
+              <label class="form-label">📆Ngày bắt đầu</label>
               <input v-model="voucher.ngayBatDau" type="date" class="form-control" />
             </div>
             <div class="col-md-4">
-              <label class="form-label">Ngày kết thúc</label>
+              <label class="form-label">🕛Ngày kết thúc</label>
               <input v-model="voucher.ngayKetThuc" type="date" class="form-control" />
             </div>
 
             <div class="col-md-4">
-              <label class="form-label">Số lượng</label>
+              <label class="form-label">🔢Số lượng</label>
               <input
                 v-model.number="voucher.soLuong"
                 type="number"
@@ -62,17 +62,16 @@
                   id="voHanCheckbox"
                 />
                 <label class="form-check-label" for="voHanCheckbox">
-                  <i class="bi bi-star-fill text-warning me-1"></i> Phiếu Đặc Biệt
+                  <i class="bi bi-star-fill text-warning me-1"></i>⭐ Phiếu Đặc Biệt
                 </label>
               </div>
             </div>
           </div>
-
           <div class="d-flex justify-content-end mt-4">
             <button type="submit" class="btn btn-primary me-2">
-              {{ isEditing ? "Cập nhật" : "Thêm" }}
+              {{ isEditing ? "Cập nhật" : "➕Thêm" }}
             </button>
-            <button type="button" class="btn btn-secondary" @click="resetForm">Hủy</button>
+            <button type="button" class="btn btn-secondary" @click="resetForm">❌Hủy</button>
           </div>
         </form>
       </div>
@@ -135,7 +134,11 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="v in vouchers" :key="v.voucherID">
+          <tr
+            v-for="v in vouchers"
+            :key="v.voucherID"
+            :class="{ expired: new Date(v.ngayKetThuc) < new Date() }"
+          >
             <td>{{ v.maCode }}</td>
             <td>{{ v.giaTriGiam }}</td>
             <td>{{ v.kieuGiamGia === 0 ? "%" : "$" }}</td>
@@ -387,7 +390,128 @@ onMounted(fetchVouchers);
 </script>
 
 <style scoped>
+/* .container {
+  max-width: 1200px;
+} */
+ .voucher-title {
+  font-size: 3.0rem;
+}
+
+.expired {
+  text-decoration: line-through;
+  opacity: 0.4;
+  background-color: #c92c2c;
+}
+/* ========== Tổng thể ========== */
 .container {
   max-width: 1200px;
+  /* background: linear-gradient(to right, #d03939, #26bc53); */
+  background: linear-gradient(to right, #8ba0b5, #ffffff);
+  padding: 32px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+  font-family: "Poppins", "Segoe UI", sans-serif;
+}
+.table-responsive {
+  border-radius: 12px;
+  overflow-x: auto;
+}
+.table th {
+  background: linear-gradient(45deg, #007bff, #0056b3);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  vertical-align: middle;
+  text-transform: uppercase;
+  padding: 12px;
+}
+
+.table td {
+  vertical-align: middle;
+  font-size: 14px;
+  padding: 10px 12px;
+  background-color: #fff;
+}
+
+.badge {
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.badge-special {
+  background: linear-gradient(to right, #ffc107, #ff9800);
+  color: #212529;
+}
+
+.badge-expired {
+  background: #ff4d4f;
+  color: #fff;
+}
+
+.badge-active {
+  background: #198754;
+  color: #fff;
+}
+
+/* ========== Nút hành động ========== */
+.btn {
+  border: none;
+  padding: 6px 14px;
+  font-weight: 500;
+  font-size: 14px;
+  border-radius: 10px;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-warning {
+  background: linear-gradient(to right, #ffe259, #ffa751);
+  color: #212529;
+}
+.btn-warning:hover {
+  opacity: 0.9;
+}
+
+.btn-danger {
+  background: linear-gradient(to right, #ff416c, #ff4b2b);
+  color: #fff;
+}
+.btn-danger:hover {
+  opacity: 0.9;
+}
+
+/* ========== Input, Label, Filter ========== */
+.form-label {
+  font-weight: 600;
+  font-size: 13px;
+  color: #343a40;
+}
+
+.form-control,
+.form-select {
+  border-radius: 10px;
+  font-size: 14px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* ========== Icon số lượng đặc biệt ========== */
+td .bi-star-fill {
+  font-size: 18px;
+  color: gold;
+  animation: pulse 1.5s infinite;
+}
+
+/* Hiệu ứng nhấp nháy ngôi sao */
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ========== Responsive Table ========== */
+.table-responsive {
+  border-radius: 12px;
+  overflow-x: auto;
 }
 </style>
