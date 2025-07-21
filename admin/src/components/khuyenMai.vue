@@ -14,7 +14,12 @@
           <div class="row g-3">
             <div class="col-md-4">
               <label class="form-label">Mã code</label>
-              <input v-model="voucher.maCode" class="form-control" required />
+              <input
+                v-model="voucher.maCode"
+                class="form-control"
+                required
+                @input="removeVietnamese"
+              />
             </div>
             <div class="col-md-4">
               <label class="form-label">Giá trị giảm</label>
@@ -24,9 +29,10 @@
               <label class="form-label">Kiểu giảm giá</label>
               <select v-model="voucher.kieuGiamGia" class="form-select">
                 <option :value="0">%</option>
-                <option :value="1">VNĐ</option>
+                <option :value="1">$</option>
               </select>
             </div>
+
             <div class="col-md-4">
               <label class="form-label">Ngày bắt đầu</label>
               <input v-model="voucher.ngayBatDau" type="date" class="form-control" />
@@ -35,9 +41,30 @@
               <label class="form-label">Ngày kết thúc</label>
               <input v-model="voucher.ngayKetThuc" type="date" class="form-control" />
             </div>
+
             <div class="col-md-4">
               <label class="form-label">Số lượng</label>
-              <input v-model.number="voucher.soLuong" type="number" class="form-control" />
+              <input
+                v-model.number="voucher.soLuong"
+                type="number"
+                class="form-control"
+                min="1"
+                :disabled="voucher.voHan"
+              />
+            </div>
+
+            <div class="col-md-4 d-flex align-items-end">
+              <div class="form-check mt-4">
+                <input
+                  v-model="voucher.voHan"
+                  class="form-check-input"
+                  type="checkbox"
+                  id="voHanCheckbox"
+                />
+                <label class="form-check-label" for="voHanCheckbox">
+                  <i class="bi bi-star-fill text-warning me-1"></i> Phiếu Đặc Biệt
+                </label>
+              </div>
             </div>
           </div>
 
@@ -52,38 +79,45 @@
     </div>
 
     <!-- Bộ lọc và tìm kiếm -->
-    <div class="row mb-4 g-3">
-      <div class="col-md-3">
+    <div class="row mb-4 g-2 align-items-end">
+      <div class="col-md-2">
         <label class="form-label fw-bold small text-muted">🔍 Tìm theo mã</label>
-        <div class="input-group">
-          <input v-model="searchCode" type="text" class="form-control" placeholder="VD: VIP" />
-          <button class="btn btn-outline-primary" @click="searchByCode">Tìm</button>
-        </div>
+        <input v-model="searchCode" @input="applyAllFilters" type="text" class="form-control" placeholder="VD: VIP" />
       </div>
 
-      <div class="col-md-4">
-        <label class="form-label fw-bold small text-muted">📊 Lọc theo giá trị giảm</label>
+      <div class="col-md-3">
+        <label class="form-label fw-bold small text-muted">📊 Giá trị giảm</label>
         <div class="input-group">
           <input v-model.number="minValue" type="number" class="form-control" placeholder="Từ" />
           <input v-model.number="maxValue" type="number" class="form-control" placeholder="Đến" />
-          <button class="btn btn-outline-success" @click="filterByValue">Lọc</button>
         </div>
       </div>
 
       <div class="col-md-2">
         <label class="form-label fw-bold small text-muted">⚙️ Kiểu giảm</label>
-        <select v-model="selectedType" class="form-select" @change="filterByType">
+        <select v-model="selectedType" class="form-select">
           <option value="">Tất cả</option>
           <option value="0">%</option>
-          <option value="1">VNĐ</option>
+          <option value="1">$</option>
         </select>
       </div>
 
-      <div class="col-md-3 d-flex align-items-end">
-        <button class="btn btn-dark w-100" @click="fetchVouchers">
+      <div class="col-md-2">
+        <label class="form-label fw-bold small text-muted">⭐ Loại phiếu</label>
+        <select v-model="selectedVoucherType" class="form-select">
+          <option value="">Tất cả</option>
+          <option value="special">Phiếu đặc biệt</option>
+          <option value="normal">Phiếu thường</option>
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label fw-bold small text-muted invisible">Ẩn</label>
+        <button class="btn btn-dark w-100" @click="resetFilters">
           <i class="bi bi-folder-symlink-fill me-1"></i> Hiển thị tất cả Voucher
         </button>
       </div>
+      
     </div>
 
     <!-- Danh sách voucher -->
@@ -91,7 +125,6 @@
       <table class="table table-bordered table-hover text-center align-middle">
         <thead class="table-primary">
           <tr>
-            <th>ID</th>
             <th>Mã code</th>
             <th>Giá trị</th>
             <th>Kiểu</th>
@@ -103,13 +136,19 @@
         </thead>
         <tbody>
           <tr v-for="v in vouchers" :key="v.voucherID">
-            <td>{{ v.voucherID }}</td>
             <td>{{ v.maCode }}</td>
             <td>{{ v.giaTriGiam }}</td>
-            <td>{{ v.kieuGiamGia === 0 ? "%" : "VNĐ" }}</td>
-            <td>{{ v.ngayBatDau }}</td>
-            <td>{{ v.ngayKetThuc }}</td>
-            <td>{{ v.soLuong }}</td>
+            <td>{{ v.kieuGiamGia === 0 ? "%" : "$" }}</td>
+            <td>{{ formatDate(v.ngayBatDau) }}</td>
+            <td>{{ formatDate(v.ngayKetThuc) }}</td>
+            <td>
+              <span v-if="Number(v.soLuong) === -1">
+                <i class="bi bi-star-fill text-warning">⭐</i>
+              </span>
+              <span v-else>
+                {{ v.soLuong }}
+              </span>
+            </td>
             <td>
               <button class="btn btn-warning btn-sm me-1" @click="editVoucher(v)">Sửa</button>
               <button class="btn btn-danger btn-sm" @click="deleteVoucher(v.voucherID)">Xóa</button>
@@ -126,31 +165,44 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import apiClient from "../utils/axiosClient"; // axios đã cấu hình baseURL
+import apiClient from "../utils/axiosClient";
 
 const vouchers = ref([]);
 const isEditing = ref(false);
 const searchCode = ref("");
-const minValue = ref(0);
-const maxValue = ref(100);
+const minValue = ref();
+const maxValue = ref();
 const selectedType = ref("");
+const selectedVoucherType = ref("");
+
+
+const getTodayDate = () => {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+};
 
 const voucher = ref({
   voucherID: 0,
   maCode: "",
   giaTriGiam: 0,
   kieuGiamGia: 0,
-  ngayBatDau: "",
+  ngayBatDau: getTodayDate(),
   ngayKetThuc: "",
-  soLuong: 0,
+  soLuong: 1,
+  voHan: false,
 });
 
-const formatDate = (dateStr) => {
-  return new Date(dateStr).toLocaleDateString("vi-VN");
+const formatDate = (isoDate) => {
+  if (!isoDate) return "";
+  return isoDate.split("T")[0];
 };
 
 const formatDateForApi = (dateStr) => {
-  return new Date(dateStr).toISOString();
+  const d = new Date(dateStr);
+  return d.toISOString();
 };
 
 const fetchVouchers = async () => {
@@ -163,11 +215,30 @@ const fetchVouchers = async () => {
 };
 
 const saveVoucher = async () => {
+  const ngayBatDauDate = new Date(voucher.value.ngayBatDau);
+  const ngayKetThucDate = new Date(voucher.value.ngayKetThuc);
+
+  if (!voucher.value.ngayBatDau || !voucher.value.ngayKetThuc) {
+    alert("❌ Vui lòng nhập đủ ngày bắt đầu và ngày kết thúc.");
+    return;
+  }
+
+  if (ngayBatDauDate > ngayKetThucDate) {
+    alert("❌ Ngày bắt đầu không được lớn hơn ngày kết thúc.");
+    return;
+  }
+
+  if (!voucher.value.voHan && voucher.value.soLuong < 1) {
+    alert("❌ Số lượng phải lớn hơn hoặc bằng 1.");
+    return;
+  }
+
   try {
     const payload = {
       ...voucher.value,
       ngayBatDau: formatDateForApi(voucher.value.ngayBatDau),
       ngayKetThuc: formatDateForApi(voucher.value.ngayKetThuc),
+      soLuong: voucher.value.voHan ? -1 : voucher.value.soLuong,
     };
 
     if (isEditing.value) {
@@ -175,6 +246,7 @@ const saveVoucher = async () => {
     } else {
       await apiClient.post("Vouchers", payload);
     }
+
     resetForm();
     await fetchVouchers();
   } catch (err) {
@@ -191,12 +263,22 @@ const deleteVoucher = async (id) => {
     console.error("Lỗi xóa voucher:", err);
   }
 };
+function removeVietnamese(event) {
+  const raw = event.target.value
+  const noAccent = raw
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // bỏ dấu
+
+  event.target.value = noAccent
+}
 
 const editVoucher = (v) => {
   voucher.value = {
     ...v,
     ngayBatDau: v.ngayBatDau.split("T")[0],
     ngayKetThuc: v.ngayKetThuc.split("T")[0],
+    voHan: v.soLuong === -1,
+    soLuong: v.soLuong === -1 ? 1 : v.soLuong,
   };
   isEditing.value = true;
 };
@@ -206,49 +288,103 @@ const resetForm = () => {
   voucher.value = {
     voucherID: 0,
     maCode: "",
-    giaTriGiam: 0,
-    kieuGiamGia: 0,
-    ngayBatDau: "",
+    giaTriGiam: "",
+    kieuGiamGia: "",
+    ngayBatDau: getTodayDate(),
     ngayKetThuc: "",
-    soLuong: 0,
+    soLuong: 1,
+    voHan: false,
   };
 };
 
-const searchByCode = async () => {
+const applyAllFilters = async () => {
   try {
-    if (!searchCode.value.trim()) return fetchVouchers();
-    const res = await apiClient.get(`Vouchers/code?ma=${searchCode.value}`);
-    vouchers.value = res.data;
-  } catch (err) {
-    console.error("Lỗi tìm kiếm mã:", err);
-  }
-};
+    // Lấy dữ liệu gốc từ server
+    const res = await apiClient.get("Vouchers");
+    let data = res.data;
 
-const filterByValue = async () => {
-  try {
-    const res = await apiClient.get(`Vouchers/filter-value?min=${minValue.value}&max=${maxValue.value}`);
-    vouchers.value = res.data;
-  } catch (err) {
-    console.error("Lỗi lọc theo giá trị:", err);
-  }
-};
-
-const filterByType = async () => {
-  try {
-    if (selectedType.value === "") {
-      fetchVouchers();
-    } else {
-      const res = await apiClient.get(`Vouchers/filter-type?type=${selectedType.value}`);
-      vouchers.value = res.data;
+    // 🔍 Lọc theo mã code
+    if (searchCode.value.trim()) {
+      data = data.filter((v) =>
+        v.maCode.toLowerCase().includes(searchCode.value.trim().toLowerCase())
+      );
     }
+
+    // // 💰 Lọc theo giá trị giảm
+    // if (
+    //   minValue.value != null &&
+    //   maxValue.value != null &&
+    //   !(minValue.value === "" && maxValue.value === "")
+    // ) {
+    //   data = data.filter(
+    //     (v) => v.giaTriGiam >= minValue.value && v.giaTriGiam <= maxValue.value
+    //   );
+    // }
+const min = Number(minValue.value);
+const max = Number(maxValue.value);
+
+let filteredData = [...data]; // tạo bản sao từ danh sách gốc
+
+// Nếu chỉ nhập "Từ"
+if (!isNaN(min) && minValue.value !== "" && (isNaN(max) || maxValue.value === "")) {
+  filteredData = filteredData.filter((v) => v.giaTriGiam >= min);
+}
+
+// Nếu chỉ nhập "Đến"
+if (!isNaN(max) && maxValue.value !== "" && (isNaN(min) || minValue.value === "")) {
+  filteredData = filteredData.filter((v) => v.giaTriGiam <= max);
+}
+
+// Nếu nhập cả hai
+if (!isNaN(min) && minValue.value !== "" && !isNaN(max) && maxValue.value !== "") {
+  filteredData = filteredData.filter((v) => v.giaTriGiam >= min && v.giaTriGiam <= max);
+}
+data = filteredData;
+
+    // ⚙️ Lọc theo kiểu giảm
+    if (selectedType.value !== "") {
+      data = data.filter((v) => String(v.kieuGiamGia) === selectedType.value);
+    }
+
+    // ⭐ Lọc loại phiếu
+    if (selectedVoucherType.value === "special") {
+      data = data.filter((v) => v.soLuong === -1);
+    } else if (selectedVoucherType.value === "normal") {
+      data = data.filter((v) => v.soLuong !== -1);
+    }
+
+    vouchers.value = data;
   } catch (err) {
-    console.error("Lỗi lọc theo kiểu:", err);
+    console.error("Lỗi lọc dữ liệu:", err);
   }
 };
+const resetFilters = () => {
+  searchCode.value = "";
+  minValue.value = "";
+  maxValue.value = ""; // hoặc giới hạn tối đa bạn muốn
+  selectedType.value = "";
+  selectedVoucherType.value = "";
+  fetchVouchers();
+};
+
+import { watch } from "vue";
+
+// Tự động áp dụng lọc khi người dùng thay đổi các trường filter
+watch(searchCode, applyAllFilters);
+watch(minValue, applyAllFilters);
+watch(maxValue, applyAllFilters);
+watch(selectedType, applyAllFilters);
+watch(selectedVoucherType, applyAllFilters);
+
+
+// Các sự kiện thay đổi gọi applyAllFilters
+const searchByCode = () => applyAllFilters();
+const filterByValue = () => applyAllFilters();
+const filterByType = () => applyAllFilters();
+const filterByVoucherType = () => applyAllFilters();
 
 onMounted(fetchVouchers);
 </script>
-
 
 <style scoped>
 .container {
