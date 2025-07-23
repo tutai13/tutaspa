@@ -69,7 +69,7 @@
           </div>
           <div class="d-flex justify-content-end mt-4">
             <button type="submit" class="btn btn-primary me-2">
-              {{ isEditing ? "Cập nhật" : "➕Thêm" }}
+              {{ isEditing ? "🔄Cập nhật" : "➕Thêm" }}
             </button>
             <button type="button" class="btn btn-secondary" @click="resetForm">❌Hủy</button>
           </div>
@@ -109,14 +109,12 @@
           <option value="normal">Phiếu thường</option>
         </select>
       </div>
-
       <div class="col-md-3">
         <label class="form-label fw-bold small text-muted invisible">Ẩn</label>
         <button class="btn btn-dark w-100" @click="resetFilters">
           <i class="bi bi-folder-symlink-fill me-1"></i> Hiển thị tất cả Voucher
         </button>
       </div>
-      
     </div>
 
     <!-- Danh sách voucher -->
@@ -135,10 +133,9 @@
         </thead>
         <tbody>
           <tr
-            v-for="v in vouchers"
+            v-for="v in sortedVouchers"
             :key="v.voucherID"
-            :class="{ expired: new Date(v.ngayKetThuc) < new Date() }"
-          >
+            :class="{ expired: isExpired(v.ngayKetThuc) }">
             <td>{{ v.maCode }}</td>
             <td>{{ v.giaTriGiam }}</td>
             <td>{{ v.kieuGiamGia === 0 ? "%" : "$" }}</td>
@@ -186,6 +183,14 @@ const getTodayDate = () => {
   const dd = String(now.getDate()).padStart(2, "0");
   return `${yyyy}-${mm}-${dd}`;
 };
+function isExpired(dateString) {
+  const today = new Date();
+  const endDate = new Date(dateString);
+  // Set cả hai về 0h00 để so sánh chỉ theo ngày
+  today.setHours(0, 0, 0, 0);
+  endDate.setHours(0, 0, 0, 0);
+  return endDate < today;
+}
 
 const voucher = ref({
   voucherID: 0,
@@ -312,17 +317,6 @@ const applyAllFilters = async () => {
         v.maCode.toLowerCase().includes(searchCode.value.trim().toLowerCase())
       );
     }
-
-    // // 💰 Lọc theo giá trị giảm
-    // if (
-    //   minValue.value != null &&
-    //   maxValue.value != null &&
-    //   !(minValue.value === "" && maxValue.value === "")
-    // ) {
-    //   data = data.filter(
-    //     (v) => v.giaTriGiam >= minValue.value && v.giaTriGiam <= maxValue.value
-    //   );
-    // }
 const min = Number(minValue.value);
 const max = Number(maxValue.value);
 
@@ -379,6 +373,28 @@ watch(maxValue, applyAllFilters);
 watch(selectedType, applyAllFilters);
 watch(selectedVoucherType, applyAllFilters);
 
+import { computed } from 'vue';
+
+const sortedVouchers = computed(() => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return [...vouchers.value].sort((a, b) => {
+    const aDate = new Date(a.ngayKetThuc);
+    const bDate = new Date(b.ngayKetThuc);
+    aDate.setHours(0, 0, 0, 0);
+    bDate.setHours(0, 0, 0, 0);
+
+    const aExpired = aDate < today;
+    const bExpired = bDate < today;
+
+    if (aExpired && !bExpired) return 1;
+    if (!aExpired && bExpired) return -1;
+
+    // Nếu cả hai cùng trạng thái thì sắp theo ngày kết thúc tăng dần
+    return aDate - bDate;
+  });
+});
 
 // Các sự kiện thay đổi gọi applyAllFilters
 const searchByCode = () => applyAllFilters();
@@ -406,7 +422,7 @@ onMounted(fetchVouchers);
 .container {
   max-width: 1200px;
   /* background: linear-gradient(to right, #d03939, #26bc53); */
-  background: linear-gradient(to right, #8ba0b5, #ffffff);
+  background: linear-gradient(to right, #8ba0b5, #8ba0b5);
   padding: 32px;
   border-radius: 20px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
