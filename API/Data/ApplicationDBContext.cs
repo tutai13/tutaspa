@@ -15,10 +15,14 @@ namespace API.Data
         public DbSet<Category> Categorys { get; set; }
 
 		public DbSet<InventoryHistory> InventoryHistories { get; set; }
-
+        public DbSet<DanhGia> DanhGiass{ get; set; }
+        public DbSet<Banggiadichvu> BangGiaDichVus { get; set; }
         public DbSet<HoaDon> hoaDons { get; set; }
         public DbSet<ChiTietHoaDon> chiTietHoaDons { get; set; }
         public DbSet<API.Models.Voucher> Voucher { get; set; } = default!;
+        public DbSet<DatLich> datLiches { get; set; }
+        public DbSet<ChiTietDatLich> chiTietDatLiches { get; set; }
+
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {

@@ -40,6 +40,8 @@ namespace API.Models
         [ForeignKey("LoaiDichVuID")]
         [JsonIgnore]
         public LoaiDichVu? LoaiDichVu { get; set; }
+        public ICollection<Banggiadichvu>? BangGiaDichVu { get; set; }
+
     }
 
 }

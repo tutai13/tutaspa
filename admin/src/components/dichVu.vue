@@ -1,4 +1,4 @@
-<template>
+ <template>
   <div class="container mt-4">
     <!-- Tiêu đề trang -->
     <h2 class="text-center mb-4 text-primary fw-bold">
@@ -187,7 +187,7 @@ const dichVu = ref({
 const isEditing = ref(false);
 const searchName = ref("");
 const priceMin = ref(0);
-const priceMax = ref(1000000);
+const priceMax = ref(0);
 const selectedImage = ref(null);
 
 const handleFileChange = (e) => {
@@ -241,7 +241,19 @@ const searchByName = async () => {
 };
 
 const filterByPrice = async () => {
-  if (priceMin.value < 0 || priceMax.value < 0) return alert("Giá không được nhỏ hơn 0");
+  if (priceMin.value < 0 || priceMax.value < 0) {
+    return alert("Giá không được nhỏ hơn 0");
+  }
+
+  // Nếu max chưa nhập mà min đã có -> gán max = min
+  if (priceMax.value === 0 && priceMin.value > 0) {
+    priceMax.value = priceMin.value;
+  }
+
+  if (priceMin.value > priceMax.value) {
+    return alert("Giá tối thiểu không được lớn hơn giá tối đa");
+  }
+
   try {
     const response = await apiClient.get(`DichVu/filter-by-price?min=${priceMin.value}&max=${priceMax.value}`);
     dichVus.value = response.data;
@@ -259,8 +271,8 @@ const saveDichVu = async () => {
     if (selectedImage.value) {
       const formData = new FormData();
       formData.append("file", selectedImage.value);
-
-      const uploadRes = await apiClient.post("/DichVu/image", formData, {
+      formData.append("tenDichVu", dichVu.value.tenDichVu);
+      const uploadRes = await apiClient.post("/DichVu/image/", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 

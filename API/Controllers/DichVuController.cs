@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using API.Data;
 using API.Models;
 using Microsoft.AspNetCore.Hosting;
+using ClosedXML.Excel;
 
 namespace API.Controllers
 {
@@ -28,31 +29,30 @@ namespace API.Controllers
             return await _context.DichVus
                 .Where(dv => dv.TrangThai == 1)
                 .ToListAsync();
+
         }
-        // ✅ (Tùy chọn) Trả về tất cả dịch vụ (admin dùng)
         [HttpGet("all")]
         public async Task<ActionResult<IEnumerable<object>>> GetAllDichVus()
         {
             var dichVus = await _context.DichVus
-                .Include(dv => dv.LoaiDichVu) // Join với bảng LoaiDichVu
+                .Include(dv => dv.LoaiDichVu)
                 .Select(dv => new
                 {
-                    dv.DichVuID,
-                    dv.TenDichVu,
-                    dv.Gia,
-                    dv.ThoiGian,
-                    dv.MoTa,
-                    dv.HinhAnh,
-                    dv.NgayTao,
-                    dv.TrangThai,
-                    dv.LoaiDichVuID,
-                    dv.LoaiDichVu.TenLoai // Lấy tên loại
-                })
+                   dv.DichVuID,
+                   dv.TenDichVu,
+                   dv.Gia,
+                   dv.ThoiGian,
+                   dv.MoTa,
+                   dv.HinhAnh,
+                   dv.NgayTao,
+                   dv.TrangThai,
+                   dv.LoaiDichVuID,
+                   TenLoai = dv.LoaiDichVu != null ? dv.LoaiDichVu.TenLoai : "", // tránh null
+               })
                 .ToListAsync();
 
             return Ok(dichVus);
         }
-
         // GET: api/DichVus/5
         [HttpGet("{id}")]
         public async Task<ActionResult<DichVu>> GetDichVu(int id)
@@ -110,12 +110,9 @@ namespace API.Controllers
             return NoContent();
         }
 
-        // POST: api/DichVus
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<DichVu>> PostDichVu(DichVu dichVu)
         {
-            dichVu.NgayTao =DateTime.Now;
             _context.DichVus.Add(dichVu);
             await _context.SaveChangesAsync();
 
@@ -184,28 +181,39 @@ namespace API.Controllers
             }
         }
         [HttpPost("image")]
-        public async Task<IActionResult> UploadImage(IFormFile file)
+        public async Task<IActionResult> UploadImage(IFormFile file, [FromForm] string tenDichVu)
         {
             if (file == null || file.Length == 0)
                 return BadRequest(new { message = "Không có file ảnh." });
 
-            var uploadsFolder = Path.Combine(_env.WebRootPath, "images");
+            if (string.IsNullOrWhiteSpace(tenDichVu))
+                return BadRequest(new { message = "Tên dịch vụ không được rỗng." });
 
-            // Nếu file trùng tên thì tự động thêm hậu tố - copy
-            string originalFileName = Path.GetFileNameWithoutExtension(file.FileName);
+            var uploadsFolder = Path.Combine(_env.WebRootPath, "images");
+            if (!Directory.Exists(uploadsFolder))
+                Directory.CreateDirectory(uploadsFolder);
+
+            // Chuyển tên dịch vụ thành slug (bỏ dấu, viết thường, gạch nối)
+            string slug = tenDichVu
+                .ToLower()
+                .Normalize(System.Text.NormalizationForm.FormD)
+                .Replace("[\\u0300-\\u036f]", "") // bỏ dấu
+                .Replace("đ", "d") // riêng chữ đ
+                .Replace(" ", "-")
+                .Replace("[^a-z0-9-]", ""); // chỉ giữ a-z, số, -
+
             string extension = Path.GetExtension(file.FileName);
-            string fileName = $"{originalFileName}{extension}";
+            string fileName = $"{slug}{extension}";
             string filePath = Path.Combine(uploadsFolder, fileName);
 
-            int count = 1;
+            // Nếu trùng tên ảnh thì thêm hậu tố chuỗi ngẫu nhiên
             while (System.IO.File.Exists(filePath))
             {
-                fileName = $"{originalFileName}_{count}{extension}";
+                string randomSuffix = Path.GetRandomFileName().Substring(0, 6); // ví dụ: 'abc123'
+                fileName = $"{slug}_{randomSuffix}{extension}";
                 filePath = Path.Combine(uploadsFolder, fileName);
-                count++;
             }
 
-            // Lưu ảnh vào thư mục
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
                 await file.CopyToAsync(stream);
@@ -217,5 +225,70 @@ namespace API.Controllers
         {
             return _context.DichVus.Any(e => e.DichVuID == id);
         }
+        [HttpPost("import")]
+        public async Task<IActionResult> ImportDichVu(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("Chưa chọn file.");
+
+            if (!Path.GetExtension(file.FileName).Equals(".xlsx", StringComparison.OrdinalIgnoreCase))
+                return BadRequest("File không hợp lệ, chỉ hỗ trợ .xlsx");
+
+            var dichVuList = new List<DichVu>();
+
+            using (var stream = new MemoryStream())
+            {
+                await file.CopyToAsync(stream);
+                using (var workbook = new XLWorkbook(stream))
+                {
+                    var worksheet = workbook.Worksheet("DichVu");
+                    if (worksheet == null)
+                        return BadRequest("Không tìm thấy sheet tên 'DichVu'.");
+
+                    foreach (var row in worksheet.RowsUsed().Skip(1)) 
+                    {
+                        try
+                        {
+                            var tenDichVu = row.Cell(1).GetString()?.Trim();
+                            var gia = row.Cell(2).GetValue<decimal>();
+                            var thoiGian = row.Cell(3).GetValue<int>();
+                            var moTa = row.Cell(4).GetString()?.Trim();
+                            var hinhAnh = row.Cell(5).GetString()?.Trim();
+                            var trangThai = row.Cell(6).GetValue<int>();
+                            var ngayTao = row.Cell(7).GetDateTime();
+                            var loaiDichVuID = row.Cell(8).GetValue<int>();
+
+                            
+                            if (string.IsNullOrEmpty(tenDichVu) || gia < 0 || thoiGian <= 0)
+                                continue;
+
+                            var dv = new DichVu
+                            {
+                                TenDichVu = tenDichVu,
+                                Gia = gia,
+                                ThoiGian = thoiGian,
+                                MoTa = moTa,
+                                HinhAnh = hinhAnh,
+                                TrangThai = trangThai,
+                                NgayTao = ngayTao,
+                                LoaiDichVuID = loaiDichVuID
+                            };
+
+                            dichVuList.Add(dv);
+                        }
+                        catch (Exception ex)
+                        {
+                            continue;
+                        }
+                    }
+                }
+            }
+
+            _context.DichVus.AddRange(dichVuList);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true, count = dichVuList.Count });
+        }
+
     }
 }

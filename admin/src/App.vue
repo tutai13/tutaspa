@@ -11,7 +11,11 @@
         <router-link to="/" class="menu-item" exact-active-class="active">
           <i class="fas fa-th-large"></i> Dashboard
         </router-link>
-        <router-link to="/QlDichVu" class="menu-item" exact-active-class="active">
+        <router-link
+          to="/QlDichVu"
+          class="menu-item"
+          exact-active-class="active"
+        >
           <i class="fas fa-globe"></i> Quản lý dịch vụ
         </router-link>
         <router-link
@@ -24,16 +28,31 @@
         <router-link to="/kho" class="menu-item" exact-active-class="active">
           <i class="fas fa-columns"></i> Quản lý kho
         </router-link>
-        <router-link to="/QuanLySanPham" class="menu-item" exact-active-class="active">
+        <router-link
+          to="/QuanLySanPham"
+          class="menu-item"
+          exact-active-class="active"
+        >
           <i class="fas fa-columns"></i> Quản lý Sản Phẩm
         </router-link>
-        <router-link to="/employees" class="menu-item" exact-active-class="active">
+        <router-link
+          to="/employees"
+          class="menu-item"
+          exact-active-class="active"
+        >
           <i class="fas fa-columns"></i> Quản lý nhân viên
+        </router-link>
+        <router-link
+          to="/DanhGiaKhachHang"
+          class="menu-item"
+          exact-active-class="active"
+        >
+          <i class="fas fa-star me-1"></i> Quản lý Đánh Giá
         </router-link>
 
         <div class="menu-title">APPS</div>
         <router-link
-          to="/apps/ecommerce"
+          to="/ThongKe"
           class="menu-item"
           exact-active-class="active"
         >
