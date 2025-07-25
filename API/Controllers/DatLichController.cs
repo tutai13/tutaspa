@@ -191,7 +191,17 @@ namespace API.Controllers
 
             return Ok($"✅ Đã đổi trạng thái thành '{datLich.TrangThai}'.");
         }
+        [HttpPut("capnhat-thanhtoan/{id}")]
+        public async Task<IActionResult> CapNhatThanhToan(int id)
+        {
+            var datLich = await _context.datLiches.FindAsync(id);
+            if (datLich == null)
+                return NotFound();
 
+            datLich.DaThanhToan = true;
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
 
         [HttpGet("slots")]
         public IActionResult GetSlotInfo(DateTime ngay)

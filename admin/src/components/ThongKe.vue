@@ -1,56 +1,46 @@
 <template>
   <div>
-    <h4 class="mb-3">📋 Danh sách đặt lịch</h4>
+    <h4 class="mb-3">📋 Danh sách hóa đơn</h4>
     <div class="table-responsive">
       <table class="table table-bordered table-hover align-middle">
         <thead class="table-primary">
           <tr>
             <th>#</th>
-            <th>SĐT</th>
-            <th>Thời gian</th>
-            <th>Thời lượng</th>
+            <th>Ngày tạo</th>
+            <th>Tổng tiền</th>
+            <th>Khách đưa</th>
+            <th>Thối lại</th>
+            <th>Hình thức</th>
             <th>Trạng thái</th>
-            <th>Thanh toán</th>
             <th>Dịch vụ</th>
-            <th>Ghi Chú</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(lich, index) in danhSachDatLich" :key="lich.datLichID">
+          <tr v-for="(hd, index) in danhSachHoaDon" :key="hd.hoaDonID">
             <td>{{ index + 1 }}</td>
-            <td>{{ lich.soDienThoai }}</td>
-            <td>{{ formatDateTime(lich.thoiGian) }}</td>
-            <td>{{ lich.thoiLuong }} phút</td>
+            <td>{{ formatDateTime(hd.ngayTao) }}</td>
+            <td>{{ hd.tongTien.toLocaleString() }}₫</td>
+            <td>{{ hd.tienKhachDua?.toLocaleString() ?? "—" }}₫</td>
+            <td>{{ hd.tienThoiLai?.toLocaleString() ?? "—" }}₫</td>
+            <td>{{ hd.hinhThucThanhToan }}</td>
             <td>
               <span
-                :class="
-                  lich.trangThai === 'Đã đến' ? 'text-success' : 'text-danger'
-                "
+                :class="hd.trangThai === 1 ? 'text-success' : 'text-danger'"
               >
-                {{ lich.trangThai }}
-              </span>
-            </td>
-            <td>
-              <span :class="lich.daThanhToan ? 'text-success' : 'text-warning'">
-                {{
-                  lich.daThanhToan ? "✔ Đã thanh toán" : "❌ Chưa thanh toán"
-                }}
+                {{ hd.trangThai === 1 ? "✔ Hoàn tất" : "⏳ Chờ xử lý" }}
               </span>
             </td>
             <td>
               <ul class="mb-0 ps-3">
-                <li
-                  v-for="dv in lich.chiTietDichVus"
-                  :key="dv.chiTietDatLichID"
-                >
-                  {{ dv.dichVu.tenDichVu }} - {{ dv.dichVu.thoiGian }}p -
-                  {{ dv.dichVu.gia.toLocaleString() }}₫
+                <li v-for="ct in hd.chiTietHoaDons" :key="ct.chiTietHoaDonID">
+                  {{ ct.dichVu?.tenDichVu ?? "—" }} -
+                  {{ ct.dichVu?.thoiGian ?? 0 }}p -
+                  {{ ct.thanhTien?.toLocaleString() }}₫
                 </li>
               </ul>
             </td>
-            <td>{{ lich.ghiChu }}</td>
           </tr>
-          <tr v-if="danhSachDatLich.length === 0">
+          <tr v-if="danhSachHoaDon.length === 0">
             <td colspan="8" class="text-center text-muted">Không có dữ liệu</td>
           </tr>
         </tbody>
@@ -63,14 +53,16 @@
 import { ref, onMounted } from "vue";
 import axios from "axios";
 
-const danhSachDatLich = ref([]);
+const danhSachHoaDon = ref([]);
 
 const layDanhSach = async () => {
   try {
-    const res = await axios.get("https://localhost:7183/api/DatLich");
-    danhSachDatLich.value = res.data;
+    const res = await axios.get(
+      "https://localhost:7183/api/ThongKe/thongKeHoaDon"
+    );
+    danhSachHoaDon.value = res.data;
   } catch (err) {
-    console.error("Lỗi lấy danh sách:", err);
+    console.error("Lỗi lấy danh sách hóa đơn:", err);
   }
 };
 

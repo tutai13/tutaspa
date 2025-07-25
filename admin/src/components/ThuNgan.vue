@@ -317,6 +317,7 @@
                   Đổi trạng thái
                 </button>
                 <button
+                  v-if="!lich.daThanhToan"
                   class="btn btn-sm btn-outline-secondary me-2"
                   @click="batDauSuaLich(lich)"
                 >
@@ -440,12 +441,19 @@ const taoThanhToan = async () => {
 
   try {
     await axios.post("http://localhost:5055/api/ThanhToan/tao-hoadon", data);
+
+    if (isSuaLich.value && lichDangSua.value?.datLichID) {
+      await axios.put(
+        `http://localhost:5055/api/DatLich/capnhat-thanhtoan/${lichDangSua.value.datLichID}`
+      );
+    }
     alert("Tạo hóa đơn thành công");
     danhSachChon.value = [];
     tienKhachDua.value = 0;
     tienKhachDuaHienThi.value = "";
     hinhThuc.value = "Tiền mặt";
     localStorage.removeItem("checkoutData");
+    layDanhSach();
   } catch (err) {
     console.error("Lỗi tạo hóa đơn:", err);
   }

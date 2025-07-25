@@ -86,6 +86,28 @@ namespace API.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "hoaDons",
+                columns: table => new
+                {
+                    HoaDonID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    NgayTao = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TongTien = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    MaGiamGia = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TongTienSauGiamGia = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    HinhThucThanhToan = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TrangThai = table.Column<byte>(type: "tinyint", nullable: false),
+                    TienKhachDua = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    TienThoiLai = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    NhanVienID = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserID = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_hoaDons", x => x.HoaDonID);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "LoaiDichVus",
                 columns: table => new
                 {
@@ -217,34 +239,6 @@ namespace API.Migrations
                     table.ForeignKey(
                         name: "FK_AspNetUserTokens_AspNetUsers_UserId",
                         column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "hoaDons",
-                columns: table => new
-                {
-                    HoaDonID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    NgayTao = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    TongTien = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    MaGiamGia = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    TongTienSauGiamGia = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    HinhThucThanhToan = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TrangThai = table.Column<byte>(type: "tinyint", nullable: false),
-                    TienKhachDua = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    TienThoiLai = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    NhanVienID = table.Column<int>(type: "int", nullable: false),
-                    UserID = table.Column<string>(type: "nvarchar(450)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_hoaDons", x => x.HoaDonID);
-                    table.ForeignKey(
-                        name: "FK_hoaDons_AspNetUsers_UserID",
-                        column: x => x.UserID,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -554,11 +548,6 @@ namespace API.Migrations
                 name: "IX_DichVus_LoaiDichVuID",
                 table: "DichVus",
                 column: "LoaiDichVuID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_hoaDons_UserID",
-                table: "hoaDons",
-                column: "UserID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_InventoryHistories_ProductId",
