@@ -16,9 +16,9 @@ namespace API.Models
         public decimal ThanhTien { get; set; }
         [JsonIgnore]
         public virtual HoaDon HoaDon { get; set; }
-        [JsonIgnore]
-        public virtual Product SanPham { get; set; }
-        [JsonIgnore]
-        public virtual DichVu DichVu { get; set; }
+        
+        public virtual Product? SanPham { get; set; }
+        
+        public virtual DichVu? DichVu { get; set; }
     }
 }

@@ -54,6 +54,7 @@ namespace API.Controllers
 
                 return Ok(new
                 {
+                    qrCode = result.qrCode,
                     checkoutUrl = result.checkoutUrl,
                     orderId = orderId
                 });

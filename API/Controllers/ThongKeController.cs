@@ -1,7 +1,9 @@
 ﻿using API.Data;
 using API.DTOs.ThongKe;
+using API.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers
 {
@@ -112,6 +114,16 @@ namespace API.Controllers
                 })
                 .OrderBy(x => x.Ngay)
                 .ToList();
+
+            return Ok(result);
+        }
+        [HttpGet("thongKeHoaDon")]
+        public async Task<ActionResult<IEnumerable<HoaDon>>> GetHoaDon()
+        {
+            var result = await _context.hoaDons
+                    .Include(dl => dl.ChiTietHoaDons)
+                    .ThenInclude(ct => ct.DichVu)
+                    .ToListAsync();
 
             return Ok(result);
         }

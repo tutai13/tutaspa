@@ -73,7 +73,6 @@
       <router-view />
     </main>
   </div>
-
   <!-- Floating Button -->
   <div class="floating-menu">
     <!-- Nút chính -->
@@ -422,7 +421,7 @@ body {
     flex-direction: column;
   }
   .form-control-custom {
-    border-radius: 8px 8px 0 0;
+  border-radius: 8px 8px 0 0;
   }
   .btn-custom {
     border-radius: 0 0 8px 8px;
@@ -610,7 +609,7 @@ body {
   }
 
   .footer-section h3 {
-    border: none;
+  border: none;
   }
 }
 .bg-dark-red {
