@@ -1,4 +1,7 @@
 <template>
+  <header>
+    <div>TutaSpa</div>
+  </header>
   <div class="layout">
     <!-- Sidebar -->
     <aside class="sidebar">

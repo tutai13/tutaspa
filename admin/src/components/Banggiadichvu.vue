@@ -1,3 +1,4 @@
+// BangGiaDichVu.vue
 <template>
   <div class="container py-4">
     <h2 class="text-center text-primary fw-bold mb-4">
@@ -62,6 +63,7 @@
               <th>Thời lượng</th>
               <th>Giá</th>
               <th>Kiểu tính giá</th>
+              <th>Hiển thị</th>
               <th>Hành động</th>
             </tr>
           </thead>
@@ -72,16 +74,24 @@
               <td>{{ formatCurrency(item.gia) }}</td>
               <td>{{ item.kieuTinhGia === 0 ? 'Theo thời gian' : 'Theo quy trình' }}</td>
               <td>
+                <span class="badge" :class="item.isVisible ? 'bg-success' : 'bg-secondary'">
+                  <!-- {{ item.isVisible ? 'Hiện' : 'Ẩn' }} -->
+                </span>
+                <button class="btn btn-sm" :class="item.isVisible ? 'btn-outline-warning' : 'btn-outline-success'" @click="toggleHienGia(item.id)">
+                  <i class="fa" :class="item.isVisible ? 'fa-eye-slash' : 'fa-eye'"></i>
+                </button>
+              </td>
+              <td>
                 <button class="btn btn-warning btn-sm me-2" @click="editBangGia(item)">
                   <i class="fa fa-edit"></i>
                 </button>
-                <button class="btn btn-danger btn-sm" @click="deleteBangGia(item.id)">
+                <!-- <button class="btn btn-danger btn-sm" @click="deleteBangGia(item.id)">
                   <i class="fa fa-trash"></i>
-                </button>
+                </button> -->
               </td>
             </tr>
             <tr v-if="!bangGias.length">
-              <td colspan="5" class="text-muted">Chưa có bảng giá nào</td>
+              <td colspan="6" class="text-muted">Chưa có bảng giá nào</td>
             </tr>
           </tbody>
         </table>
@@ -138,6 +148,14 @@ const saveBangGia = async () => {
   }
 }
 
+const toggleHienGia = async (id) => {
+  try {
+    await axios.put(`http://localhost:5055/api/BangGiaDichVu/ToggleGiaDichVu/${id}`)
+    fetchBangGias()
+  } catch (err) {
+    console.error('Lỗi khi bật/tắt hiển thị:', err)
+  }
+}
 
 const editBangGia = (item) => {
   bangGia.value = { ...item }
@@ -147,7 +165,7 @@ const editBangGia = (item) => {
 const deleteBangGia = async (id) => {
   if (!confirm('Bạn có chắc muốn xoá?')) return
   try {
-    await axios.delete(`http://localhost:5055/api/BangGiaDichVu/${id}`)
+    await axios.delete(`http://localhost:5055/api/BangGiaDichVu/DeleteGiaDichVu/${id}`)
     fetchBangGias()
   } catch (err) {
     console.error('Lỗi khi xoá bảng giá:', err)

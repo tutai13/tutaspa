@@ -34,18 +34,18 @@ namespace API.Controllers
         }
 
 
-        // Danh sách đánh giá đã duyệt theo dịch vụ
         [HttpGet("dichvu/{maDichVu}")]
         public async Task<IActionResult> LayDanhGiaTheoDichVu(int maDichVu)
         {
             var danhGias = await _context.DanhGiass
-                .Where(d => d.MaDichVu == maDichVu && d.DaDuyet)
+                .Where(d => d.MaDichVu == maDichVu && d.DaDuyet && d.IsActive) // 👈 Bắt buộc thêm IsActive!
                 .Include(d => d.User)
                 .OrderByDescending(d => d.NgayTao)
                 .ToListAsync();
 
             return Ok(danhGias);
         }
+
 
         // Admin lấy tất cả đánh giá (chưa duyệt / đã duyệt)
         [HttpGet("admin")]
@@ -94,7 +94,19 @@ namespace API.Controllers
             return Ok(trungBinh);
         }
 
-        
+        [HttpPut("toggle/{id}")]
+        public async Task<IActionResult> ToggleTrangThaiDanhGia(int id)
+        {
+            var dg = await _context.DanhGiass.FindAsync(id);
+            if (dg == null) return NotFound();
+
+            dg.IsActive = !dg.IsActive; // Đảo trạng thái
+            await _context.SaveChangesAsync();
+
+            var trangThai = dg.IsActive ? "hiện" : "ẩn";
+            return Ok($"Đánh giá đã được {trangThai}.");
+        }
+
 
 
     }

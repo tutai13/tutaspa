@@ -1,52 +1,65 @@
 <template>
   <div class="container py-5">
     <div v-if="service">
-      <!-- Tiêu đề và mô tả -->
+      <!-- Tiêu đề -->
       <div class="text-center mb-5">
-        <h2 class="fw-bold text-success">{{ service.tenDichVu }}</h2>
+        <h2 class="fw-bold text-success display-5">{{ service.tenDichVu }}</h2>
         <p class="text-muted fs-5">{{ service.moTa }}</p>
       </div>
 
-      <!-- 3 box thời gian -->
-      <div class="row g-4 mb-5" v-if="giaDichVu.length">
-        <div class="col-md-4" v-for="(g, i) in giaDichVu" :key="i">
-          <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
-            <img :src="getImageUrl(service.hinhAnh)" class="card-img-top" style="height: 220px; object-fit: cover;" />
+      <!-- Box thời gian & giá -->
+      <div class="row g-4 mb-5 justify-content-center" v-if="giaDichVu.length">
+        <div class="col-lg-4 col-md-6" v-for="(g, i) in giaDichVu" :key="i">
+          <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden service-card">
+            <img :src="getImageUrl(service.hinhAnh)" class="card-img-top img-zoom" style="height: 230px; object-fit: cover;" />
             <div class="card-body text-center">
-              <h5 class="fw-bold text-marron">{{ service.tenDichVu }} - {{ g.thoiLuong }} phút</h5>
+              <h5 class="fw-bold text-primary mb-2">{{ service.tenDichVu }} - {{ g.thoiLuong }} phút</h5>
               <p class="text-success fs-5 fw-semibold">{{ formatCurrency(g.gia) }}</p>
-              <router-link :to="`/dat-lich`" class="btn btn-outline-success rounded-pill">Đặt dịch vụ</router-link>
+              <router-link to="/dat-lich" class="btn btn-success rounded-pill px-4 shadow-sm btn-hover">Đặt dịch vụ</router-link>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Đánh giá trung bình -->
-      <div class="mb-4">
-        <h5 class="fw-bold">Đánh giá trung bình:</h5>
+      <div class="mb-5 text-center">
+        <h5 class="fw-bold mb-2">⭐ Đánh giá trung bình:</h5>
         <div v-if="trungBinh !== null">
-          <i class="fa-solid fa-star text-warning" v-for="n in Math.round(trungBinh)" :key="n"></i>
-          <span class="text-muted">{{ trungBinh.toFixed(1) }}/5</span>
+          <div class="fs-4 text-warning mb-1">
+            <i class="fa-solid fa-star" v-for="n in Math.round(trungBinh)" :key="n"></i>
+          </div>
+          <span class="text-muted fs-5">{{ trungBinh.toFixed(1) }}/5</span>
         </div>
         <div v-else class="text-muted">Chưa có đánh giá</div>
       </div>
 
       <!-- Danh sách đánh giá -->
       <div v-if="danhGias.length" class="mt-4">
-        <h5 class="fw-bold mb-3">Phản hồi từ khách hàng:</h5>
-        <div v-for="dg in danhGias" :key="dg.id" class="border rounded-4 p-3 mb-3 shadow-sm">
-          <div class="mb-2">
-            <i class="fa-solid fa-star text-warning me-1" v-for="n in dg.sao" :key="n"></i>
-            <span class="text-muted small">{{ new Date(dg.ngayTao).toLocaleDateString() }}</span>
+        <h5 class="fw-bold mb-4 text-primary">📢 Phản hồi từ khách hàng:</h5>
+        <div
+          v-for="dg in danhGias"
+          :key="dg.id"
+          class="border rounded-4 p-3 mb-3 shadow-sm bg-light review-card"
+        >
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <div class="text-warning">
+              <i class="fa-solid fa-star me-1" v-for="n in dg.sao" :key="n"></i>
+            </div>
+            <div class="text-muted small">{{ new Date(dg.ngayTao).toLocaleDateString() }}</div>
           </div>
-          <p class="mb-0">{{ dg.noiDung }}</p>
-          <div v-if="dg.anDanh" class="text-muted small fst-italic">Ẩn danh</div>
+          <p class="mb-2 fst-italic">"{{ dg.noiDung }}"</p>
+          <div class="text-muted small d-flex align-items-center">
+            <i class="fa-regular fa-user-circle me-1"></i>
+            {{ dg.anDanh ? 'Ẩn danh' : 'Khách hàng' }}
+          </div>
         </div>
       </div>
     </div>
 
+    <!-- Loading -->
     <div v-else class="text-center text-muted py-5">
-      Đang tải thông tin dịch vụ...
+      <div class="spinner-border text-success mb-3" role="status"></div>
+      <p>Đang tải thông tin dịch vụ...</p>
     </div>
   </div>
 </template>
@@ -82,7 +95,7 @@ onMounted(async () => {
   }
 });
 
-const getImageUrl = (path) => `http://localhost:5055${path}`;
+const getImageUrl = (path) => `http://localhost:5055/images/${path}`;
 const formatCurrency = (num) =>
   new Intl.NumberFormat('vi-VN', {
     style: 'currency',
@@ -91,7 +104,27 @@ const formatCurrency = (num) =>
 </script>
 
 <style scoped>
-.text-marron {
-  color: #00796B;
+.service-card {
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.service-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+.btn-hover:hover {
+  transform: scale(1.05);
+  transition: transform 0.2s;
+}
+.img-zoom {
+  transition: transform 0.3s ease-in-out;
+}
+.img-zoom:hover {
+  transform: scale(1.05);
+}
+.review-card {
+  transition: background 0.3s ease;
+}
+.review-card:hover {
+  background: #f8f9fa;
 }
 </style>
