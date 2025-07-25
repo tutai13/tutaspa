@@ -9,10 +9,11 @@ import ThuNgan from "../components/ThuNgan.vue";
 import login from "../components/login.vue";
 import EmployeeManagerment from "../components/EmployeeManagerment.vue";
 import QuanLySanPham from "../components/QuanLySanPham.vue";
-import LoaiSanPham from '../components/LoaiSanPham.vue';
-import SanPham from '../components/sanpham.vue';
-import DanhGiaKhachHang from '../components/DanhGiaKhachHang.vue';
-import Banggiadichvu from '../components/Banggiadichvu.vue';
+import LoaiSanPham from "../components/LoaiSanPham.vue";
+import SanPham from "../components/sanpham.vue";
+import DanhGiaKhachHang from "../components/DanhGiaKhachHang.vue";
+import Banggiadichvu from "../components/Banggiadichvu.vue";
+import ThongKe from "../components/ThongKe.vue";
 const routes = [
   { path: "/", name: "Dashboard", component: Dashboard },
   { path: "/khuyenMai", name: "khuyenMai", component: khuyenMai },
@@ -22,18 +23,25 @@ const routes = [
   { path: "/kho", name: "kho", component: kho },
   { path: "/ThuNgan", name: "ThuNgan", component: ThuNgan },
   { path: "/employees", name: "employees", component: EmployeeManagerment },
- { path: "/QuanLySanPham", name: "QuanLySanPham", component: QuanLySanPham },
-{ path: "/categories", name: "LoaiSanPham", component: LoaiSanPham },
-{ path: "/Products", name: "sanpham", component: SanPham },
-{ path: "/DanhGiaKhachHang", name: "DanhGiaKhachHang", component: DanhGiaKhachHang },
-{ path: "/Banggiadichvu", name: "Banggiadichvu", component: Banggiadichvu },
+  { path: "/QuanLySanPham", name: "QuanLySanPham", component: QuanLySanPham },
+  { path: "/categories", name: "LoaiSanPham", component: LoaiSanPham },
+  { path: "/Products", name: "sanpham", component: SanPham },
   {
-    path: "/login", name: "login", component: login, meta: {
-      layout: false, // Không sử dụng layout chung
-      requiresAuth: false
-    }
+    path: "/DanhGiaKhachHang",
+    name: "DanhGiaKhachHang",
+    component: DanhGiaKhachHang,
   },
-
+  { path: "/Banggiadichvu", name: "Banggiadichvu", component: Banggiadichvu },
+  { path: "/ThongKe", name: "ThongKe", component: ThongKe },
+  {
+    path: "/login",
+    name: "login",
+    component: login,
+    meta: {
+      layout: false, // Không sử dụng layout chung
+      requiresAuth: false,
+    },
+  },
 ];
 const router = createRouter({
   history: createWebHistory(),
