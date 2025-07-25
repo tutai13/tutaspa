@@ -1,9 +1,7 @@
 ﻿using API.Data;
 using API.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
 
 namespace API.Controllers
 {
@@ -18,12 +16,11 @@ namespace API.Controllers
             _context = context;
         }
 
-        // ✅ Lấy bảng giá theo thời gian (KieuTinhGia == 0)
         [HttpGet("GetGiaTheoThoiGian/{dichVuID}")]
         public async Task<IActionResult> GetGiaTheoThoiGian(int dichVuID)
         {
             var result = await _context.BangGiaDichVus
-                .Where(g => g.DichVuID == dichVuID && g.KieuTinhGia == 0)
+                .Where(g => g.DichVuID == dichVuID && g.KieuTinhGia == 0 && g.IsVisible)
                 .OrderBy(g => g.ThoiLuong)
                 .Select(g => new
                 {
@@ -36,31 +33,29 @@ namespace API.Controllers
             return Ok(result);
         }
 
-        // ✅ Lấy toàn bộ bảng giá của một dịch vụ (mọi kiểu)
         [HttpGet("GetGiaByDichVu/{dichVuID}")]
         public async Task<IActionResult> GetGiaByDichVu(int dichVuID)
         {
             var result = await _context.BangGiaDichVus
-                .Where(g => g.DichVuID == dichVuID)
+                .Where(g => g.DichVuID == dichVuID && g.IsVisible)
                 .OrderBy(g => g.ThoiLuong)
                 .ToListAsync();
 
             return Ok(result);
         }
 
-        // ✅ Thêm bảng giá mới
         [HttpPost("AddGiaDichVu")]
         public async Task<IActionResult> AddGiaDichVu([FromBody] Banggiadichvu model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            model.IsVisible = true;
             _context.BangGiaDichVus.Add(model);
             await _context.SaveChangesAsync();
             return Ok(model);
         }
 
-        // ✅ Cập nhật bảng giá
         [HttpPut("UpdateGiaDichVu/{id}")]
         public async Task<IActionResult> UpdateGiaDichVu(int id, [FromBody] Banggiadichvu model)
         {
@@ -71,12 +66,11 @@ namespace API.Controllers
             gia.Gia = model.Gia;
             gia.KieuTinhGia = model.KieuTinhGia;
             gia.DichVuID = model.DichVuID;
-
             await _context.SaveChangesAsync();
+
             return Ok(gia);
         }
 
-        // ✅ Xoá bảng giá
         [HttpDelete("DeleteGiaDichVu/{id}")]
         public async Task<IActionResult> DeleteGiaDichVu(int id)
         {
@@ -87,8 +81,24 @@ namespace API.Controllers
             await _context.SaveChangesAsync();
             return Ok(new { message = "Đã xoá thành công" });
         }
-        // ✅ Lấy toàn bộ bảng giá (cho admin)
-        // Controllers/BangGiaDichVuController.cs
+
+        [HttpPut("ToggleGiaDichVu/{id}")]
+        public async Task<IActionResult> ToggleGiaDichVu(int id)
+        {
+            var gia = await _context.BangGiaDichVus.FindAsync(id);
+            if (gia == null) return NotFound();
+
+            gia.IsVisible = !gia.IsVisible;
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                message = gia.IsVisible ? "Đã hiển thị giá dịch vụ" : "Đã ẩn giá dịch vụ",
+                gia.Id,
+                gia.IsVisible
+            });
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -103,15 +113,12 @@ namespace API.Controllers
                     TenDichVu = bg.DichVu != null ? bg.DichVu.TenDichVu : null,
                     bg.ThoiLuong,
                     bg.Gia,
-                    bg.KieuTinhGia
+                    bg.KieuTinhGia,
+                    bg.IsVisible
                 })
                 .ToListAsync();
 
             return Ok(list);
         }
-
-      
-
-
     }
 }

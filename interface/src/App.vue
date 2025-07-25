@@ -1,54 +1,68 @@
 <template>
   <div id="app">
-    <!-- Navbar -->
-    <nav class="navbar" :class="{ hidden: isNavbarHidden }" ref="navbar">
-      <div class="logo animated-logo">
-        <router-link to="/">
-          <img
-            src="/src/assets/img/logo.png"
-            alt="TutaSpa Logo"
-            class="logo-image"
-          />
-        </router-link>
-      </div>
 
+    <!-- ✅ Header Top -->
+    <div class="header-top d-flex justify-content-between align-items-center px-4 py-2">
+      <!-- Logo -->
+      <div class="logo d-flex align-items-center">
+        <router-link to="/">
+          <img src="/src/assets/img/logo.png" alt="Logo" class="me-2" style="height: 40px;" />
+        </router-link>
+        <span class="brand-name ms-2"></span>
+      </div>
+      <!-- Giờ mở cửa -->
+      <div class="open-hours text-end me-4">
+        <small class="text-uppercase text-muted">GIỜ MỞ CỬA</small><br />
+        <strong class="fs-6">8.00AM - 8.00PM</strong>
+      </div>
+      <!-- Hotline & Tài khoản -->
+      <div class="d-flex align-items-center gap-4">
+        <!-- Hotline -->
+        <div class="hotline-box d-flex align-items-center gap-2">
+          <i class="fa-solid fa-phone"></i>
+          <div class="text-start">
+            <span class="d-block" style="font-size: 12px; font-style: italic;">Hotline</span>
+            <span style="font-size: 18px; font-weight: bold;">0966193978</span>
+          </div>
+        </div>
+
+        <!-- Đăng nhập và Xem lịch -->
+        <div class="d-flex align-items-center gap-2">
+          <router-link to="/login" class="btn btn-outline-dark btn-sm d-flex align-items-center gap-1">
+            <i class="fa-solid fa-user"></i> Đăng nhập
+          </router-link>
+          <router-link to="/lich-hen" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1">
+            <i class="fa-regular fa-calendar-check"></i> Xem lịch
+          </router-link>
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ Navbar -->
+    <nav class="navbar" :class="{ hidden: isNavbarHidden }" ref="navbar">
       <ul class="nav-links">
-        <li>
-          <router-link to="/">
-            <i class="fa-solid fa-house"></i> Trang Chủ
-          </router-link>
-        </li>
-        <li>
-          <router-link to="/DichVu">
-            <i class="fa-solid fa-briefcase"></i> Dịch Vụ
-          </router-link>
-        </li>
-        <li>
-          <router-link to="/datlich">
-            <i class="fa-regular fa-calendar-check"></i> Đặt Lịch
-          </router-link>
-        </li>
-        <li>
-          <router-link to="/GioiThieu">
-            <i class="fa-solid fa-circle-info"></i> Giới Thiệu
-          </router-link>
-        </li>
-        <li>
-          <router-link to="/LienHe">
-            <i class="fa-solid fa-envelope"></i> Liên Hệ
-          </router-link>
-        </li>
+        <li><router-link to="/"><i class="fa-solid fa-house"></i> Trang Chủ</router-link></li>
+        <li><router-link to="/DichVu"><i class="fa-solid fa-briefcase"></i> Dịch Vụ</router-link></li>
+        <li><router-link to="/DatLich"><i class="fa-regular fa-calendar-check"></i> Đặt Lịch</router-link></li>
+        <li><router-link to="/GioiThieu"><i class="fa-solid fa-circle-info"></i> Giới Thiệu</router-link></li>
+        <li><router-link to="/LienHe"><i class="fa-solid fa-envelope"></i> Liên Hệ</router-link></li>
       </ul>
 
-      <div class="user-icon">
-        <router-link to="/login" class="user-link">
-          <i class="fa-solid fa-circle-user"></i>
-          <span>Đăng nhập</span>
-        </router-link>
-        <router-link to="/lich-hen" class="calendar-link">
-          <i class="fa-regular fa-calendar-check"></i>
-          <span>Xem lịch</span>
-        </router-link>
+      <!-- 🔍 Thanh tìm kiếm dịch vụ -->
+      <div class="search-bar ms-4">
+        <form @submit.prevent="handleSearch">
+          <div class="input-group">
+            <input
+              v-model="searchQuery"
+              type="text"
+              class="form-control form-control-sm"
+              placeholder="Nhập từ khóa..."
+            />
+            <button type="submit" class="btn btn-warning btn-sm">
+              <i class="fa fa-search"></i>
+            </button>
+          </div>
+        </form>
       </div>
     </nav>
 
@@ -59,7 +73,6 @@
       <router-view />
     </main>
   </div>
-
   <!-- Floating Button -->
   <div class="floating-menu">
     <!-- Nút chính -->
@@ -110,146 +123,70 @@
     </div>
   </div>
 
-  <!-- Footer -->
-  <footer style="background-color: #005b4f" class="text-white pt-5 pb-4">
-    <div class="container">
-      <div class="row gy-4">
-        <!-- Cột 1: Logo & giới thiệu -->
-        <div class="col-md-3">
-          <img
-            src="/src/assets/img/logo.png"
-            alt="TutaSpa Logo"
-            class="mb-3"
-            width="120"
-          />
-          <p class="text-white-50">
-            <strong>Tuta Spa</strong> – Nơi tôn vinh vẻ đẹp tự nhiên. Dịch vụ
-            chăm sóc da chuyên nghiệp, hiện đại và tận tâm.
-          </p>
+  
+<!-- Footer -->
+<footer style="background-color: #006641;" class="text-white pt-5 pb-4">
+  <div class="container">
+    <div class="row gy-4">
+
+      <!-- Cột 1: Logo & giới thiệu -->
+      <div class="col-md-3">
+        <img src="/src/assets/img/logo.png" alt="TutaSpa Logo" class="mb-3" width="120" />
+        <p class="text-white-50">
+          <strong>Tuta Spa</strong> – Nơi tôn vinh vẻ đẹp tự nhiên. Dịch vụ chăm sóc da chuyên nghiệp, hiện đại và tận tâm.
+        </p>
+      </div>
+
+      <!-- Cột 2: Liên kết nhanh -->
+      <div class="col-md-3">
+        <h5 class="fw-semibold mb-3">Liên kết nhanh</h5>
+        <ul class="list-unstyled">
+          <li><router-link to="/" class="text-white-50 text-decoration-none d-block mb-2">Trang chủ</router-link></li>
+          <li><router-link to="/DichVu" class="text-white-50 text-decoration-none d-block mb-2">Dịch vụ</router-link></li>
+          <li><router-link to="/dat-lich" class="text-white-50 text-decoration-none d-block mb-2">Đặt lịch</router-link></li>
+          <li><router-link to="/GioiThieu" class="text-white-50 text-decoration-none d-block mb-2">Giới thiệu</router-link></li>
+          <li><router-link to="/LienHe" class="text-white-50 text-decoration-none d-block">Liên hệ</router-link></li>
+        </ul>
+      </div>
+
+      <!-- Cột 3: Liên hệ -->
+      <div class="col-md-3">
+        <h5 class="fw-semibold mb-3">Liên hệ</h5>
+        <p class="mb-2"><i class="fa-solid fa-location-dot me-2"></i>31 Nguyễn Mộng Tuân, Q. Liên Chiểu, Đà Nẵng</p>
+        <p class="mb-2"><i class="fa-solid fa-phone me-2"></i>0901 234 567</p>
+        <p class="mb-2"><i class="fa-solid fa-envelope me-2"></i>info@tutaspa.vn</p>
+        <p><i class="fa-solid fa-clock me-2"></i>Thứ 2 - CN: 8:00 - 20:00</p>
+      </div>
+
+      <!-- Cột 4: Mạng xã hội & thanh toán -->
+      <div class="col-md-3">
+        <h5 class="fw-semibold mb-3">Kết nối với chúng tôi</h5>
+        <div class="d-flex gap-3 mb-3">
+          <a href="https://facebook.com/tutaspa.vn" target="_blank" class="text-white fs-5"><i class="fa-brands fa-facebook"></i></a>
+          <a href="https://instagram.com/tutaspa" target="_blank" class="text-white fs-5"><i class="fa-brands fa-instagram"></i></a>
+          <a href="https://zalo.me/0901234567" target="_blank">
+            <img src="/src/assets/img/zalo.png" alt="Zalo" width="20" height="20" />
+          </a>
         </div>
 
-        <!-- Cột 2: Liên kết nhanh -->
-        <div class="col-md-3">
-          <h5 class="fw-semibold mb-3">Liên kết nhanh</h5>
-          <ul class="list-unstyled">
-            <li>
-              <router-link
-                to="/"
-                class="text-white-50 text-decoration-none d-block mb-2"
-                >Trang chủ</router-link
-              >
-            </li>
-            <li>
-              <router-link
-                to="/DichVu"
-                class="text-white-50 text-decoration-none d-block mb-2"
-                >Dịch vụ</router-link
-              >
-            </li>
-            <li>
-              <router-link
-                to="/dat-lich"
-                class="text-white-50 text-decoration-none d-block mb-2"
-                >Đặt lịch</router-link
-              >
-            </li>
-            <li>
-              <router-link
-                to="/GioiThieu"
-                class="text-white-50 text-decoration-none d-block mb-2"
-                >Giới thiệu</router-link
-              >
-            </li>
-            <li>
-              <router-link
-                to="/LienHe"
-                class="text-white-50 text-decoration-none d-block"
-                >Liên hệ</router-link
-              >
-            </li>
-          </ul>
-        </div>
-
-        <!-- Cột 3: Liên hệ -->
-        <div class="col-md-3">
-          <h5 class="fw-semibold mb-3">Liên hệ</h5>
-          <p class="mb-2">
-            <i class="fa-solid fa-location-dot me-2"></i>31 Nguyễn Mộng Tuân, Q.
-            Liên Chiểu, Đà Nẵng
-          </p>
-          <p class="mb-2"><i class="fa-solid fa-phone me-2"></i>0901 234 567</p>
-          <p class="mb-2">
-            <i class="fa-solid fa-envelope me-2"></i>info@tutaspa.vn
-          </p>
-          <p><i class="fa-solid fa-clock me-2"></i>Thứ 2 - CN: 8:00 - 20:00</p>
-        </div>
-
-        <!-- Cột 4: Mạng xã hội & thanh toán -->
-        <div class="col-md-3">
-          <h5 class="fw-semibold mb-3">Kết nối với chúng tôi</h5>
-          <div class="d-flex gap-3 mb-3">
-            <a
-              href="https://facebook.com/tutaspa.vn"
-              target="_blank"
-              class="text-white fs-5"
-              ><i class="fa-brands fa-facebook"></i
-            ></a>
-            <a
-              href="https://instagram.com/tutaspa"
-              target="_blank"
-              class="text-white fs-5"
-              ><i class="fa-brands fa-instagram"></i
-            ></a>
-            <a href="https://zalo.me/0901234567" target="_blank">
-              <img
-                src="/src/assets/img/zalo.png"
-                alt="Zalo"
-                width="20"
-                height="20"
-              />
-            </a>
-          </div>
-
-          <h6 class="fw-semibold mb-2">Hỗ trợ thanh toán</h6>
-          <div class="d-flex gap-2 align-items-center">
-            <img
-              src="/src/assets/img/Logo-Vietcombank.webp"
-              alt="VCB"
-              class="rounded"
-              width="50"
-              height="30"
-            />
-            <img
-              src="/src/assets/img/Logo_MB_new.png.webp"
-              alt="MBBank"
-              class="rounded"
-              width="50"
-              height="30"
-            />
-            <img
-              src="/src/assets/img/Techcombank_logo.png"
-              alt="Techcombank"
-              class="rounded"
-              width="50"
-              height="30"
-            />
-            <img
-              src="/src/assets/img/LOGO-VIB-Blue.png"
-              alt="VIB"
-              class="rounded"
-              width="50"
-              height="30"
-            />
-          </div>
+        <h6 class="fw-semibold mb-2">Hỗ trợ thanh toán</h6>
+        <div class="d-flex gap-2 align-items-center">
+          <img src="/src/assets/img/Logo-Vietcombank.webp" alt="VCB" class="rounded" width="50" height="30" />
+          <img src="/src/assets/img/Logo_MB_new.png.webp" alt="MBBank" class="rounded" width="50" height="30" />
+          <img src="/src/assets/img/Techcombank_logo.png" alt="Techcombank" class="rounded" width="50" height="30" />
+          <img src="/src/assets/img/LOGO-VIB-Blue.png" alt="VIB" class="rounded" width="50" height="30" />
         </div>
       </div>
 
-      <!-- Footer bottom -->
-      <div class="text-center text-white-50 border-top mt-4 pt-3 small">
-        &copy; 2025 Tuta Spa. Phát triển bởi đội ngũ yêu cái đẹp.
-      </div>
     </div>
-  </footer>
+
+    <!-- Footer bottom -->
+    <div class="text-center text-white-50 border-top mt-4 pt-3 small">
+      &copy; 2025 Tuta Spa. Phát triển bởi đội ngũ yêu cái đẹp.
+    </div>
+  </div>
+</footer>
+
 </template>
 
 <script setup>
@@ -272,6 +209,15 @@ onMounted(() => {
 });
 const isMenuVisible = ref(false);
 
+const searchQuery = ref("");
+
+function handleSearch() {
+  if (searchQuery.value.trim()) {
+    window.location.href = `/DichVu?search=${encodeURIComponent(searchQuery.value)}`;
+  }
+}
+
+
 function toggleMenu() {
   isMenuVisible.value = !isMenuVisible.value;
 }
@@ -284,10 +230,23 @@ body {
   background: #fff;
 }
 
+
+.search-bar {
+  flex: 1;
+  max-width: 280px;
+}
+.search-bar .form-control {
+  border-radius: 8px 0 0 8px;
+}
+.search-bar .btn {
+  border-radius: 0 8px 8px 0;
+}
+
+
 /* Navbar */
 .navbar {
-  background-color: white;
-  color: #f7c213;
+  background-color:#57e6ad;
+  color: #8c7851;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -311,10 +270,11 @@ body {
 }
 .nav-links li a {
   position: relative;
-  color: #005b4f; /* Màu mặc định */
+  color: white; /* Màu mặc định */
   text-decoration: none;
   transition: color 0.3s;
   font-size: 21px;
+  font-weight: bold; 
 }
 
 /* Gạch dưới ẩn ban đầu */
@@ -325,13 +285,13 @@ body {
   left: 0;
   width: 0%;
   height: 2px;
-  background-color: #8e0d3c; /* Màu gạch dưới */
+  background-color: #ffd700; /* Màu gạch dưới */
   transition: width 0.3s ease;
 }
 
 /* Khi hover: đổi màu và hiện gạch dưới */
 .nav-links li a:hover {
-  color: #d4af37;
+  color: #ffd700;
 }
 
 .nav-links li a:hover::after {
@@ -343,7 +303,7 @@ body {
 }
 .user-icon i {
   font-size: 24px;
-  color: #005b4f; /* màu mận đỏ như ảnh */
+  color: #ffffff; 
   margin-left: 10px;
   cursor: pointer;
   transition: transform 0.3s ease;
@@ -419,7 +379,7 @@ body {
 
 .btn-submit:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(42, 82, 152, 0.6);
+  box-shadow: 0 6px 16px #8c7851;
 }
 
 @media (max-width: 576px) {
@@ -461,7 +421,7 @@ body {
     flex-direction: column;
   }
   .form-control-custom {
-    border-radius: 8px 8px 0 0;
+  border-radius: 8px 8px 0 0;
   }
   .btn-custom {
     border-radius: 0 0 8px 8px;
@@ -649,7 +609,7 @@ body {
   }
 
   .footer-section h3 {
-    border: none;
+  border: none;
   }
 }
 .bg-dark-red {
@@ -680,4 +640,30 @@ body {
 .calendar-link:hover {
   color: #007bff;
 }
+/* header */
+
+.header-top {
+  background-color: #fefefe;
+  border-bottom: 1px solid #ddd;
+  font-size: 16px;
+  padding: 10px 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.header-top .brand-name {
+  font-weight: 600;
+  font-size: 20px;
+  color: #4e342e;
+}
+
+.hotline-box {
+  background-color: #f7941d;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 16px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
 </style>

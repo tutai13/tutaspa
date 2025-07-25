@@ -24,5 +24,7 @@ namespace API.Models
 
         [ForeignKey("DichVuID")]
         public DichVu? DichVu { get; set; }
+        public bool IsVisible { get; set; } = true;
+
     }
 }
