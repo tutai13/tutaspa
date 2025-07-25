@@ -1,179 +1,202 @@
 <template>
-  <div class="container my-5">
-    <h2 class="text-primary-green fw-bold mb-5 text-center display-6">Dịch Vụ Spa Cao Cấp</h2>
-    <div class="row gx-5">
-      <!-- Bộ lọc cố định bên trái -->
-      <aside class="col-lg-3 mb-4">
-        <div class="sticky-filter p-4 rounded-4 shadow bg-white border">
-          <h5 class="fw-bold text-primary-green mb-3">🔍 Tìm kiếm</h5>
-          <input
-            v-model="searchQuery"
-            type="text"
-            class="form-control rounded-pill mb-4"
-            placeholder="Nhập tên dịch vụ..."
-          />
+  <section class="py-5 bg-light min-vh-100">
+    <div class="container">
+      <div class="text-center mb-5">
+        <h2 class="fw-bold text-title text-uppercase mb-3">Dịch vụ tại TuTa Spa</h2>
+        <p class="text-muted fs-5">Khám phá dịch vụ đa dạng và thư giãn tại không gian đẳng cấp của chúng tôi</p>
+      </div>
 
-          <h6 class="fw-semibold text-primary-green mb-3">📂 Lọc theo loại</h6>
-          <div class="d-flex flex-column gap-2">
-            <button
-              class="btn btn-sm fw-semibold"
-              :class="selectedType === null ? 'btn-primary-green' : 'btn-outline-primary-green'"
-              @click="selectedType = null"
-            >
-              Tất cả
-            </button>
-            <button
-              v-for="type in serviceTypes"
-              :key="type.loaiDichVuID"
-              class="btn btn-sm fw-semibold text-start"
-              :class="selectedType === type.loaiDichVuID ? 'btn-primary-green' : 'btn-outline-primary-green'"
-              @click="selectedType = type.loaiDichVuID"
-            >
-              {{ type.tenLoai }}
-            </button>
+      <!-- Ưu đãi nổi bật -->
+      <!-- <div class="alert alert-success text-center rounded-4 fw-bold shadow-sm mb-5">
+        🎁 Giảm 30% dịch vụ massage toàn thân – Chỉ hôm nay!
+      </div> -->
+
+      <div class="row g-4">
+        <!-- Bộ lọc bên trái -->
+        <div class="col-lg-3">
+          <div class="position-sticky sticky-top shadow-sm p-4 rounded-4 bg-white" style="top: 100px">
+            <h5 class="fw-semibold text-green mb-3">Bộ lọc dịch vụ</h5>
+            <input v-model="searchKeyword" type="text" class="form-control rounded-pill px-4 mb-3" placeholder="Tìm kiếm dịch vụ...">
+
+            <div class="mb-3">
+              <h6 class="fw-bold mb-2 text-dark">Loại dịch vụ</h6>
+              <button @click="selectedTypeID = null" :class="['btn w-100 mb-2 rounded-pill fw-semibold', selectedTypeID === null ? 'btn-green text-white' : 'btn-outline-secondary']">
+                <i class="fa-solid fa-layer-group me-2"></i>Tất cả
+              </button>
+              <button v-for="type in serviceTypes" :key="type.loaiDichVuID" @click="selectedTypeID = type.loaiDichVuID" :class="['btn w-100 mb-2 rounded-pill fw-semibold', selectedTypeID === type.loaiDichVuID ? 'btn-green text-white' : 'btn-outline-secondary']">
+                <i class="fa-solid fa-leaf me-2 text-success"></i>{{ type.tenLoai }}
+              </button>
+            </div>
+
+            <div>
+              <h6 class="fw-bold mb-2 text-dark">Khoảng giá</h6>
+              <input type="range" v-model="priceRange" min="0" max="2000000" step="50000" class="form-range">
+              <div class="small text-muted">Tối đa: {{ priceRange.toLocaleString('vi-VN') }}đ</div>
+            </div>
           </div>
         </div>
-      </aside>
 
-      <!-- Danh sách dịch vụ bên phải -->
-      <section class="col-lg-9">
-        <div
-          v-for="type in filteredTypes"
-          :key="type.loaiDichVuID"
-          class="mb-5"
-        >
-          <h3 class="text-primary-green fw-bold border-start border-5 ps-3 mb-4 fs-4">
-            {{ type.tenLoai }}
-          </h3>
-          <div class="row g-4">
-            <div
-              class="col-md-6 col-lg-4"
-              v-for="service in filteredServicesByType(type.loaiDichVuID)"
-              :key="service.id"
-            >
-              <div class="card h-100 shadow-sm border-0 rounded-4 hover-shadow overflow-hidden">
-                <router-link
-                  :to="`/dichvu/${service.id}`"
-                  class="d-block"
-                >
-                  <img
-                    :src="'http://localhost:5055' + service.image"
-                    class="card-img-top service-img rounded-top-4"
-                    :alt="service.name"
-                  />
-                </router-link>
-                <div class="card-body">
-                  <h5 class="card-title fw-bold text-primary-green">{{ service.name }}</h5>
-                  <p class="card-text text-muted small">{{ service.description }}</p>
-                </div>
-                <div class="card-footer bg-white border-0 text-center">
-                  <router-link
-                    :to="`/dichvu/${service.id}`"
-                    class="btn btn-outline-primary-green rounded-pill px-4"
-                  >
-                    Xem chi tiết &raquo;
-                  </router-link>
+        <!-- Danh sách dịch vụ -->
+        <div class="col-lg-9">
+          <transition-group name="fade" tag="div" class="row g-4">
+            <div class="col-md-6 col-lg-4" v-for="service in filteredServices" :key="service.id">
+              <div class="card service-card shadow-sm rounded-4 overflow-hidden bg-white">
+                <div class="position-relative">
+                  <img :src="'http://localhost:5055/images/' + service.image" class="w-100 service-img rounded-top" style="height: 240px; object-fit: cover;" />
+                  <h5 class="pre-hover-title text-dark fw-bold position-absolute bottom-0 start-0 p-3 m-0 w-100 text-center bg-light bg-opacity-75">
+                    {{ service.name }}
+                  </h5>
+                  <div class="hover-overlay" @mouseenter="loadPricesForService(service.id)">
+                    <h5 class="hover-title fw-bold text-dark mb-2">{{ service.name }}</h5>
+                    <span class="badge bg-danger mb-2">KHUYẾN MÃI LÊN ĐẾN 25%</span>
+                    <!--  -->
+                    <div v-if="servicePrices[service.id]" class="text-dark small mb-3">
+                      <div v-for="gia in servicePrices[service.id]" :key="gia.thoiLuong">
+                        {{ gia.thoiLuong }}’: {{ gia.gia.toLocaleString('vi-VN') }}đ
+                      </div>
+                    </div>
+                    <router-link :to="`/DichVuChiTiet/${service.id}`" class="btn btn-outline-success rounded-pill">Xem chi tiết</router-link>
+                  </div>
                 </div>
               </div>
             </div>
-            <div
-              v-if="filteredServicesByType(type.loaiDichVuID).length === 0"
-              class="text-muted fst-italic text-center"
-            >
-              Không có dịch vụ phù hợp.
-            </div>
+          </transition-group>
+          <div v-if="filteredServices.length === 0" class="text-center py-5">
+            <p class="text-muted">Không tìm thấy dịch vụ phù hợp</p>
           </div>
         </div>
-      </section>
+      </div>
     </div>
-  </div>
+  </section>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 
 const services = ref([]);
 const serviceTypes = ref([]);
-const searchQuery = ref('');
-const selectedType = ref(null);
+const selectedTypeID = ref(null);
+const searchKeyword = ref('');
+const priceRange = ref(2000000);
+const servicePrices = ref({});
 
 onMounted(async () => {
   try {
-    const [dichVuRes, loaiDichVuRes] = await Promise.all([
+    const [dvRes, ldvRes] = await Promise.all([
       axios.get('http://localhost:5055/api/DichVu'),
-      axios.get('http://localhost:5055/api/LoaiDichVu'),
+      axios.get('http://localhost:5055/api/LoaiDichVu')
     ]);
-
-    services.value = dichVuRes.data.map((item) => ({
-      id: item.dichVuID,
-      name: item.tenDichVu,
-      description: item.moTa,
-      image: item.hinhAnh || '/images/default-service.jpg',
-      loaiDichVuID: item.loaiDichVuID,
+    services.value = dvRes.data.map(s => ({
+      id: s.dichVuID,
+      name: s.tenDichVu,
+      description: s.moTa,
+      image: s.hinhAnh || "default-service.jpg",
+      loaiDichVuID: s.loaiDichVuID
     }));
-
-    serviceTypes.value = loaiDichVuRes.data;
-  } catch (error) {
-    console.error('Lỗi khi lấy dữ liệu:', error);
+    serviceTypes.value = ldvRes.data;
+  } catch (err) {
+    console.error('Lỗi tải dữ liệu:', err);
   }
 });
 
-const filteredTypes = computed(() => {
-  return serviceTypes.value.filter(
-    (type) => filteredServicesByType(type.loaiDichVuID).length > 0
-  );
+const filteredServices = computed(() => {
+  return services.value.filter(s => {
+    const matchType = !selectedTypeID.value || s.loaiDichVuID === selectedTypeID.value;
+    const matchKeyword = s.name.toLowerCase().includes(searchKeyword.value.toLowerCase());
+    const priceList = servicePrices.value[s.id] || [];
+    const matchPrice = priceList.some(p => p.gia <= priceRange.value) || priceList.length === 0;
+    return matchType && matchKeyword && matchPrice;
+  });
 });
 
-const filteredServicesByType = (typeId) => {
-  return services.value.filter((s) => {
-    const matchType =
-      (selectedType.value === null || s.loaiDichVuID === selectedType.value) &&
-      s.loaiDichVuID === typeId;
-
-    const matchSearch = s.name.toLowerCase().includes(searchQuery.value.toLowerCase());
-
-    return matchType && matchSearch;
-  });
-};
+async function loadPricesForService(serviceId) {
+  if (!servicePrices.value[serviceId]) {
+    try {
+      const res = await axios.get(`http://localhost:5055/api/BangGiaDichVu/GetGiaTheoThoiGian/${serviceId}`);
+      servicePrices.value[serviceId] = res.data;
+    } catch (err) {
+      console.error('Lỗi tải giá:', err);
+      servicePrices.value[serviceId] = [];
+    }
+  }
+}
 </script>
 
 <style scoped>
-.text-primary-green {
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&display=swap');
+
+.text-title {
+  color: #2f3e46;
+  font-family: 'Playfair Display', serif;
+}
+.text-muted {
+  color: #6c757d;
+}
+.text-green {
   color: #007E5A;
 }
-.btn-primary-green {
+.bg-light {
+  background-color: #f8f9fa !important;
+}
+.bg-card {
+  background-color: #ffffff;
+}
+
+.btn-green {
   background-color: #007E5A;
   color: white;
-  border: none;
 }
-.btn-outline-primary-green {
-  border: 2px solid #007E5A;
-  color: #007E5A;
-  background-color: white;
+.btn-green:hover {
+  background-color: #099c6a;
 }
-.btn-outline-primary-green:hover {
-  background-color: #007E5A;
-  color: white;
+
+.service-card {
+  transition: transform 0.3s;
+  font-family: 'Playfair Display', serif;
+}
+.service-card:hover {
+  transform: translateY(-5px);
 }
 .service-img {
-  height: 220px;
-  object-fit: cover;
   transition: transform 0.3s ease;
 }
-.service-img:hover {
+.service-card:hover .service-img {
   transform: scale(1.05);
 }
-.hover-shadow {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+.hover-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(248, 240, 226, 0.92);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+  transition: opacity 0.3s ease;
+  opacity: 0;
+  z-index: 10;
 }
-.hover-shadow:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+.service-card:hover .hover-overlay {
+  opacity: 1;
 }
-.sticky-filter {
-  position: sticky;
-  top: 90px;
-  z-index: 100;
+.service-card:hover .pre-hover-title {
+  opacity: 0;
+}
+.hover-title {
+  font-size: 1.25rem;
+  transition: opacity 0.3s ease;
+  font-family: 'Playfair Display', serif;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
 }
 </style>
