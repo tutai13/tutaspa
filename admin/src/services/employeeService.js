@@ -34,27 +34,97 @@ apiClient.interceptors.request.use(
   }
 )
 
+
+// ✅ Biến để theo dõi refresh token đang được thực hiện
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  
+  failedQueue = [];
+};
+
 // Interceptor để xử lý response và error
 apiClient.interceptors.response.use(
   (response) => {
     return response
   },
-  async (error) => {
-    // Xử lý các lỗi phổ biến
+ async (error) => {
+    const originalRequest = error.config;
+
     if (error.response) {
       const { status, data } = error.response
       
       switch (status) {
         case 401:
-          if(await authAPI.refreshToken()){
-            return apiClient.request(error.config)
-          }
-          else{
-            router.push('/login?return_url=employees')
+          // ✅ Kiểm tra nếu đã thử refresh token rồi
+          if (originalRequest._retry) {
+            // Đã thử refresh nhưng vẫn 401 -> logout
             localStorage.removeItem('accessToken')
-            sessionStorage.removeItem('accessToken')
+            localStorage.removeItem('user-info')
+            router.push('/login?return_url=' + router.currentRoute.value.fullPath)
+            return Promise.reject(error);
           }
-          break
+
+          // ✅ Kiểm tra nếu request này là refresh-token
+          if (originalRequest.url.includes('/auth/refresh-token')) {
+            // Refresh token cũng bị 401 -> logout
+            localStorage.removeItem('accessToken')
+            localStorage.removeItem('user-info')
+            router.push('/login?return_url=' + router.currentRoute.value.fullPath)
+            return Promise.reject(error);
+          }
+
+          originalRequest._retry = true;
+
+          if (isRefreshing) {
+            // ✅ Nếu đang refresh, đợi kết quả
+            return new Promise((resolve, reject) => {
+              failedQueue.push({ resolve, reject });
+            }).then(token => {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+              return apiClient(originalRequest);
+            }).catch(err => {
+              return Promise.reject(err);
+            });
+          }
+
+          isRefreshing = true;
+
+          try {
+            // ✅ Gọi refresh token API
+            const response = await authAPI.refreshToken();
+            
+            if (response.accessToken) {
+              localStorage.setItem('accessToken', response.accessToken);
+              
+              // ✅ Cập nhật header cho request gốc
+              originalRequest.headers.Authorization = `Bearer ${response.accessToken}`;
+              
+              // ✅ Xử lý các request đang chờ
+              processQueue(null, response.accessToken);
+              
+              // ✅ Retry request gốc
+              return apiClient(originalRequest);
+            }
+          } catch (refreshError) {
+            // ✅ Refresh token thất bại -> logout
+            processQueue(refreshError, null);
+            localStorage.removeItem('accessToken')
+            localStorage.removeItem('user-info')
+            router.push('/login?return_url=' + router.currentRoute.value.fullPath)
+            return Promise.reject(refreshError);
+          } finally {
+            isRefreshing = false;
+          }
+          break;
         case 403:
           console.error('Unauthorized access - redirecting to login')
           router.push('/login?return_url=employees')

@@ -13,7 +13,6 @@ import LoaiSanPham from "../components/LoaiSanPham.vue";
 import SanPham from "../components/sanpham.vue";
 import DanhGiaKhachHang from "../components/DanhGiaKhachHang.vue";
 import Banggiadichvu from "../components/Banggiadichvu.vue";
-import ThongKe from "../components/ThongKe.vue";
 const routes = [
   { path: "/", name: "Dashboard", component: Dashboard },
   { path: "/khuyenMai", name: "khuyenMai", component: khuyenMai },
@@ -32,7 +31,6 @@ const routes = [
     component: DanhGiaKhachHang,
   },
   { path: "/Banggiadichvu", name: "Banggiadichvu", component: Banggiadichvu },
-  { path: "/ThongKe", name: "ThongKe", component: ThongKe },
   {
     path: "/login",
     name: "login",

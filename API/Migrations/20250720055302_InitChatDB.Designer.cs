@@ -4,6 +4,7 @@ using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20250720055302_InitChatDB")]
+    partial class InitChatDB
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -36,9 +39,6 @@ namespace API.Migrations
                     b.Property<decimal>("Gia")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<bool>("IsVisible")
-                        .HasColumnType("bit");
 
                     b.Property<int>("KieuTinhGia")
                         .HasColumnType("int");
@@ -230,44 +230,6 @@ namespace API.Migrations
                     b.HasIndex("SanPhamID");
 
                     b.ToTable("chiTietHoaDons");
-                });
-
-            modelBuilder.Entity("API.Models.DatLich", b =>
-                {
-                    b.Property<int>("DatLichID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DatLichID"));
-
-                    b.Property<bool>("DaThanhToan")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("DichVuID")
-                        .HasColumnType("int");
-
-                    b.Property<string>("GhiChu")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SoDienThoai")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("ThoiGian")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("ThoiLuong")
-                        .HasColumnType("int");
-
-                    b.Property<string>("TrangThai")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("DatLichID");
-
-                    b.HasIndex("DichVuID");
-
-                    b.ToTable("datLiches");
                 });
 
             modelBuilder.Entity("API.Models.DichVu", b =>
@@ -818,15 +780,6 @@ namespace API.Migrations
                     b.Navigation("HoaDon");
 
                     b.Navigation("SanPham");
-                });
-
-            modelBuilder.Entity("API.Models.DatLich", b =>
-                {
-                    b.HasOne("API.Models.DichVu", "DichVu")
-                        .WithMany()
-                        .HasForeignKey("DichVuID");
-
-                    b.Navigation("DichVu");
                 });
 
             modelBuilder.Entity("API.Models.DichVu", b =>

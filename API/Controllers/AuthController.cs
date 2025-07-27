@@ -40,22 +40,20 @@ namespace API.Controllers
 
             if (!result.FirstLogin)
             {
-                Console.WriteLine("Alooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo");
-                Console.WriteLine("Here");
                 var refreshToken = result.Token.RefreshToken;
                 var cookieOptions = new CookieOptions
                 {
                     HttpOnly = true,
                     Secure = true,
-                    SameSite = SameSiteMode.Strict,
+                    SameSite = SameSiteMode.None,
                     Expires = DateTime.UtcNow.AddDays(7),
-                    Path = "/api/auth"
+                    Path = "/"
                 };
 
                 Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
             }
 
-            return Ok(new { FisrtLogin = result.FirstLogin, Role = result.Role, AccessToken = result.Token.Accesstoken });
+            return Ok(new {  UserInfo = result.User, AccessToken = result.Token.Accesstoken });
         }
 
         [HttpPost("refresh-token")]
@@ -80,9 +78,9 @@ namespace API.Controllers
                 {
                     HttpOnly = true,
                     Secure = true,
-                    SameSite = SameSiteMode.Strict,
+                    SameSite = SameSiteMode.None,
                     Expires = DateTime.UtcNow.AddDays(7),
-                    Path = "/api/auth"
+                    Path = "/"
                 });
 
                 return Ok(new { AccessToken = result.Token.Accesstoken });
@@ -101,15 +99,15 @@ namespace API.Controllers
         {
             try
             {
-                var refreshToken = Request.Cookies["refreshtoken"];
+                var refreshToken = Request.Cookies["refreshToken"];
                 if (string.IsNullOrEmpty(refreshToken))
                 {
-                    return BadRequest(new { Message = "Yêu câu không hợp lệ" });
+                    return BadRequest(new { Message = "Yêu cầu không hợp lệ" });
                 }
 
                 await _authService.Logout(refreshToken);
-                Response.Cookies.Delete("refreshtoken");
-
+                Response.Cookies.Delete("refreshToken");
+                _logger.LogInformation("Logout thành công ");
                 return Ok();
             }
             catch (Exception ex)
@@ -139,6 +137,62 @@ namespace API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+
+        [HttpPost("forgot-password-otp/send/{Email}")]
+        public async Task<IActionResult> ForgotPasswordOTP([FromRoute] string Email)
+        {
+
+            try
+            {
+                await _authService.SendForgetPasswordOTP(Email);
+                return Ok(); 
+
+            }
+
+            catch (Exception ex)
+            {
+                _logger.LogError($"Lỗi khi gửi OTP: {ex.Message}");
+                return BadRequest(new { message = "Lỗi khi gửi OTP: " + ex.Message });
+            }
+        }
+
+
+        [HttpPost("forgot-password-otp/verifi")]
+        public async Task<IActionResult> VerifiForgotPasswordOTP([FromBody] VerifiOtp verifi )
+        {
+            try
+            {
+                 var token =  await _authService.VerifiOtp(verifi.Email,verifi.Otp);
+                return Ok(new {token = token});
+
+            }
+
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "Xác thực thất bại :" + ex.InnerException?.Message });
+            }
+        }
+
+
+        [HttpPost("set-new-pass")]
+        [Authorize(AuthenticationSchemes = "Bearer", Policy = "ChangePasswordOnly")]
+        public async Task<IActionResult> SetPass([FromBody] ForgetPassDTO request)
+        {
+            try
+            {
+                request.UserId = User.GetUserId();
+                await _authService.ResetPassword(request);
+
+                return Ok(); 
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "Đặt lại mật khẩu thất bại ,  vui lòng thử lại sau" });
+            }
+        }
+
+
 
 
 

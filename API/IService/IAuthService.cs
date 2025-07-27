@@ -1,6 +1,7 @@
 ﻿
 using API.DTOs.Response;
 using API.DTOs.Auth;
+using Microsoft.AspNetCore.Identity.Data;
 
 namespace API.IService
 {
@@ -13,6 +14,12 @@ namespace API.IService
         public Task<AuthResponse> Resgister(RegisterDTO request);
 
         public Task<AuthResponse> RefreshToken(string refreshToken);
+
+        public Task ResetPassword(ForgetPassDTO reset); 
+
+        public Task SendForgetPasswordOTP(string email);
+
+        public Task<string> VerifiOtp(string email, string otp);
 
         public Task add(string email, string pass); 
 
