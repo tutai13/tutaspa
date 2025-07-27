@@ -13,6 +13,7 @@
             <th>Hình thức</th>
             <th>Trạng thái</th>
             <th>Dịch vụ</th>
+            <th>Tải hóa đơn</th>
           </tr>
         </thead>
         <tbody>
@@ -38,6 +39,14 @@
                   {{ ct.thanhTien?.toLocaleString() }}₫
                 </li>
               </ul>
+            </td>
+            <td>
+              <button
+                class="btn btn-sm btn-outline-primary"
+                @click="taiHoaDon(hd.hoaDonID)"
+              >
+                ⬇️ Tải
+              </button>
             </td>
           </tr>
           <tr v-if="danhSachHoaDon.length === 0">
@@ -72,6 +81,25 @@ const formatDateTime = (dateStr) => {
     hour: "2-digit",
     minute: "2-digit",
   })} - ${date.toLocaleDateString("vi-VN")}`;
+};
+const taiHoaDon = async (hoaDonID) => {
+  try {
+    const response = await axios.get(
+      `https://localhost:7183/api/ThanhToan/xuat-hoadon/${hoaDonID}`,
+      { responseType: "blob" } // để nhận file PDF
+    );
+
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `HoaDon_${hoaDonID}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  } catch (error) {
+    console.error("Lỗi khi tải hóa đơn:", error);
+    alert("Không thể tải hóa đơn.");
+  }
 };
 
 onMounted(() => {
