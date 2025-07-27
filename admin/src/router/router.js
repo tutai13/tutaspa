@@ -13,6 +13,9 @@ import LoaiSanPham from '../components/LoaiSanPham.vue';
 import SanPham from '../components/sanpham.vue';
 import DanhGiaKhachHang from '../components/DanhGiaKhachHang.vue';
 import Banggiadichvu from '../components/Banggiadichvu.vue';
+import Chat from "../components/chat.vue"
+import ChangePassword from "../components/ChangePassword.vue";
+import ForgotPassword from "../components/ForgotPassword.vue";
 const routes = [
   { path: "/", name: "Dashboard", component: Dashboard },
   { path: "/khuyenMai", name: "khuyenMai", component: khuyenMai },
@@ -27,12 +30,20 @@ const routes = [
 { path: "/Products", name: "sanpham", component: SanPham },
 { path: "/DanhGiaKhachHang", name: "DanhGiaKhachHang", component: DanhGiaKhachHang },
 { path: "/Banggiadichvu", name: "Banggiadichvu", component: Banggiadichvu },
+  {path: "/Chat", name: "Chat", component: Chat, meta: { requiresAuth: true } },
   {
     path: "/login", name: "login", component: login, meta: {
       layout: false, // Không sử dụng layout chung
       requiresAuth: false
     }
+  },{
+    path : "/ChangePassword", name: "ChangePassword", component: ChangePassword, meta: {
+      requiresAuth: true
+    }
   },
+  {
+    path : "/forget-password", name: "ForgotPassword", component: ForgotPassword
+  }
 
 ];
 const router = createRouter({

@@ -61,55 +61,93 @@
   </div>
 
   <!-- Floating Button -->
-  <div class="floating-menu">
-    <!-- Nút chính -->
-    <button class="main-btn" @click="toggleMenu">
-      <i class="fa-solid fa-phone"></i>
+   <div class="chat-popup-wrapper">
+    <!-- Chat Toggle Button -->
+    <button 
+      v-if="!chatOpen" 
+      @click="toggleChat" 
+      class="chat-toggle-btn"
+      title="Hỗ trợ trực tuyến"
+    >
+      <i class="fas fa-comments"></i>
+      <span v-if="hasUnreadMessages" class="notification-badge">{{ unreadCount }}</span>
     </button>
 
-    <!-- Menu các chức năng -->
-    <div
-      class="menu-items"
-      :class="{ 'show-menu': isMenuVisible }"
-      id="menuItems"
-    >
-      <div class="menu-item">
-        <a href="https://zalo.me" target="_blank">
-          <i class="fa-brands fa-zalo"></i>
-          <span>Chat trên Zalo</span>
-        </a>
+    <!-- Chat Window -->
+    <div v-if="chatOpen" class="chat-window">
+      <div class="chat-header">
+        <h3>Hỗ trợ khách hàng</h3>
+        <p>Chúng tôi luôn sẵn sàng hỗ trợ bạn</p>
+        <div :class="['status-indicator', isConnected ? 'connected' : '']"></div>
+        <button @click="toggleChat" class="close-btn">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
-      <div class="menu-item">
-        <a href="https://m.me/" target="_blank">
-          <i class="fa-brands fa-facebook-messenger"></i>
-          <span>Chat trên Facebook</span>
-        </a>
+
+      <!-- Welcome Screen -->
+      <div v-if="!chatStarted" class="welcome-screen">
+        <h4>Chào mừng bạn!</h4>
+        <p>Vui lòng nhập tên của bạn để bắt đầu trò chuyện</p>
+        <input 
+          v-model="guestName" 
+          type="text" 
+          placeholder="Tên của bạn (tùy chọn)" 
+          maxlength="50"
+          @keypress="handleWelcomeKeyPress"
+        >
+        <button @click="startChat" class="start-chat-btn">Bắt đầu chat</button>
       </div>
-      <div class="menu-item">
-        <a href="tel:0123456789">
-          <i class="fa-solid fa-phone"></i>
-          <span>Gọi hotline</span>
-        </a>
+
+      <!-- Chat Messages -->
+      <div v-if="chatStarted" class="chat-messages" ref="chatMessages">
+        <div 
+          v-for="message in messages" 
+          :key="message.id"
+          :class="[
+            'message', 
+            message.isFromAdmin ? 'support' : '', 
+            message.isInlineNotice ? 'inline-notice' : '', 
+            message.isFromAdmin === false && !message.isSystem && !message.isInlineNotice ? 'user' : ''
+          ]"
+        >
+          <div v-if="message.isInlineNotice" class="inline-system-notice">
+            {{ message.message }}
+          </div>
+          <div v-else class="message-bubble">
+            {{ message.message }}
+            <div class="message-time">{{ formatTime(message.timestamp) }}</div>
+          </div>
+        </div>
       </div>
-      <div class="menu-item">
-        <a href="#">
-          <i class="fa-regular fa-star"></i>
-          <span>Đánh giá dịch vụ</span>
-        </a>
+
+      <!-- Chat Input - chỉ hiện khi chat đang hoạt động và admin chưa disconnect -->
+      <div v-if="chatStarted && !adminDisconnected" class="chat-input">
+        <div class="input-group">
+          <input 
+            v-model="currentMessage" 
+            type="text" 
+            class="message-input" 
+            placeholder="Nhập tin nhắn..." 
+            maxlength="500"
+            @keypress="handleMessageKeyPress"
+          >
+          <button @click="sendMessage" class="send-btn" :disabled="!currentMessage.trim()">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
       </div>
-      <div class="menu-item">
-        <a href="#">
-          <i class="fa-solid fa-house"></i>
-          <span>Liên hệ nhượng quyền</span>
-        </a>
+
+      <!-- Nút bắt đầu phiên mới khi admin disconnect -->
+      <div v-if="chatStarted && adminDisconnected" class="new-session-section">
+        <div class="disconnect-notice">
+          <p>Nhân viên hỗ trợ đã kết thúc phiên làm việc</p>
+          <button @click="startNewSession" class="start-new-session-btn">
+            Bắt đầu phiên hỗ trợ mới
+          </button>
+        </div>
       </div>
-      <!-- Nút đóng -->
-      <button class="close-btn" @click="toggleMenu">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
     </div>
   </div>
-
   
 <!-- Footer -->
 <footer style="background-color: #005B4F;" class="text-white pt-5 pb-4">
@@ -177,7 +215,25 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, onUnmounted,ref,nextTick } from "vue";
+import * as signalR from '@microsoft/signalr';
+
+const chatClosed = ref(false);
+const adminDisconnected = ref(false); // Thêm biến theo dõi trạng thái admin disconnect
+const base_url = import.meta.env.VITE_CHAT_URL ;
+const chatOpen = ref(false);
+const chatStarted = ref(false);
+const isConnected = ref(false);
+const guestName = ref('');
+const currentMessage = ref('');
+const messages = ref([]);
+const hasUnreadMessages = ref(false);
+const unreadCount = ref(0);
+const sessionId = ref(null);
+const userName = ref(null);
+const connection = ref(null);
+const chatMessages = ref(null);
+const assignedAdmin = ref({ id: null, name: null });
 
 const isNavbarHidden = ref(false);
 let lastScroll = 0;
@@ -193,12 +249,323 @@ onMounted(() => {
     }
     lastScroll = currentScroll;
   });
+    initializeChat();
 });
+
+
+// Enhanced cleanup function
+onUnmounted(async () => {
+  try {
+    if (connection.value && connection.value.state === signalR.HubConnectionState.Connected) {
+      await connection.value.stop();
+    }
+  } catch (error) {
+    console.error("Lỗi khi đóng kết nối:", error);
+  }
+});
+
+
 const isMenuVisible = ref(false);
 
 function toggleMenu() {
   isMenuVisible.value = !isMenuVisible.value;
 }
+
+
+// Chat functions
+function initializeChat() {
+  try {
+    // Only create connection if it doesn't exist or is disconnected
+    if (!connection.value || connection.value.state === signalR.HubConnectionState.Disconnected) {
+      connection.value = new signalR.HubConnectionBuilder()
+        .withUrl(`${base_url}`)
+        .withAutomaticReconnect()
+        .build();
+
+      setupChatEventHandlers();
+    }
+  } catch (error) {
+    console.error("Lỗi khởi tạo kết nối:", error);
+    isConnected.value = false;
+    addSystemMessage("Không thể khởi tạo kết nối với server. Vui lòng thử lại.", 'error');
+  }
+}
+
+
+function setupChatEventHandlers() {
+  connection.value.onreconnected(() => {
+    isConnected.value = true;
+    addSystemMessage("Đã kết nối lại với server");
+  });
+
+  connection.value.onclose(() => {
+    isConnected.value = false;
+    addSystemMessage("Mất kết nối với server");
+  });
+
+
+  connection.value.on("AdminAssigned", (data) => {
+  console.log("Admin assigned:", data);
+  // Lưu admin vào biến để hiện ở header
+  assignedAdmin.value = { id: data.AdminId, name: data.AdminName };
+  // Reset trạng thái admin disconnect khi có admin mới
+  adminDisconnected.value = false;
+  // Hiện thông báo inline
+  addInlineSystemNotice(data.message);
+  //addMessage(data.chatMessage);
+});
+
+  connection.value.on("ChatSessionCreated", (data) => {
+    console.log("Chat session created:", data);
+    sessionId.value = data.sessionId;
+    userName.value = data.userName;
+    chatStarted.value = true;
+    // Reset trạng thái khi tạo session mới
+    adminDisconnected.value = false;
+    chatClosed.value = false;
+    addSystemMessage1(data.message);
+  });
+
+  connection.value.on("ReceiveMessage", (message) => {
+    addMessage(message);
+    if (!chatOpen.value) {
+      hasUnreadMessages.value = true;
+      unreadCount.value++;
+    }
+  });
+
+  connection.value.on("ChatClosed", (msg) => {
+    chatStarted.value = false;  
+    // Ẩn phần nhập tin nhắn
+    chatClosed.value = true;
+    adminDisconnected.value = false; // Reset trạng thái admin disconnect
+    // Hiện lại màn hình bắt đầu chat
+    addInlineSystemNotice(typeof msg === 'string' ? msg : (msg?.message || "Phiên chat đã kết thúc. Vui lòng bắt đầu cuộc trò chuyện mới."));
+  });
+
+  connection.value.on("MessageSent", (message) => {
+    console.log("Message sent successfully:", message.messageId);
+  });
+
+  connection.value.on("Error", (error) => {
+    addSystemMessage(`Lỗi: ${error}`, 'error');
+  });
+
+  // Sửa lại logic xử lý AdminDisconnected
+  connection.value.on("AdminDisconnected", (data) => {
+    // Đánh dấu admin đã disconnect nhưng giữ chatStarted = true
+    adminDisconnected.value = true;
+    
+    // // Hiện thông báo
+    // addInlineSystemNotice(data.Message || "Nhân viên hỗ trợ đã kết thúc phiên làm việc.");
+  });
+}
+
+async function startConnection() {
+  try {
+    // Check connection state before starting
+    if (!connection.value) {
+      initializeChat();
+    }
+
+    // Only start if connection is in Disconnected state
+    if (connection.value.state === signalR.HubConnectionState.Disconnected) {
+      await connection.value.start();
+      isConnected.value = true;
+      console.log("SignalR connection started successfully");
+      return true;
+    } else if (connection.value.state === signalR.HubConnectionState.Connected) {
+      // Already connected
+      isConnected.value = true;
+      return true;
+    } else {
+      // Connection is in Connecting or Reconnecting state, wait a bit
+      console.log("Connection is in state:", connection.value.state);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return await startConnection(); // Retry
+    }
+  } catch (error) {
+    console.error("Lỗi kết nối:", error);
+    isConnected.value = false;
+    addSystemMessage("Không thể kết nối với server. Vui lòng thử lại.", 'error');
+    return false;
+  }
+}
+
+function toggleChat() {
+  chatOpen.value = !chatOpen.value;
+  if (chatOpen.value) {
+    hasUnreadMessages.value = false;
+    unreadCount.value = 0;
+  }
+}
+
+async function startChat() {
+  try {
+    // Nếu đang kết nối thì disconnect trước
+    if (connection.value && connection.value.state === signalR.HubConnectionState.Connected) {
+      await connection.value.stop();
+      // Reset trạng thái
+      chatStarted.value = false;
+      chatClosed.value = false;
+      adminDisconnected.value = false; // Reset trạng thái admin disconnect
+      sessionId.value = null;
+      userName.value = null;
+      messages.value = [];
+      assignedAdmin.value = { id: null, name: null };
+    }
+    // Kết nối lại và bắt đầu phiên mới
+    const connected = await startConnection();
+    if (connected && connection.value.state === signalR.HubConnectionState.Connected) {
+      await connection.value.invoke("JoinAsGuest", guestName.value || "");
+    } else {
+      addSystemMessage('Không thể kết nối với server. Vui lòng thử lại.', 'error');
+    }
+  } catch (error) {
+    console.error("Lỗi tham gia chat:", error);
+    addSystemMessage("Không thể tham gia chat. Vui lòng thử lại.", 'error');
+  }
+}
+
+// Thêm function mới để xử lý khi nhấn nút bắt đầu phiên mới
+async function startNewSession() {
+  try {
+    // Reset các trạng thái về ban đầu
+    chatStarted.value = false;
+    adminDisconnected.value = false;
+    chatClosed.value = false;
+    sessionId.value = null;
+    userName.value = null;
+    messages.value = [];
+    assignedAdmin.value = { id: null, name: null };
+    
+    // Disconnect connection hiện tại nếu có
+    if (connection.value && connection.value.state === signalR.HubConnectionState.Connected) {
+      await connection.value.stop();
+    }
+    
+    // Mở lại welcome screen để user có thể nhập tên mới nếu muốn
+    // chatStarted.value đã được set = false ở trên nên welcome screen sẽ hiện
+    
+  } catch (error) {
+    console.error("Lỗi khi bắt đầu phiên mới:", error);
+    addSystemMessage("Có lỗi xảy ra. Vui lòng thử lại.", 'error');
+  }
+}
+
+async function sendMessage() {
+  if (!currentMessage.value.trim()) return;
+
+  try {
+    const message = {
+      fromUserId: sessionId.value,
+      fromUserName: userName.value,
+      message: currentMessage.value,
+      timestamp: new Date().toISOString(),
+      isFromAdmin: false,
+      id: Date.now()
+    };
+
+    addMessage(message);
+    await connection.value.invoke("SendMessageToSupport", currentMessage.value);
+    currentMessage.value = '';
+  } catch (error) {
+    console.error("Lỗi gửi tin nhắn:", error);
+    addSystemMessage("Không thể gửi tin nhắn. Vui lòng thử lại.", 'error');
+  }
+}
+
+function addMessage(message) {
+  messages.value.push({
+    ...message,
+    id: message.id || Date.now() + Math.random()
+  });
+  scrollToBottom();
+}
+function addSystemMessage1(message, type = 'info') {
+  messages.value.push({
+    id: Date.now() + Math.random(),
+    message: message,
+    isFromAdmin: true,
+    isSystem: false,
+    type: type,
+    timestamp: new Date().toISOString()
+  });
+  scrollToBottom();
+}
+
+function addSystemMessage(message, type = 'info') {
+  messages.value.push({
+    id: Date.now() + Math.random(),
+    message: message,
+    isFromAdmin: false,
+    isSystem: true,
+    type: type,
+    timestamp: new Date().toISOString()
+  });
+  scrollToBottom();
+}
+
+function addInlineSystemNotice(message) {
+  messages.value.push({
+    id: Date.now() + Math.random(),
+    message: message,
+    isInlineNotice: true,
+    timestamp: new Date().toISOString()
+  });
+}
+
+function formatTime(timestamp) {
+  return new Date(timestamp).toLocaleTimeString('vi-VN', {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+function scrollToBottom() {
+  nextTick(() => {
+    if (chatMessages.value) {
+      chatMessages.value.scrollTop = chatMessages.value.scrollHeight;
+    }
+  });
+}
+
+function handleWelcomeKeyPress(e) {
+  if (e.key === 'Enter') {
+    startChat();
+  }
+}
+
+function handleMessageKeyPress(e) {
+  if (e.key === 'Enter') {
+    sendMessage();
+  }
+}
+
+// Helper function to check connection status
+function checkConnectionStatus() {
+  if (connection.value) {
+    console.log("Connection state:", connection.value.state);
+    return connection.value.state === signalR.HubConnectionState.Connected;
+  }
+  return false;
+}
+
+// Optional: Add connection status monitoring
+setInterval(() => {
+  if (connection.value && chatStarted.value) {
+    const wasConnected = isConnected.value;
+    const nowConnected = connection.value.state === signalR.HubConnectionState.Connected;
+    
+    if (wasConnected !== nowConnected) {
+      isConnected.value = nowConnected;
+      if (!nowConnected) {
+        addSystemMessage("Mất kết nối với server", 'warning');
+      }
+    }
+  }
+}, 5000);
+
 </script>
 
 <style scoped>
@@ -206,6 +573,32 @@ body {
   margin: 0;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background: #fff;
+}
+
+.new-session-section {
+    padding: 16px;
+  }
+  .start-new-session-btn {
+  background: linear-gradient(135deg, #ff6b6b, #ff5252);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.start-new-session-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+  background: linear-gradient(135deg, #ff5252, #ff4444);
+}
+
+.start-new-session-btn:active {
+  transform: translateY(0);
 }
 
 /* Navbar */
@@ -604,4 +997,327 @@ body {
 .calendar-link:hover {
   color: #007bff;
 }
+
+/* Chat Popup Styles */
+.chat-popup-wrapper {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.chat-toggle-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-toggle-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+}
+
+.notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #ff4444;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.chat-window {
+  width: 350px;
+  height: 500px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chat-header {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  padding: 20px;
+  text-align: center;
+  position: relative;
+}
+
+.chat-header h3 {
+  margin: 0 0 5px 0;
+  font-size: 1.2em;
+}
+
+.chat-header p {
+  margin: 0;
+  font-size: 0.8em;
+  opacity: 0.9;
+}
+
+.status-indicator {
+  position: absolute;
+  top: 15px;
+  right: 40px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ff4444;
+  animation: pulse 2s infinite;
+}
+
+.status-indicator.connected {
+  background: #4CAF50;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.welcome-screen {
+  padding: 30px 20px;
+  text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.welcome-screen h4 {
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.welcome-screen p {
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 0.9em;
+}
+
+.welcome-screen input {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #ddd;
+  border-radius: 20px;
+  font-size: 14px;
+  margin-bottom: 15px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.welcome-screen input:focus {
+  border-color: #4CAF50;
+}
+
+.start-chat-btn {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.start-chat-btn:hover {
+  transform: translateY(-2px);
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
+  background: #f8f9fa;
+}
+
+.message {
+  margin-bottom: 15px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.message.user {
+  justify-content: flex-end;
+}
+
+.message.support {
+  justify-content: flex-start;
+}
+
+.message-bubble {
+  max-width: 70%;
+  padding: 10px 14px;
+  border-radius: 18px;
+  font-size: 13px;
+  line-height: 1.4;
+  position: relative;
+  animation: slideIn 0.3s ease;
+}
+
+.message.user .message-bubble {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.message.support .message-bubble {
+  background: white;
+  color: #333;
+  border: 1px solid #e0e0e0;
+  border-bottom-left-radius: 4px;
+}
+
+.message-time {
+  font-size: 10px;
+  opacity: 0.7;
+  margin-top: 5px;
+}
+
+.message.user .message-time {
+  text-align: right;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.message.support .message-time {
+  color: #666;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chat-input {
+  padding: 15px;
+  background: white;
+  border-top: 1px solid #e0e0e0;
+}
+
+.input-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.message-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 2px solid #ddd;
+  border-radius: 20px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.message-input:focus {
+  border-color: #4CAF50;
+}
+
+.send-btn {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.send-btn:hover {
+  transform: scale(1.05);
+}
+
+.send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .chat-popup-wrapper {
+    bottom: 10px;
+    right: 10px;
+  }
+  
+  .chat-window {
+    width: 320px;
+    height: 450px;
+  }
+}
+
+.inline-system-notice {
+  width: 100%;
+  text-align: center;
+  background: #e5e7eb;
+  color: #444;
+  border-radius: 8px;
+  padding: 7px 12px;
+  margin: 10px 0;
+  font-size: 0.95em;
+  font-style: italic;
+  opacity: 0.85;
+}
+
+
 </style>

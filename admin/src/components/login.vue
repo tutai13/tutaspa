@@ -198,7 +198,7 @@ const handleLogin = async () => {
             timer : 1500
         })
     setTimeout(() => {
-      router.push('/'+return_url)
+      router.push(''+return_url)
     },2000)
     }
    catch (error) {

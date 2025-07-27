@@ -14,6 +14,10 @@ using FluentValidation;
 using Azure.Identity;
 using Microsoft.EntityFrameworkCore;
 using Twilio.Rest.Api.V2010.Account;
+using Humanizer;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.AspNetCore.Identity.Data;
 
 namespace API.Services
 {
@@ -25,11 +29,14 @@ namespace API.Services
         private readonly ITokenService _tokenService;
         private readonly ILogger<AuthService> _logger;
         private readonly IValidator<RegisterDTO> _validator;
+        private readonly IValidator<ResetPassDTO> _reSetPassvalidator;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IUserRepository _userRepository;
+        private readonly IMemoryCache _cache;
+        private readonly IGmailService emailService;
 
 
-        public AuthService(IConfiguration configuration, UserManager<User> userManager, SignInManager<User> signInManager, ITokenService tokenService, ILogger<AuthService> logger, IValidator<RegisterDTO> v, IUserRepository userRepository, RoleManager<IdentityRole> roleManager    )
+        public AuthService(IConfiguration configuration, UserManager<User> userManager, SignInManager<User> signInManager, ITokenService tokenService, ILogger<AuthService> logger, IValidator<RegisterDTO> v, IUserRepository userRepository, RoleManager<IdentityRole> roleManager, IValidator<ResetPassDTO> _reSetPassvalidator, IGmailService email, IMemoryCache cache)
         {
             _configuration = configuration;
             _userManager = userManager;
@@ -39,12 +46,19 @@ namespace API.Services
             _validator = v;
             _userRepository = userRepository;
             _roleManager = roleManager;
+            this._reSetPassvalidator = _reSetPassvalidator;
+            emailService = email;
+            _cache = cache;
         }
 
         public async Task<bool> ChangePassword(ResetPassDTO resetPassDTO)
         {
-            if (resetPassDTO.NewPassword != resetPassDTO.ConfirmPassword)
-                throw new Exception("Mật khẩu xác nhận không khớp");
+            var valResult = await _reSetPassvalidator.ValidateAsync(resetPassDTO);
+            if (!valResult.IsValid)
+            {
+                _logger.LogWarning("Đổi mật khẩu thất bại do dữ liệu không hợp lệ: " + string.Join(", ", valResult.Errors.Select(e => e.ErrorMessage)));
+                throw new Exception(string.Join(", ", valResult.Errors.Select(e => e.ErrorMessage)));
+            }
 
             var user = await _userManager.FindByIdAsync(resetPassDTO.UserID);
             CheckUserNull(user);
@@ -119,7 +133,13 @@ namespace API.Services
 
            
                 var token = await _tokenService.GenerateToken(user, roles);
-                return Success("Đăng nhập thành công", token,Role : roles.FirstOrDefault()  );
+                return Success("Đăng nhập thành công", token,Role : roles.FirstOrDefault(), new UserInfo
+                {
+                    Id = user.Id,
+                    Name = user.Name,
+                    PhoneNumber = user.PhoneNumber,
+                    Role = roles.FirstOrDefault() ?? "Unknown"
+                });
             }
             catch (Exception ex)
             {
@@ -286,6 +306,49 @@ namespace API.Services
                 _logger.LogError(ex, "Đã xảy ra lỗi khi đăng kí tài khoản :  {UserName}", request.PhoneNumber + ex.InnerException?.Message);
                 return Failure("Xảy ra lỗi :" + ex.Message);
             }
+        }
+
+        public async Task SendForgetPasswordOTP(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            CheckUserNull(user);
+
+            var userRole = await GetRoles(user); 
+            if ( !userRole.Any() ||  userRole.Contains("User"))
+                throw new UnauthorizedAccessException("Tài khoản không có quyền truy cập");
+
+            var randPass = RandomNumberGenerator.GetInt32(111111, 999999).ToString();
+
+            _cache.Set($"otp_{email}", randPass , DateTimeOffset.Now.AddMinutes(5)); 
+            await emailService.SendEmailAsync(email ,  "Đây là mã xác nhận đổi mật khẩu của bạn :", $"<h1>Mã xác nhận có hiệu lực trong 5 phút</h1><p>Vui lòng không cung cấp cho bất kỳ ai</p><p>Mã xác nhận là: <strong>{randPass}</strong></p>")    ;
+        }
+
+        public async Task<string> VerifiOtp(string email, string otp)
+        {
+            var inMemoryOtp = _cache.Get<string>($"otp_{email}");
+
+            if(string.IsNullOrEmpty(inMemoryOtp))
+                throw new Exception("Mã OTP không hợp lệ hoặc đã hết hạn");
+
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (inMemoryOtp != otp)
+                throw new Exception("Mã OTP không chính xác");
+
+            _cache.Remove($"otp_{email}"); 
+
+            var token = _tokenService.GenerateChangePasswordToken(user);
+
+            return token.Accesstoken ;        
+        }
+
+        public async Task ResetPassword(ForgetPassDTO reset)
+        {
+            var user = await _userManager.FindByIdAsync(reset.UserId);
+            CheckUserNull(user);
+            await _userManager.RemovePasswordAsync(user); 
+            await _userManager.AddPasswordAsync(user, reset.NewPassword);
+
         }
     }
 }

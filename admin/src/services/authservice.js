@@ -1,6 +1,8 @@
 import axios from 'axios'
 import router from '../router/router';
-
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '../services/authStore'
+import { createSignalRConnection, getSignalRConnection, stopSignalRConnection } from '../services/chatService'
 
 // Cấu hình base URL cho API
 const API_BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -9,11 +11,27 @@ const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000, // 10 seconds timeout
+  withCredentials: true, // Quan trọng: để gửi cookies
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
   },
 })
+// ✅ Biến để theo dõi refresh token đang được thực hiện
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  
+  failedQueue = [];
+};
 
 // Request interceptor - thêm token vào header
 apiClient.interceptors.request.use(
@@ -34,21 +52,76 @@ apiClient.interceptors.response.use(
   (response) => {
     return response.data
   },
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+
     if (error.response) {
-      // Server trả về error status
       const { status, data } = error.response
       
       switch (status) {
         case 401:
-          // Token hết hạn hoặc không hợp lệ
-          localStorage.removeItem('accessToken')
-          localStorage.removeItem('refresh_token')
-          // Redirect về trang login
-          if (typeof window !== 'undefined') {
-            window.location.href = '/login'
+          // ✅ Kiểm tra nếu đã thử refresh token rồi
+          if (originalRequest._retry) {
+            // Đã thử refresh nhưng vẫn 401 -> logout
+            localStorage.removeItem('accessToken')
+            localStorage.removeItem('user-info')
+            router.push('/login?return_url=' + router.currentRoute.value.fullPath)
+            return Promise.reject(error);
           }
-          break
+
+          // ✅ Kiểm tra nếu request này là refresh-token
+          if (originalRequest.url.includes('/auth/refresh-token')) {
+            // Refresh token cũng bị 401 -> logout
+            localStorage.removeItem('accessToken')
+            localStorage.removeItem('user-info')
+            router.push('/login?return_url=' + router.currentRoute.value.fullPath)
+            return Promise.reject(error);
+          }
+
+          originalRequest._retry = true;
+
+          if (isRefreshing) {
+            // ✅ Nếu đang refresh, đợi kết quả
+            return new Promise((resolve, reject) => {
+              failedQueue.push({ resolve, reject });
+            }).then(token => {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+              return apiClient(originalRequest);
+            }).catch(err => {
+              return Promise.reject(err);
+            });
+          }
+
+          isRefreshing = true;
+
+          try {
+            // ✅ Gọi refresh token API
+            const response = await apiClient.post('/auth/refresh-token', {});
+            
+            if (response.accessToken) {
+              localStorage.setItem('accessToken', response.accessToken);
+              
+              // ✅ Cập nhật header cho request gốc
+              originalRequest.headers.Authorization = `Bearer ${response.accessToken}`;
+              
+              // ✅ Xử lý các request đang chờ
+              processQueue(null, response.accessToken);
+              
+              // ✅ Retry request gốc
+              return apiClient(originalRequest);
+            }
+          } catch (refreshError) {
+            // ✅ Refresh token thất bại -> logout
+            processQueue(refreshError, null);
+            localStorage.removeItem('accessToken')
+            localStorage.removeItem('user-info')
+            router.push('/login?return_url=' + router.currentRoute.value.fullPath)
+            return Promise.reject(refreshError);
+          } finally {
+            isRefreshing = false;
+          }
+          break;
+          
         case 403:
           console.error('Không có quyền truy cập')
           break
@@ -64,6 +137,7 @@ apiClient.interceptors.response.use(
       
       return Promise.reject(data || error.response)
     } else if (error.request) {
+      console.error('Không nhận được phản hồi từ server:', error.request)
       // Network error
       console.error('Lỗi kết nối mạng')
       return Promise.reject({ message: 'Lỗi kết nối mạng' })
@@ -81,44 +155,81 @@ export const authAPI = {
   login: async (credentials) => {
     try {
       const response = await apiClient.post('/auth/login', credentials)
+
+      const user_info = response.userInfo
+      const token = response.accessToken
       
       // Lưu token vào localStorage
       if (response.accessToken) {
         localStorage.setItem('accessToken', response.accessToken)
         localStorage.setItem("user-info", JSON.stringify(response.userInfo))
       }
+
+      const auth = useAuthStore()
+      auth.login(response.accessToken, user_info.role,user_info)  
+      
+      if (user_info.role === 'Cashier') {
+        const conn = createSignalRConnection(token)
+      }
       
       return response
     } catch (error) {
-
       throw error
     }
-},
+  },
 
   // Đăng xuất
   logout: async () => {
     try {
       await apiClient.post('/auth/logout')
       localStorage.removeItem('accessToken')
+      localStorage.removeItem('user-info')
+
+
+      if(getSignalRConnection()) {
+        stopSignalRConnection()
+      }
+      
+      // ✅ Clear auth store
+      const auth = useAuthStore()
+      auth.logout()
+      
       return true
     } catch (error) {
       // Vẫn xóa token dù API lỗi
       localStorage.removeItem('accessToken')
+      localStorage.removeItem('user-info')
+      
+      const auth = useAuthStore()
+      auth.logout()
+      
       throw error
     }
   },
 
-  // Làm mới token
+  // ✅ Làm mới token - sử dụng trực tiếp trong interceptor
   refreshToken: async () => {
     try {
+      // ✅ Tạo instance riêng để tránh loop
+      const refreshClient = axios.create({
+        baseURL: API_BASE_URL,
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      })
 
-      const response = await apiClient.post('/auth/refresh-token')
-      localStorage.setItem('accessToken', response.accessToken)
-      return true
-
+      const response = await refreshClient.post('/auth/refresh-token', {})
+      
+      if (response.data.accessToken) {
+        localStorage.setItem('accessToken', response.data.accessToken)
+      }
+      
+      return response.data
     } catch (error) {
-      router.push('/login?return_url=employees')
       localStorage.removeItem('accessToken')
+      localStorage.removeItem('user-info')
       throw error
     }
   },
@@ -134,11 +245,12 @@ export const authAPI = {
   },
 
   // Đặt lại mật khẩu
-  resetPassword: async (token, newPassword) => {
+  resetPassword: async (oldPassword, newPassword, confirmPassword) => {
     try {
       const response = await apiClient.post('/auth/reset-password', {
-        token,
-        new_password: newPassword
+        oldPassword,
+        newPassword,
+        confirmPassword
       })
       return response
     } catch (error) {
@@ -198,7 +310,6 @@ export const userAPI = {
   }
 }
 
-
 // ====================== UTILITY FUNCTIONS ======================
 
 export const apiUtils = {
@@ -215,6 +326,7 @@ export const apiUtils = {
   // Xóa token (logout)
   clearAuth: () => {
     localStorage.removeItem('accessToken')
+    localStorage.removeItem('user-info')
   },
 
   // Format lỗi API để hiển thị
@@ -238,9 +350,6 @@ export const apiUtils = {
     }
   }
 }
-
-
-
 
 // Export axios instance nếu cần sử dụng trực tiếp
 export default apiClient

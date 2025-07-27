@@ -110,32 +110,31 @@
             <div class="position-relative">
               <img :src="'http://localhost:5055' + service.image" class="w-100 service-img" style="height: 240px; object-fit: cover;" />
               <h5 class="text-white fw-bold position-absolute bottom-0 start-0 p-3 m-0" style="z-index:1; background: rgba(0,0,0,0.4); width: 100%;">{{ service.name }}</h5>
-              <div
-  class="hover-overlay"
-  @mouseenter="loadPricesForService(service.id)"
->
-  <span class="badge bg-danger mb-2">KHUYẾN MÃI LÊN ĐẾN 25%</span>
-  <div v-if="servicePrices[service.id]" class="text-white small mb-3">
-    <div v-for="gia in servicePrices[service.id]" :key="gia.thoiLuong">
-      {{ gia.thoiLuong }}’: {{ gia.gia.toLocaleString('vi-VN') }}đ
-    </div>
-  </div>
-  <div class="d-flex gap-2">
-    <router-link :to="`/DichVuChiTiet/${service.id}`" class="btn btn-outline-light rounded-pill">Xem chi tiết</router-link>
-    <router-link :to="`/dichvu/${service.id}`" class="btn btn-warning text-dark rounded-pill">Đặt dịch vụ</router-link>
-  </div>
-</div>
-
+              <div class="hover-overlay" @mouseenter="loadPricesForService(service.id)">
+                <span class="badge bg-danger mb-2">KHUYẾN MÃI LÊN ĐẾN 25%</span>
+                <div v-if="servicePrices[service.id]" class="text-white small mb-3">
+                  <div v-for="gia in servicePrices[service.id]" :key="gia.thoiLuong">
+                    {{ gia.thoiLuong }}': {{ gia.gia.toLocaleString('vi-VN') }}đ
+                  </div>
+                </div>
+                <div class="d-flex gap-2">
+                  <router-link :to="`/DichVuChiTiet/${service.id}`" class="btn btn-outline-light rounded-pill">Xem chi tiết</router-link>
+                  <router-link :to="`/dichvu/${service.id}`" class="btn btn-warning text-dark rounded-pill">Đặt dịch vụ</router-link>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
   </section>
+
+  <!-- Chat Popup -->
+  
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 
@@ -152,8 +151,8 @@ const benefits = [
 onMounted(async () => {
   try {
     const [dvRes, ldvRes] = await Promise.all([
-      axios.get('http://localhost:5055/api/DichVu'),
-      axios.get('http://localhost:5055/api/LoaiDichVu')
+      axios.get('https://localhost:7183/api/DichVu'),
+      axios.get('https://localhost:7183/api/LoaiDichVu')
     ]);
     services.value = dvRes.data.map(s => ({
       id: s.dichVuID,
@@ -166,7 +165,10 @@ onMounted(async () => {
   } catch (err) {
     console.error('Lỗi tải dữ liệu:', err);
   }
+
 });
+
+
 
 const servicePrices = ref({});
 
@@ -182,27 +184,32 @@ async function loadPricesForService(serviceId) {
   }
 }
 
-
 function goToBooking() {
   router.push('/dat-lich');
 }
+
+
 </script>
 
 <style scoped>
 .text-marron {
   color: #00796B;
 }
+
 .service-card {
   position: relative;
   overflow: hidden;
   transition: transform 0.3s;
 }
+
 .service-img {
   transition: transform 0.3s ease;
 }
+
 .service-card:hover .service-img {
   transform: scale(1.05);
 }
+
 .hover-overlay {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -217,7 +224,316 @@ function goToBooking() {
   transition: opacity 0.3s ease;
   z-index: 10;
 }
+
 .service-card:hover .hover-overlay {
   opacity: 1;
+}
+
+/* Chat Popup Styles */
+.chat-popup-wrapper {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.chat-toggle-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-toggle-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+}
+
+.notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #ff4444;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.chat-window {
+  width: 350px;
+  height: 500px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chat-header {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  padding: 20px;
+  text-align: center;
+  position: relative;
+}
+
+.chat-header h3 {
+  margin: 0 0 5px 0;
+  font-size: 1.2em;
+}
+
+.chat-header p {
+  margin: 0;
+  font-size: 0.8em;
+  opacity: 0.9;
+}
+
+.status-indicator {
+  position: absolute;
+  top: 15px;
+  right: 40px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ff4444;
+  animation: pulse 2s infinite;
+}
+
+.status-indicator.connected {
+  background: #4CAF50;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.welcome-screen {
+  padding: 30px 20px;
+  text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.welcome-screen h4 {
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.welcome-screen p {
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 0.9em;
+}
+
+.welcome-screen input {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #ddd;
+  border-radius: 20px;
+  font-size: 14px;
+  margin-bottom: 15px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.welcome-screen input:focus {
+  border-color: #4CAF50;
+}
+
+.start-chat-btn {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.start-chat-btn:hover {
+  transform: translateY(-2px);
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
+  background: #f8f9fa;
+}
+
+.message {
+  margin-bottom: 15px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.message.user {
+  justify-content: flex-end;
+}
+
+.message.support {
+  justify-content: flex-start;
+}
+
+.message-bubble {
+  max-width: 70%;
+  padding: 10px 14px;
+  border-radius: 18px;
+  font-size: 13px;
+  line-height: 1.4;
+  position: relative;
+  animation: slideIn 0.3s ease;
+}
+
+.message.user .message-bubble {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.message.support .message-bubble {
+  background: white;
+  color: #333;
+  border: 1px solid #e0e0e0;
+  border-bottom-left-radius: 4px;
+}
+
+.message-time {
+  font-size: 10px;
+  opacity: 0.7;
+  margin-top: 5px;
+}
+
+.message.user .message-time {
+  text-align: right;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.message.support .message-time {
+  color: #666;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chat-input {
+  padding: 15px;
+  background: white;
+  border-top: 1px solid #e0e0e0;
+}
+
+.input-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.message-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 2px solid #ddd;
+  border-radius: 20px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.message-input:focus {
+  border-color: #4CAF50;
+}
+
+.send-btn {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.send-btn:hover {
+  transform: scale(1.05);
+}
+
+.send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .chat-popup-wrapper {
+    bottom: 10px;
+    right: 10px;
+  }
+  
+  .chat-window {
+    width: 320px;
+    height: 450px;
+  }
 }
 </style>

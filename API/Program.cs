@@ -16,6 +16,11 @@ using System.Web.WebPages;
 using FluentValidation;
 using API.DTOs.Employee;
 using System.Text.Json.Serialization;
+using ChatSupport.Hubs;
+using System.IdentityModel.Tokens.Jwt;
+using TutaSpa.Data;
+using TutaSpa.API.IService;
+using Microsoft.AspNetCore.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
@@ -84,6 +89,10 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 .AddDefaultTokenProviders();
 
 
+builder.Services.AddSignalR(); 
+
+
+
 builder.Services.AddSingleton<OtpService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
@@ -91,18 +100,19 @@ builder.Services.AddScoped<IOTPService, OtpService>();
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IProductService, ProductService>();
-
+builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IGmailService, GmailService>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
-
-
-
 //Validators
 builder.Services.AddScoped<IValidator<RegisterDTO>, RegisterValidator>();
 builder.Services.AddScoped<IValidator<CreateEmployeeDTO>, CreateEmployValidator>();
+builder.Services.AddScoped<IValidator<ResetPassDTO>, ChangePasswordValidator>();
+
+// MongoDB configuration
+builder.Services.AddScoped<MongoDBInitialCreate>();
 
 
 //config
@@ -115,21 +125,26 @@ builder.Services.AddControllers()
     });
 
 
-
-
-
-
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient<IOTPService, OtpService>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowVueApp",
+        builder =>
+        {
+            builder
+                .WithOrigins("http://localhost:5173", "http://localhost:5174")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();// Quan trọng nếu dùng SignalR
+        });
+});
 
 
 
 
 var app = builder.Build();
-
-app.UseCors(policy => policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
-
-
 
 
 
@@ -138,18 +153,59 @@ app.UseCors(policy => policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin())
 if (app.Environment.IsDevelopment())
 {
 
-	app.UseSwagger();
-	app.UseSwaggerUI(c =>
-	{
-		c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API v1");
-	});
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API v1");
+    });
 
 }
+
+app.Use(async ( context, next) =>
+{
+    var path = context.Request.Path;
+    var token = context.Request.Query["access_token"].ToString();
+
+
+    Console.WriteLine(token);
+
+    if (path.StartsWithSegments("/chat") && !string.IsNullOrEmpty(token))
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+
+        var validationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        };
+
+        try
+        {
+            var principal = tokenHandler.ValidateToken(token, validationParameters, out var validatedToken);
+            context.User = principal;
+        }
+        catch
+        {
+
+            
+            context.Response.StatusCode = 401;
+            return;
+        }
+    }
+
+    await next();
+});
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
-
+app.UseCors("AllowVueApp");
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -157,6 +213,8 @@ app.UseResponseCaching();
 app.UseEndpoints(enpoints =>
 {
     enpoints.MapControllers();
+    
+    enpoints.MapHub<ChatHub>("/chat").RequireCors("AllowVueApp");
 }
 );
 
