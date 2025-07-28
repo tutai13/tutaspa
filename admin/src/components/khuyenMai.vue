@@ -216,7 +216,7 @@ const formatDateForApi = (dateStr) => {
 const fetchVouchers = async () => {
   try {
     const res = await apiClient.get("Vouchers");
-    vouchers.value = res.data;
+    vouchers.value = res;
   } catch (err) {
     console.error("Lỗi fetch voucher:", err);
   }
@@ -309,7 +309,7 @@ const applyAllFilters = async () => {
   try {
     // Lấy dữ liệu gốc từ server
     const res = await apiClient.get("Vouchers");
-    let data = res.data;
+    let data = res;
 
     // 🔍 Lọc theo mã code
     if (searchCode.value.trim()) {
@@ -413,6 +413,14 @@ onMounted(fetchVouchers);
   font-size: 3.0rem;
 }
 
+.card-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px 25px;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .expired {
   text-decoration: line-through;
   opacity: 0.4;
@@ -433,7 +441,7 @@ onMounted(fetchVouchers);
   overflow-x: auto;
 }
 .table th {
-  background: linear-gradient(45deg, #007bff, #0056b3);
+  background: linear-gradient(to right, #7f63f4, #53c0f0); /* Tím - xanh */
   color: #fff;
   font-weight: 600;
   font-size: 14px;
@@ -498,22 +506,23 @@ onMounted(fetchVouchers);
 }
 
 /* ========== Input, Label, Filter ========== */
-.form-label {
-  font-weight: 600;
-  font-size: 13px;
-  color: #343a40;
+/* .form-label {
 }
 
 .form-control,
-.form-select {
-  border-radius: 10px;
-  font-size: 14px;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+.form-select { */
+  
+/* } */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 25px;
 }
 
 /* ========== Icon số lượng đặc biệt ========== */
 td .bi-star-fill {
-  font-size: 18px;
+  font-size: 20px;
   color: gold;
   animation: pulse 1.5s infinite;
 }
