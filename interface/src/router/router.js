@@ -13,7 +13,7 @@ import register from "../components/register.vue";
 import DatLich from "../components/DatLich.vue";
 
 import DanhGia from "../components/DanhGia.vue";
-
+import LichSuDatLich from "../components/LichSuDatLich.vue";
 
 const routes = [
   { path: "/", name: "Home", component: Home },
@@ -23,12 +23,19 @@ const routes = [
 
   { path: "/DatLich", name: "DatLich", component: DatLich },
   { path: "/ChiTietDichVu", name: "ChiTietDichVu", component: ChiTietDichVu },
-  {path: "/Danhgia", name: "DanhGia", component: DanhGia},
+  {path: "/DanhGia/:id?", name: "DanhGia", component: DanhGia},
+  {path: "/LichSuDatLich", name: "LichSuDatLich", component: LichSuDatLich},
   {
   path: '/DichVuChiTiet/:id',
   name: 'DichVuChiTiet',
   component: DichVuChiTiet
 },
+
+// {
+//   path: '/DanhGia/:id?',
+//   name: 'DanhGia',
+//   component: () => import('../views/DanhGia.vue')  // hoặc đường dẫn tương ứng với bạn
+// },
 
 
   {

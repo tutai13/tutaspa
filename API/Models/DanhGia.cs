@@ -17,6 +17,7 @@ public class DanhGia
 
     public string UserId { get; set; } = string.Empty;
 
+    [ForeignKey("UserId")]
     public User? User { get; set; }
 
     public int SoSao { get; set; } = 5;

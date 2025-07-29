@@ -31,8 +31,8 @@
           <router-link to="/login" class="btn btn-outline-dark btn-sm d-flex align-items-center gap-1">
             <i class="fa-solid fa-user"></i> Đăng nhập
           </router-link>
-          <router-link to="/lich-hen" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1">
-            <i class="fa-regular fa-calendar-check"></i> Xem lịch
+          <router-link to="/LichSuDatLich" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1">
+            <i class="fa-regular fa-calendar-check"></i> Lịch sử 
           </router-link>
         </div>
       </div>
@@ -270,7 +270,7 @@ body {
 }
 .nav-links li a {
   position: relative;
-  color: white; /* Màu mặc định */
+  color: rgb(255, 255, 255); /* Màu mặc định */
   text-decoration: none;
   transition: color 0.3s;
   font-size: 21px;
@@ -382,7 +382,7 @@ body {
   box-shadow: 0 6px 16px #8c7851;
 }
 
-@media (max-width: 576px) {
+@media (max-width: 400px) {
   .input-group-custom {
     flex-direction: column;
     gap: 8px;
