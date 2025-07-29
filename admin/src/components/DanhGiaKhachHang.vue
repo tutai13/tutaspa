@@ -89,7 +89,7 @@
         <td class="fw-semibold text-primary">{{ dg.dichVu?.tenDichVu || 'Không rõ' }}</td>
         <td>
           <span v-if="dg.anDanh" class="text-muted fst-italic"><i class="fas fa-user-secret me-1"></i>Ẩn danh</span>
-          <span v-else>{{ dg.user?.ten || 'Chưa rõ' }}</span>
+          <span v-else>{{ dg.user?.name || 'Chưa rõ' }}</span>
         </td>
         <td>
           <span v-for="n in 5" :key="n">
@@ -224,7 +224,7 @@ const danhSachLoc = computed(() => {
 
     const matchSearch =
       !searchName.value ||
-      (!d.anDanh && d.user?.ten?.toLowerCase().includes(searchName.value.toLowerCase()));
+      (!d.anDanh && d.user?.name?.toLowerCase().includes(searchName.value.toLowerCase()));
 
     const createdAt = new Date(d.ngayTao);
     const start = startDate.value ? new Date(startDate.value) : null;
