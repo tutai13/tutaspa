@@ -134,7 +134,6 @@ builder.Services.AddControllers()
 
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient<IOTPService, OtpService>();
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowVueApp",
@@ -208,7 +207,11 @@ app.Use(async ( context, next) =>
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+
 app.UseCors("AllowVueApp");
+
+app.UseStaticFiles();
+
 
 app.UseAuthentication();
 app.UseAuthorization();

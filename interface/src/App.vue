@@ -772,7 +772,7 @@ body {
 }
 .nav-links li a {
   position: relative;
-  color: white; /* Màu mặc định */
+  color: rgb(255, 255, 255); /* Màu mặc định */
   text-decoration: none;
   transition: color 0.3s;
   font-size: 21px;
@@ -884,7 +884,7 @@ body {
   box-shadow: 0 6px 16px #8c7851;
 }
 
-@media (max-width: 576px) {
+@media (max-width: 400px) {
   .input-group-custom {
     flex-direction: column;
     gap: 8px;

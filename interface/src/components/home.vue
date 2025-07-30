@@ -91,6 +91,7 @@
     </div>
   </div>
 
+
   <!-- About Section -->
   <section id="about" class="about-section" ref="aboutSection">
     <div class="container">
@@ -158,6 +159,30 @@
         <h2 class="section-title">Tại Sao Chọn TUTA Spa?</h2>
         <p class="section-subtitle">Những lý do khiến hàng nghìn khách hàng tin tưởng và lựa chọn</p>
       </div>
+
+  <!-- Floating Elements -->
+  <div class="floating-elements">
+    <div class="floating-element element-1">🌸</div>
+    <div class="floating-element element-2">🍃</div>
+    <div class="floating-element element-3">✨</div>
+    <div class="floating-element element-4">🌿</div>
+  </div>
+  <h2 class="fw-bold text-green mb-3 text-uppercase">ĐÔI NÉT VỀ TUTA SPA</h2>
+  <div class="d-flex justify-content-center align-items-center mb-4">
+    <div class="border-top border-2 border-success w-25"></div>
+    <i class="fas fa-leaf text-green mx-3"></i>
+    <div class="border-top border-2 border-success w-25"></div>
+  </div>
+  <div class="mx-auto px-3 px-md-5 col-lg-8">
+    <p class="text-muted fs-5 lh-lg">
+      Với đội ngũ kỹ thuật viên <strong>giàu kinh nghiệm</strong>, luôn tiên
+      phong ứng dụng <em>công nghệ hiện đại</em> và phục vụ chuyên nghiệp,
+      <span class="fw-semibold text-green">TUTA Spa</span>
+      <u> hứa hẹn đem lại trải nghiệm dịch vụ tốt nhất </u> sự hài lòng của
+      khách hàng <strong> là sự thành công </strong> của chúng tôi.
+    </p>
+  </div>
+
 
       <div class="benefits-grid">
         <div 
@@ -425,7 +450,11 @@ const services = ref([]);
 const serviceTypes = ref([]);
 const selectedTypeID = ref(null);
 const servicePrices = ref({});
-const phoneNumber = ref('');
+
+
+
+const phoneNumber = ref("");
+
 const aboutSection = ref(null);
 const servicesSection = ref(null);
 
@@ -457,7 +486,13 @@ const benefits = [
 ];
 
 const filteredServices = computed(() => {
+
   return services.value.filter(s => !selectedTypeID.value || s.loaiDichVuID === selectedTypeID.value);
+
+//  return services.value.filter(
+ //   (s) => !selectedTypeID.value || s.loaiDichVuID === selectedTypeID.value
+ // );
+
 });
 
 onMounted(async () => {
@@ -608,6 +643,67 @@ function handleBookingSubmit() {
   text-transform: uppercase;
   animation: fadeInUp 1s ease-out 0.3s both;
 }
+.btn-primary {
+  background-color: #04ee69;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 1s ease-out 1.2s both;
+  box-shadow: var(--shadow-medium);
+}
+
+.btn-cta.primary {
+  background: linear-gradient(
+    135deg,
+    var(--secondary-color),
+    var(--primary-color)
+  );
+  color: var(--white);
+}
+
+.btn-cta.secondary {
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--primary-dark)
+  );
+  color: var(--white);
+}
+
+.btn-cta.tertiary {
+  background: linear-gradient(135deg, var(--accent-color), #d97706);
+  color: var(--white);
+}
+
+.btn-cta.quaternary {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: var(--white);
+}
+
+.btn-cta::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.6s ease;
+
+}
 
 .hero-title {
   font-size: clamp(2.5rem, 5vw, 4.5rem);
@@ -621,6 +717,7 @@ function handleBookingSubmit() {
   text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   animation: fadeInUp 1s ease-out 0.6s both;
 }
+
 
 .hero-subtitle {
   font-size: clamp(1.1rem, 2.5vw, 1.4rem);
@@ -652,6 +749,270 @@ function handleBookingSubmit() {
   animation: fadeInUp 1s ease-out 1.2s both;
   box-shadow: var(--shadow-medium);
 }
+.text-highlight {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.brand-highlight {
+  background: linear-gradient(
+    135deg,
+    var(--secondary-color),
+    var(--primary-color)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+  font-size: 1.1em;
+}
+
+.about-stats {
+  display: flex;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.stat-mini {
+  text-align: center;
+}
+
+.stat-mini .stat-number {
+  display: block;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--secondary-color);
+  margin-bottom: 0.25rem;
+}
+
+.stat-mini .stat-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.about-visual {
+  position: relative;
+}
+
+.visual-card {
+  position: relative;
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-heavy);
+  transform: rotate(2deg);
+  transition: var(--transition);
+}
+
+.visual-card:hover {
+  transform: rotate(0deg) scale(1.02);
+}
+
+.visual-image {
+  position: relative;
+  height: 400px;
+  overflow: hidden;
+}
+
+.visual-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.visual-card:hover .visual-image img {
+  transform: scale(1.1);
+}
+
+.image-badge {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  padding: 0.75rem 1.25rem;
+  border-radius: 25px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  font-size: 0.9rem;
+  box-shadow: var(--shadow-light);
+}
+
+/* Benefits Section */
+.benefits-section {
+  background: linear-gradient(135deg, #e6f5ef 0%, #ccf2dd 100%);
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.benefit-item {
+  height: 100%;
+}
+
+.benefit-card {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  border-radius: var(--border-radius-lg);
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.benefit-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--secondary-color),
+    var(--primary-color)
+  );
+  transform: scaleX(0);
+  transition: transform 0.4s ease;
+  border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+}
+
+.benefit-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-heavy);
+}
+
+.benefit-card:hover::before {
+  transform: scaleX(1);
+}
+
+.benefit-icon {
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(
+    135deg,
+    var(--secondary-color),
+    var(--primary-color)
+  );
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  transition: var(--transition);
+}
+
+.benefit-card:hover .benefit-icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.benefit-content {
+  flex: 1;
+}
+
+.benefit-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  line-height: 1.3;
+}
+
+.benefit-description {
+  color: var(--text-secondary);
+  line-height: 1.7;
+  font-size: 1rem;
+}
+
+.benefit-image {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  overflow: hidden;
+  opacity: 0.1;
+  transition: var(--transition);
+}
+
+.benefit-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.benefit-card:hover .benefit-image {
+  opacity: 0.2;
+  transform: scale(1.1);
+}
+
+.benefit-number {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--accent-color), #d97706);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+  font-weight: 700;
+  font-size: 1.1rem;
+  box-shadow: var(--shadow-light);
+}
+
+/* Services Section */
+.services-section {
+  background: linear-gradient(135deg, var(--background-light) 0%, #f1f5f9 100%);
+}
+
+.filter-section {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.filter-wrapper {
+  display: inline-flex;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  border-radius: 50px;
+  padding: 0.5rem;
+  gap: 0.5rem;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-light);
+}
+
+.service-card {
+  background: var(--white);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: var(--transition);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.3s;
+
+}
 
 .btn-cta.primary {
   background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
@@ -677,11 +1038,230 @@ function handleBookingSubmit() {
   content: '';
   position: absolute;
   top: 0;
+
   left: -100%;
   width: 100%;
   height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   transition: left 0.6s ease;
+
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 105, 92, 0.85);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.service-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  line-height: 1.3;
+}
+
+.service-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rating,
+.popularity {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.rating i {
+  color: var(--accent-color);
+}
+
+.popularity i {
+  color: #ef4444;
+}
+
+/* CTA Section */
+.cta-section {
+  background: linear-gradient(
+    135deg,
+    var(--primary-dark) 0%,
+    var(--primary-color) 50%,
+    var(--secondary-color) 100%
+  );
+  color: var(--white);
+}
+
+.cta-wrapper {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 3rem;
+  align-items: center;
+}
+
+.cta-main {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border-radius: var(--border-radius-lg);
+  padding: 3rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.cta-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.cta-icon {
+  width: 70px;
+  height: 70px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  flex-shrink: 0;
+}
+
+.cta-text {
+  flex: 1;
+}
+
+.cta-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+}
+
+.cta-subtitle {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  line-height: 1.5;
+}
+
+.booking-form {
+  margin-bottom: 2rem;
+}
+
+.form-container {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.input-group {
+  position: relative;
+  flex: 1;
+}
+
+.input-icon {
+  position: absolute;
+  left: 1.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.7);
+  z-index: 2;
+}
+
+.form-input {
+  width: 100%;
+  padding: 1rem 1rem 1rem 3rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  color: var(--white);
+  font-size: 1rem;
+  transition: var(--transition);
+}
+
+.form-input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+.submit-button {
+  background: linear-gradient(135deg, var(--accent-color), #d97706);
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 25px;
+  color: var(--white);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  box-shadow: var(--shadow-medium);
+}
+
+.submit-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+}
+
+.trust-indicators {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.trust-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.trust-item i {
+  color: var(--secondary-light);
+}
+
+.cta-side {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: var(--border-radius-lg);
+  padding: 2.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: var(--text-primary);
+}
+
+.review-section {
+  text-align: center;
+}
+
+.review-header {
+  margin-bottom: 2rem;
+}
+
+.review-icon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, var(--accent-color), #d97706);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+  font-size: 1.5rem;
+  margin: 0 auto 1rem;
+
 }
 
 .btn-cta:hover {
@@ -747,6 +1327,7 @@ function handleBookingSubmit() {
   z-index: 10;
 }
 
+
 .custom-indicators button {
   width: 12px;
   height: 12px;
@@ -770,6 +1351,54 @@ function handleBookingSubmit() {
   inset: 0;
   pointer-events: none;
   z-index: 1;
+}
+.chat-window {
+  width: 350px;
+  height: 500px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--secondary-color),
+    var(--primary-color)
+  );
+  transform: scaleX(0);
+  transition: transform 0.4s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.stat-card:hover::before {
+  transform: scaleX(1);
+}
+
+.stat-icon {
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(
+    135deg,
+    var(--secondary-color),
+    var(--primary-color)
+  );
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease;
+
 }
 
 .floating-element {

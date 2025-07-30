@@ -106,7 +106,7 @@
 <style scoped>
 /* Màu xanh chủ đạo */
 .text-primary-green {
-  color: #007E5A;
+  color: #048661;
 }
 
 /* Màu chữ phụ (xám xanh dịu) */

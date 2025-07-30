@@ -17,7 +17,7 @@ namespace API.Data
 
 		public DbSet<InventoryHistory> InventoryHistories { get; set; }
         public DbSet<DanhGia> DanhGiass{ get; set; }
-        public DbSet<Banggiadichvu> BangGiaDichVus { get; set; }
+        //public DbSet<Banggiadichvu> BangGiaDichVus { get; set; }
         public DbSet<HoaDon> hoaDons { get; set; }
         public DbSet<ChiTietHoaDon> chiTietHoaDons { get; set; }
         public DbSet<API.Models.Voucher> Voucher { get; set; } = default!;
