@@ -137,8 +137,10 @@ async function loadPricesForService(serviceId) {
   color: #007E5A;
 }
 .bg-light {
-  background-color: #f8f9fa !important;
+  background: linear-gradient(90deg, #a0e5a8 0%, #fff8e1 100%) !important;
 }
+
+
 .bg-card {
   background-color: #ffffff;
 }

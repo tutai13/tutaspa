@@ -212,7 +212,11 @@ app.Use(async ( context, next) =>
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+
 app.UseCors("AllowVueApp");
+
+app.UseStaticFiles();
+
 
 app.UseAuthentication();
 app.UseAuthorization();

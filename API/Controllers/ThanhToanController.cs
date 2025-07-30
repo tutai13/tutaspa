@@ -1,10 +1,9 @@
 ﻿using API.Data;
 using API.DTOs.HoaDon;
 using API.DTOs.ThongKe;
-using API.Helpers;
 using API.Models;
-using DinkToPdf;
-using DinkToPdf.Contracts;
+using API.Helpers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -73,6 +72,22 @@ namespace API.Controllers
                 return StatusCode(500, $"Lỗi tạo link thanh toán: {ex.Message}");
             }
         }
+
+        [HttpGet("by-user")]
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "User")]
+        public async Task<IActionResult> GetHoaDonByUser()
+        {
+            var userId = User.GetUserId();
+            var hoaDonList = await _context.hoaDons
+                .Where(h => h.UserID == userId)
+                .Include(h => h.ChiTietHoaDons)
+                .ThenInclude(ct => ct.DichVu)
+                .OrderByDescending(h => h.NgayTao)
+                .ToListAsync();
+
+            return Ok(hoaDonList);
+        }
+
 
         [HttpPost("tao-hoadon")]
         public async Task<IActionResult> TaoHoaDon([FromBody] HoaDonDTO request)
