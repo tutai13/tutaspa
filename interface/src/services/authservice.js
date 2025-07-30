@@ -1,19 +1,16 @@
 
 import axios from "axios";
 import { error } from "../notification";
-
-
-
-
+import { useAuthState } from "./authstate";
 // Cấu hình base URL cho API
 const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 
-console.log("url :" + API_BASE_URL);
 
 // Tạo axios instance
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
+  credentials: true, // Cho phép gửi cookie với request
   timeout: 10000, // 10 seconds timeout
   headers: {
     "Content-Type": "application/json",
@@ -90,10 +87,8 @@ export const authAPI = {
       
       // Lưu token vào localStorage
       if (response.accessToken) {
-        localStorage.setItem("accessToken", response.accessToken);
-        localStorage.setItem("user-info", JSON.stringify(response.userInfo))
-
-
+        const state = useAuthState();
+        state.login(response.accessToken, response.userInfo);
       }
 
       return response;

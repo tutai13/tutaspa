@@ -3,10 +3,14 @@
     <!-- Sidebar -->
     <div class="sidebar">
       <div class="sidebar-header">
-        <h2>Đoạn chat</h2>
+        <h2 class="section-title">
+          <i class="fas fa-comments"></i>
+          Đoạn chat
+        </h2>
         <div class="header-actions">
-          <button class="btn-icon" @click=" ">
-            <i class="fas fa-sync"></i>
+          <button class="btn btn-outline-primary" @click="refreshSessions">
+            <i class="fas fa-sync-alt"></i>
+            Làm mới
           </button>
         </div>
       </div>
@@ -14,51 +18,54 @@
       <!-- Search -->
       <div class="search-container">
         <div class="search-box">
-          <i class="fas fa-search"></i>
-          <input type="text" placeholder="Tìm tên khách hàng" v-model="searchQuery" />
+          <i class="fas fa-search search-icon" @click="handleSearch"></i>
+          <input type="text" placeholder="Tìm tên khách hàng" v-model="searchQuery" class="search-input" />
+          <button v-if="searchQuery" @click="clearSearch" class="clear-search" title="Xóa tìm kiếm">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
       </div>
 
       <!-- Filters -->
       <div class="filters">
         <button 
-          class="filter-btn" 
+          class="btn btn-outline-primary filter-btn "  
           :class="{ active: currentFilter === 'all' }"
           @click="setFilter('all')"
         >
           Tất cả
         </button>
         <button 
-          class="filter-btn" 
+          class="btn btn-outline-primary filter-btn" 
           :class="{ active: currentFilter === 'online' }"
           @click="setFilter('online')"
         >
           Đang online
         </button>
         <button 
-          class="filter-btn" 
+          class="btn btn-outline-primary filter-btn " 
           :class="{ active: currentFilter === 'unread' }"
           @click="setFilter('unread')"
         >
           Chưa đọc
         </button>
         <button 
-          class="filter-btn" 
-          :class="{ active: currentFilter === 'recent' }"
-          @click="setFilter('recent')"
+          class="btn btn-outline-primary filter-btn " 
+          :class="{ active: currentFilter === 'closed' }"
+          @click="setFilter('closed')"
         >
-          Gần đây
+          Đã đóng
         </button>
       </div>
 
       <!-- Loading indicator -->
-      <div v-if="isLoading" class="loading-indicator">
+      <div v-if="isLoading" class="loading-state">
         <i class="fas fa-spinner fa-spin"></i>
-        <span>Đang tải...</span>
+        Đang tải...
       </div>
 
       <!-- Customer List -->
-      <div class="customer-list" v-else>
+      <div v-else class="customer-list">
         <div 
           v-for="customer in filteredCustomers" 
           :key="customer.sessionId || customer.userId"
@@ -73,7 +80,6 @@
           }"
           @click="selectCustomer(customer)"
         >
-         
           <div class="customer-info">
             <div class="customer-name-row">
               <span class="customer-name">{{ customer.userName || customer.customerName }}</span>
@@ -83,9 +89,6 @@
               {{ customer.lastMessage || 'Chưa có tin nhắn' }}
             </div>
             <div class="session-info">
-              <!-- <span class="session-status" :class="customer.status">
-                {{ getStatusText(customer.status) }}
-              </span> -->
               <span v-if="customer.messageCount" class="message-count">
                 • {{ customer.messageCount }} tin nhắn
               </span>
@@ -104,7 +107,7 @@
         </div>
 
         <!-- Empty state for filter -->
-        <div v-if="filteredCustomers.length === 0" class="empty-filter">
+        <div v-if="filteredCustomers.length === 0" class="empty-state">
           <i class="fas fa-search"></i>
           <p>Không tìm thấy cuộc trò chuyện nào</p>
         </div>
@@ -128,34 +131,26 @@
                 <span class="status" :class="{ online: selectedCustomer.isOnline }">
                   {{ selectedCustomer.isOnline ? 'Đang hoạt động' : 'Không hoạt động' }}
                 </span>
-                <!-- <span class="session-id">• ID: {{ selectedCustomer.sessionId || selectedCustomer.userId }}</span> -->
               </div>
             </div>
           </div>
           <div class="chat-actions">
-            <button class="btn-icon" @click="assignCustomerToMe" v-if="!selectedCustomer.isAssigned">
-              <i class="fas fa-user-plus" title="Nhận phụ trách"></i>
-            </button>
-            <button class="btn-icon" @click="refreshHistory">
-              <i class="fas fa-sync" title="Làm mới"></i>
-            </button>
-            <button class="btn-icon" @click="startCall">
-              <i class="fas fa-phone"></i>
-            </button>
-            <button class="btn-icon" @click="startVideoCall">
-              <i class="fas fa-video"></i>
-            </button>
-            <button class="btn-icon" @click="showInfo">
-              <i class="fas fa-info-circle"></i>
+            <button 
+              class="btn btn-danger btn-sm close-session-btn" 
+              @click="closeSession" 
+              v-if="selectedCustomer && selectedCustomer.status !== 'Closed'"
+              title="Đóng phiên chat"
+            >
+              <i class="fas fa-lock"></i>
             </button>
           </div>
         </div>
 
         <!-- Messages -->
         <div class="messages-container" ref="messagesContainer" id="messagesContainer">
-          <div v-if="isLoadingHistory" class="loading-history">
+          <div v-if="isLoadingHistory" class="loading-state">
             <i class="fas fa-spinner fa-spin"></i>
-            <span>Đang tải lịch sử...</span>
+            Đang tải lịch sử...
           </div>
           
           <div v-for="message in currentMessages" :key="message.messageId" class="message-wrapper">
@@ -176,7 +171,7 @@
           
           <!-- Load more button -->
           <div v-if="hasMoreMessages" class="load-more-container">
-            <button class="load-more-btn" @click="loadMoreMessages" :disabled="isLoadingMore">
+            <button class="btn btn-outline-primary" @click="loadMoreMessages" :disabled="isLoadingMore">
               <i v-if="isLoadingMore" class="fas fa-spinner fa-spin"></i>
               <span>{{ isLoadingMore ? 'Đang tải...' : 'Tải thêm tin nhắn' }}</span>
             </button>
@@ -184,24 +179,24 @@
         </div>
 
         <!-- Closed notice -->
-          <div v-if="selectedCustomer.status === 'Closed'" class="closed-notice">
-            <i class="fas fa-lock"></i>
-            Phiên chat đã kết thúc.
-          </div>
+        <div v-if="selectedCustomer.status === 'Closed'" class="closed-notice">
+          <i class="fas fa-lock"></i>
+          Phiên chat đã kết thúc.
+        </div>
 
         <!-- Input Area -->
         <div class="input-area" v-else>
           <div class="input-container">
-            <button class="btn-icon">
+            <button class="btn btn-outline-primary btn-sm">
               <i class="fas fa-plus"></i>
             </button>
-            <button class="btn-icon">
+            <button class="btn btn-outline-primary btn-sm">
               <i class="fas fa-image"></i>
             </button>
-            <button class="btn-icon">
+            <button class="btn btn-outline-primary btn-sm">
               <i class="fas fa-microphone"></i>
             </button>
-            <button class="btn-icon">
+            <button class="btn btn-outline-primary btn-sm">
               <i class="fas fa-gift"></i>
             </button>
             <div class="message-input">
@@ -212,21 +207,20 @@
                 placeholder="Aa"
                 ref="messageInput"
                 :disabled="selectedCustomer.status === 'Closed'"
+                class="form-control"
               />
-              <button class="btn-icon">
+              <button class="btn btn-outline-primary btn-sm">
                 <i class="fas fa-smile"></i>
               </button>
             </div>
             <button 
-              class="btn-icon send-btn" 
+              class="btn btn-success btn-sm send-btn" 
               @click="sendMessage" 
               :disabled="!newMessage.trim() || selectedCustomer.status === 'Closed'"
             >
               <i class="fas fa-paper-plane"></i>
             </button>
           </div>
-          
-          
         </div>
       </div>
 
@@ -247,7 +241,8 @@ import { ref, reactive, computed, onMounted, onBeforeUnmount, nextTick, watch } 
 import * as signalR from '@microsoft/signalr'
 import { useRouter } from 'vue-router'
 import { getSignalRConnection, registerSignalREvent, getConnectionState, createSignalRConnection } from '../services/chatService'
-import { authAPI } from '../services/authservice' // Thêm dòng này
+import { authAPI } from '../services/authservice'
+import apiClient from '../utils/axiosClient'
 
 // Router instance
 const router = useRouter()
@@ -296,12 +291,8 @@ const filteredCustomers = computed(() => {
     case 'unread':
       filtered = filtered.filter(c => c.unreadCount > 0)
       break
-    case 'recent':
-      filtered = filtered.filter(c => {
-        const lastActivity = new Date(c.lastMessageTime || c.startTime)
-        const hoursSinceLastActivity = (Date.now() - lastActivity) / (1000 * 60 * 60)
-        return hoursSinceLastActivity <= 24
-      })
+    case 'closed':
+      filtered = filtered.filter(c => c.status === 'Closed')
       break
   }
   
@@ -444,8 +435,6 @@ async function initializeSignalR() {
     await waitForConnection()
 
     // Đăng ký các event qua chatService để an toàn
-    registerSignalREvent('OnlineCustomers', handleOnlineCustomers)
-    registerSignalREvent('RecentSessions', handleRecentSessions)
     registerSignalREvent('NewCustomerJoined', handleNewCustomerJoined)
     registerSignalREvent('UserAssigned', handleUserAssigned)
     registerSignalREvent('ReceiveMessage', handleReceiveMessage)
@@ -454,7 +443,7 @@ async function initializeSignalR() {
     registerSignalREvent('MessageSent', handleMessageSent)
     registerSignalREvent('AdminAssigned', handleAdminAssigned)
     registerSignalREvent('Error', handleError)
-    registerSignalREvent('ChatClosed', handleChatClosed);
+    registerSignalREvent('ChatClosed', handleChatClosed)
 
     // Lắng nghe sự kiện reconnect thành công để load lại dữ liệu
     conn.onreconnected(async () => {
@@ -466,7 +455,6 @@ async function initializeSignalR() {
 
     // Load initial data after connection is ready
     await loadInitialData()
-
   } catch (error) {
     console.error('SignalR Connection Error:', error)
     isLoading.value = false
@@ -486,18 +474,12 @@ async function loadInitialData() {
     await waitForConnection()
     
     console.log('Loading initial data...')
-    
-    // Load data using safe invoke
-    await Promise.all([
-      safeInvoke('GetOnlineCustomers'),
-      safeInvoke('GetRecentSessions', 72, 50)
-    ])
-    
-    console.log('Initial data loaded successfully')
-    
+
+    const sessions = await apiClient.get("/chat/recent-sessions?hours=72&pagesize=50")
+    console.log('Recent sessions loaded:', sessions)
+    handleRecentSessions(sessions)
   } catch (error) {
     console.error('Error loading initial data:', error)
-    
     // Retry after 2 seconds
     setTimeout(() => {
       console.log('Retrying load initial data...')
@@ -508,46 +490,33 @@ async function loadInitialData() {
   }
 }
 
-
 function handleChatClosed(data) {
-  // data: { sessionId }
-  // Cập nhật trạng thái Closed cho cả recentSessions và customers
-  if (!data || !data.sessionId) return;
-
-  // Cập nhật trong recentSessions
-  const session = recentSessions.value.find(s => s.sessionId === data.sessionId);
+  if (!data || !data.sessionId) return
+  const session = recentSessions.value.find(s => s.sessionId === data.sessionId)
   if (session) {
-    session.status = 'Closed';
+    session.status = 'Closed'
   }
-
-  // Cập nhật trong customers
-  const customer = customers.value.find(c => c.sessionId === data.sessionId);
+  const customer = customers.value.find(c => c.sessionId === data.sessionId)
   if (customer) {
-    customer.status = 'Closed';
+    customer.status = 'Closed'
   }
-
-  // Nếu đang mở phiên này thì cập nhật UI
   if (selectedCustomer.value && selectedCustomer.value.sessionId === data.sessionId) {
-    selectedCustomer.value.status = 'Closed';
+    selectedCustomer.value.status = 'Closed'
   }
 }
 
 function handleOnlineCustomers(onlineList) {
   console.log('Received online customers:', onlineList)
-  // Update existing customers or add new ones
   onlineList.forEach(customer => {
     const existingIndex = customers.value.findIndex(c => 
       c.sessionId === customer.sessionId || c.userId === customer.userId
     )
-    
     if (existingIndex !== -1) {
-      // Update existing customer
       Object.assign(customers.value[existingIndex], {
         ...customer,
         isOnline: true
       })
     } else {
-      // Add new online customer
       customers.value.unshift({
         ...customer,
         isOnline: true
@@ -557,17 +526,12 @@ function handleOnlineCustomers(onlineList) {
 }
 
 function handleRecentSessions(sessions) {
-  console.log('Received recent sessions:', sessions)
-
   console.log(sessions)
   recentSessions.value = sessions
-  
-  // Merge with existing customers list
   sessions.forEach(session => {
     const existingIndex = customers.value.findIndex(c => 
       c.sessionId === session.sessionId || c.userId === session.customerId
     )
-    
     const customerData = {
       sessionId: session.sessionId,
       userId: session.customerId,
@@ -582,25 +546,19 @@ function handleRecentSessions(sessions) {
       lastMessage: session.lastMessage,
       lastMessageTime: session.lastMessageTime,
       messageCount: session.messageCount,
-      unreadCount: 0, // Will be updated by message events
+      unreadCount: 0,
       isAssigned: !!session.adminId,
-      isFromAdmin: session.lastMessage && session.lastMessage.includes('Xin chào') // Simple detection
+      isFromAdmin: session.lastMessage && session.lastMessage.includes('Xin chào')
     }
-    
     if (existingIndex !== -1) {
-      // Update existing
       Object.assign(customers.value[existingIndex], customerData)
     } else {
-      // Add new
       customers.value.push(customerData)
     }
   })
-  
-  // Sort customers
   customers.value.sort((a, b) => {
     if (a.isOnline && !b.isOnline) return -1
     if (!a.isOnline && b.isOnline) return 1
-    
     const aTime = new Date(a.lastMessageTime || a.startTime)
     const bTime = new Date(b.lastMessageTime || b.startTime)
     return bTime - aTime
@@ -612,7 +570,6 @@ function handleNewCustomerJoined(customer) {
   const existingIndex = customers.value.findIndex(c => 
     c.userId === customer.userId || c.sessionId === customer.sessionId
   )
-  
   const customerData = {
     userId: customer.userId,
     sessionId: customer.sessionId,
@@ -627,14 +584,11 @@ function handleNewCustomerJoined(customer) {
     adminId: customer.assignedAdminId,
     adminName: customer.assignedAdminName
   }
-  
   if (existingIndex !== -1) {
     Object.assign(customers.value[existingIndex], customerData)
   } else {
     customers.value.unshift(customerData)
   }
-
-  // Handle waiting messages
   if (customer.waitingMessages && customer.waitingMessages.length > 0) {
     customer.waitingMessages.forEach(message => {
       handleReceiveMessage(message)
@@ -644,11 +598,8 @@ function handleNewCustomerJoined(customer) {
 
 function handleUserAssigned(assignment) {
   console.log('User assigned:', assignment)
-  
   let customer = customers.value.find(c => c.userId === assignment.customerId)
-  
   if (!customer) {
-    // ➕ Nếu chưa có, thêm mới vào danh sách
     customer = {
       sessionId: assignment.sessionId,
       userId: assignment.customerId,
@@ -665,17 +616,13 @@ function handleUserAssigned(assignment) {
       waitingMessages: assignment.waitingMessages || [],
       isFromAdmin: false
     }
-
     customers.value.unshift(customer)
   } else {
-    // ✅ Nếu đã có, cập nhật thông tin
     customer.isAssigned = true
     customer.adminId = assignment.adminId || adminInfo.adminId
     customer.adminName = assignment.adminName || adminInfo.adminName
     customer.unreadCount = assignment.unreadCount || 0
   }
-
-  // Xử lý message chờ
   if (assignment.waitingMessages && assignment.waitingMessages.length > 0) {
     assignment.waitingMessages.forEach(message => {
       handleReceiveMessage(message)
@@ -686,45 +633,34 @@ function handleUserAssigned(assignment) {
 function handleReceiveMessage(message) {
   console.log('Received message:', message)
   const sessionKey = message.sessionId || message.fromUserId
-
   if (!messages[sessionKey]) {
     messages[sessionKey] = []
   }
-  
-  // Avoid duplicate messages
   const existingMessage = messages[sessionKey].find(m => m.messageId === message.messageId)
   if (!existingMessage) {
     messages[sessionKey].push(message)
   }
-
-  // Update customer info
   const customer = customers.value.find(c => 
     c.sessionId === sessionKey || 
     c.userId === message.fromUserId || 
     c.userId === message.toUserId
   )
-  
   if (customer) {
     customer.lastMessage = message.message
     customer.lastMessageTime = message.timestamp
     customer.isFromAdmin = message.isFromAdmin
-
-    // Update unread count if not currently selected
     if (!selectedCustomer.value || 
         (selectedCustomer.value.sessionId || selectedCustomer.value.userId) !== sessionKey) {
       if (!message.isFromAdmin) {
         customer.unreadCount = (customer.unreadCount || 0) + 1
       }
     }
-
-    // Move to top of list
     const index = customers.value.indexOf(customer)
     if (index > 0) {
       customers.value.splice(index, 1)
       customers.value.unshift(customer)
     }
   }
-
   scrollToBottom()
 }
 
@@ -739,27 +675,21 @@ function handleCustomerDisconnected(customer) {
 function handleChatHistory(history) {
   console.log('Received chat history:', history)
   isLoadingHistory.value = false
-  
   const sessionKey = history.sessionId
-  console.log('→ messages[sessionKey] before set:', messages[sessionKey])
   if (currentPage.value === 1) {
     messages[sessionKey] = history.messages || []
   } else {
-    // Prepend older messages
     const existingMessages = messages[sessionKey] || []
     messages[sessionKey] = [...(history.messages || []), ...existingMessages]
   }
-  
   hasMoreMessages.value = history.pageInfo?.hasMore || false
   isLoadingMore.value = false
-  
   if (currentPage.value === 1) {
     nextTick(() => scrollToBottom())
   }
 }
 
 function handleMessageSent(message) {
-  // Message confirmed sent
   console.log('Message sent:', message)
 }
 
@@ -769,7 +699,6 @@ function handleAdminAssigned(assignment) {
 
 function handleError(error) {
   console.error('SignalR Error:', error)
-  // You can add toast notification here
 }
 
 async function selectCustomer(customer) {
@@ -777,25 +706,22 @@ async function selectCustomer(customer) {
   customer.unreadCount = 0
   currentPage.value = 1
   hasMoreMessages.value = false
-
   const sessionId = customer.sessionId || customer.userId
+  router.replace({ path: '/chat', query: { sessionId } })
   if (!sessionId) {
     console.error('No sessionId or userId found for customer:', customer)
     return
   }
-
   const sessionKey = sessionId
   messages[sessionKey] = []
-
   isLoadingHistory.value = true
-
   try {
-    await safeInvoke('GetChatHistory', sessionId, 50, currentPage.value)
+    const history = await apiClient.get(`/chat/history?sessionId=${sessionId}`)
+    handleChatHistory(history)
   } catch (error) {
     console.error('Error selecting customer:', error)
     isLoadingHistory.value = false
   }
-
   nextTick(() => {
     const input = document.getElementById('messageInput')
     if (input) input.focus()
@@ -813,10 +739,8 @@ async function loadChatHistory(customer) {
 
 async function loadMoreMessages() {
   if (!selectedCustomer.value || isLoadingMore.value) return
-  
   isLoadingMore.value = true
   currentPage.value += 1
-  
   try {
     await loadChatHistory(selectedCustomer.value)
   } catch (error) {
@@ -826,9 +750,18 @@ async function loadMoreMessages() {
   }
 }
 
+async function closeSession() {
+  if (!selectedCustomer.value || !selectedCustomer.value.sessionId) return
+  try {
+    console.log('Closing session:', selectedCustomer.value.sessionId)
+    await safeInvoke('CloseSession', selectedCustomer.value.sessionId)
+  } catch (error) {
+    console.error('Error closing session:', error)
+  }
+}
+
 async function sendMessage() {
   if (!newMessage.value.trim() || !selectedCustomer.value) return
-
   const message = {
     fromUserId: adminInfo.adminId,
     fromUserName: adminInfo.adminName,
@@ -838,24 +771,19 @@ async function sendMessage() {
     isFromAdmin: true,
     messageId: generateMessageId()
   }
-
   const sessionKey = selectedCustomer.value.sessionId || selectedCustomer.value.userId
-
   if (!messages[sessionKey]) {
     messages[sessionKey] = []
   }
   messages[sessionKey].push(message)
-
   selectedCustomer.value.lastMessage = newMessage.value
   selectedCustomer.value.lastMessageTime = new Date()
-
   try {
     await safeInvoke('SendMessageToCustomer', selectedCustomer.value.userId, newMessage.value)
     newMessage.value = ''
     scrollToBottom()
   } catch (error) {
     console.error('Error sending message:', error)
-    // Remove the message from UI if failed
     const messageIndex = messages[sessionKey].findIndex(m => m.messageId === message.messageId)
     if (messageIndex !== -1) {
       messages[sessionKey].splice(messageIndex, 1)
@@ -865,7 +793,6 @@ async function sendMessage() {
 
 async function assignCustomerToMe() {
   if (!selectedCustomer.value) return
-
   try {
     await safeInvoke('AssignCustomerToMe', selectedCustomer.value.userId)
     selectedCustomer.value.isAssigned = true
@@ -878,11 +805,9 @@ async function assignCustomerToMe() {
 
 async function refreshHistory() {
   if (!selectedCustomer.value) return
-  
   currentPage.value = 1
   const sessionKey = selectedCustomer.value.sessionId || selectedCustomer.value.userId
   messages[sessionKey] = []
-  
   isLoadingHistory.value = true
   await loadChatHistory(selectedCustomer.value)
 }
@@ -910,7 +835,6 @@ function formatTime(timestamp) {
   const date = new Date(timestamp)
   const now = new Date()
   const diff = now - date
-
   if (diff < 60000) return 'Vừa xong'
   if (diff < 3600000) return `${Math.floor(diff / 60000)} phút`
   if (diff < 86400000) return `${Math.floor(diff / 3600000)} giờ`
@@ -941,7 +865,6 @@ function getAuthToken() {
   return token
 }
 
-// Optional functions
 function startCall() {
   console.log('Starting call with', selectedCustomer.value?.userName)
 }
@@ -953,190 +876,273 @@ function startVideoCall() {
 function showInfo() {
   console.log('Showing info for', selectedCustomer.value?.userName)
 }
+
+function handleSearch() {
+  // Logic for handling search can be implemented here if needed
+}
+
+function clearSearch() {
+  searchQuery.value = ''
+}
 </script>
 
 <style scoped>
 .chat-container {
   display: flex;
   height: 85vh;
-  background: #fff; /* Nền trắng */
-  color: #222;      /* Chữ đen */
+  /* max-width: 1400px; */
+  margin: 0 auto;
+  padding: 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  overflow: hidden;
+  background: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+  border: 1px solid #476f8c;
+  border-radius: 12px;
 }
 
 .sidebar {
   width: 360px;
-  background: #f8f9fa; /* Sidebar sáng */
-  border-right: 1px solid #e5e7eb;
+  background: white;
+  border-right: 1px solid #e1e8ed;
   display: flex;
   flex-direction: column;
   min-height: 0;
 }
 
 .sidebar-header {
-  padding: 16px 20px;
+  padding: 20px 25px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #e5e7eb;
 }
 
-.sidebar-header h2 {
+.section-title {
   margin: 0;
-  font-size: 24px;
-  font-weight: 700;
-  color: #222;
-}
-
-.header-actions .btn-icon {
-  background: #e5e7eb;
-  color: #555;
-}
-.btn-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: none;
-  background: #e5e7eb;
-  color: #555;
-  cursor: pointer;
+  font-size: 1.4rem;
+  font-weight: 500;
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
-}
-.btn-icon:hover {
-  background: #d1d5db;
+  gap: 10px;
 }
 
 .search-container {
-  padding: 16px 20px;
+  padding: 20px 25px;
+  position: relative;
 }
 
 .search-box {
-  position: relative;
   display: flex;
   align-items: center;
-  background: #e5e7eb;
-  border-radius: 20px;
-  padding: 8px 12px;
 }
-.search-box i {
-  color: #888;
-  margin-right: 8px;
+
+.search-input {
+  width: 100%;
+  padding: 12px 45px 12px 15px;
+  border: 2px solid #e1e8ed;
+  border-radius: 25px;
+  font-size: 1rem;
+  background: #fafbfc;
+  color: #2c3e50;
+  transition: all 0.3s ease;
 }
-.search-box input {
-  flex: 1;
-  border: none;
-  background: transparent;
-  color: #222;
-  font-size: 15px;
+
+.search-input:focus {
   outline: none;
+  border-color: #3498db;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
-.search-box input::placeholder {
-  color: #888;
+
+.search-input::placeholder {
+  color: rgba(67, 63, 63, 0.7);
+}
+
+.search-icon {
+  position: absolute;
+  right: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(13, 13, 13, 0.8);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.clear-search {
+  position: absolute;
+  right: 60px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: rgba(13, 13, 13, 0.8);
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.clear-search:hover {
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .filters {
   display: flex;
-  gap: 8px;
-  padding: 0 20px 16px;
+  gap: 10px;
+  padding: 0 25px 20px;
 }
-.filter-btn {
-  padding: 6px 12px;
-  border-radius: 16px;
+
+.btn {
+  padding: 12px 24px;
   border: none;
-  background: #e5e7eb;
-  color: #555;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
   cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
 }
-.filter-btn.active {
-  background: #2563eb;
-  color: #fff;
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-outline-primary {
+
+  background: transparent;
+  color: #3498db;
+  border: 2px solid #3498db;
+}
+.filter-btn{
+  width: 23%;
+  height: 50px;
+  font-size: 13px;
+}
+
+.btn-outline-primary:hover:not(:disabled) {
+  background: #3498db;
+  color: white;
+}
+
+.btn-outline-primary.active {
+  background: #3498db;
+  color: white;
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #27ae60, #229954);
+  color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+}
+
+.btn-sm {
+  padding: 8px 12px;
+  font-size: 0.85rem;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #7f8c8d;
+  font-size: 1.1rem;
+}
+
+.loading-state i {
+  font-size: 2rem;
+  margin-bottom: 15px;
+  display: block;
 }
 
 .customer-list {
   flex: 1;
   overflow-y: auto;
   min-height: 0;
-  background: #fff;
+  background: white;
 }
 
 .customer-item {
   display: flex;
   align-items: center;
-  padding: 12px 20px;
+  padding: 15px 25px;
   cursor: pointer;
+  border-bottom: 1px solid #ecf0f1;
   transition: background 0.2s;
-  background: #fff;
-}
-.customer-item:hover {
-  background: #f1f5f9;
-}
-.customer-item.active {
-  background: #2563eb;
-  color: #fff;
-}
-.customer-item.active .customer-name,
-.customer-item.active .last-message,
-.customer-item.active .time {
-  color: #fff;
 }
 
-.customer-avatar {
-  position: relative;
-  margin-right: 12px;
+.customer-item:hover {
+  background: #f8f9fa;
 }
-.customer-avatar img {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-.online-indicator {
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
-  width: 14px;
-  height: 14px;
-  background: #42b883;
-  border: 2px solid #f8f9fa;
-  border-radius: 50%;
+
+.customer-item.active {
+  background: #f1f5f9;
 }
 
 .customer-info {
   flex: 1;
   min-width: 0;
 }
+
 .customer-name {
   font-size: 15px;
   font-weight: 600;
+  color: #2c3e50;
   margin-bottom: 4px;
-  color: #222;
 }
+
 .last-message {
   font-size: 13px;
-  color: #555;
+  color: #7f8c8d;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.message-icon {
+  margin-right: 5px;
+}
+
+.session-info {
+  font-size: 12px;
+  color: #7f8c8d;
+}
+
+.message-count {
+  font-weight: 500;
+}
+
 .customer-meta {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 4px;
 }
+
 .time {
   font-size: 12px;
-  color: #888;
+  color: #7f8c8d;
 }
+
 .unread-count {
-  background: #2563eb;
-  color: #fff;
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
   font-size: 12px;
   font-weight: 600;
   padding: 2px 6px;
@@ -1145,50 +1151,80 @@ function showInfo() {
   text-align: center;
 }
 
-/* Chat Area */
+.offline-indicator i {
+  color: #ccc;
+  font-size: 10px;
+}
+
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #7f8c8d;
+  font-size: 1.1rem;
+}
+
+.empty-state i {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  display: block;
+  color: #bdc3c7;
+}
+
 .chat-area {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background: white;
   min-width: 0;
   min-height: 0;
 }
+
 .chat-content {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
 }
+
 .chat-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid #e5e7eb;
-  background: #fff;
+  padding: 20px 25px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
 }
+
 .chat-header .customer-info {
   display: flex;
   align-items: center;
   gap: 12px;
 }
-.chat-header .customer-info img {
+
+.customer-avatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
 }
+
 .chat-header .customer-info h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 1.3rem;
   font-weight: 600;
-  color: #222;
 }
-.chat-header .customer-info .status {
-  font-size: 12px;
-  color: #888;
+
+.status-info .status {
+  font-size: 0.95rem;
 }
+
+.status.online {
+  color: #27ae60;
+}
+
 .chat-actions {
   display: flex;
   gap: 8px;
@@ -1199,140 +1235,204 @@ function showInfo() {
   min-height: 0;
   height: 100%;
   overflow-y: auto;
-  padding: 16px 20px;
-  background: #fff;
+  padding: 25px;
+  background: white;
 }
 
 .message-wrapper {
-  margin-bottom: 8px;
+  margin-bottom: 15px;
 }
+
 .message {
   display: flex;
   flex-direction: column;
   max-width: 70%;
 }
+
 .message-sent {
   align-items: flex-end;
   margin-left: auto;
 }
+
 .message-received {
   align-items: flex-start;
 }
+
 .message-content {
-  padding: 8px 12px;
-  border-radius: 16px;
-  margin-bottom: 2px;
-}
-.message-sent .message-content {
-  background: #2563eb;
-  color: #fff;
-}
-.message-received .message-content {
+  padding: 12px 15px;
+  border-radius: 8px;
   background: #f1f5f9;
-  color: #222;
+  color: #2c3e50;
 }
+
+.message-sent .message-content {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+}
+
 .message-content p {
   margin: 0;
-  font-size: 14px;
+  font-size: 1rem;
   line-height: 1.4;
 }
+
 .message-time {
-  font-size: 11px;
-  color: #888;
+  font-size: 0.85rem;
+  color: #7f8c8d;
   padding: 0 12px;
+  margin-top: 4px;
+}
+
+.read-status, .sent-status {
+  margin-left: 5px;
+}
+
+.read-status {
+  color: #27ae60;
+}
+
+.sent-status {
+  color: #95a5a6;
+}
+
+.load-more-container {
+  text-align: center;
+  padding: 20px;
 }
 
 .input-area {
-  padding: 16px 20px;
-  border-top: 1px solid #e5e7eb;
-  background: #fff;
+  padding: 25px;
+  border-top: 1px solid #e1e8ed;
+  background: white;
 }
+
 .input-container {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 15px;
 }
+
 .message-input {
   flex: 1;
   display: flex;
   align-items: center;
-  background: #e5e7eb;
-  border-radius: 20px;
+  border: 2px solid #e1e8ed;
+  border-radius: 8px;
   padding: 8px 12px;
+  background: #fafbfc;
 }
+
 .message-input input {
   flex: 1;
   border: none;
   background: transparent;
-  color: #222;
-  font-size: 15px;
+  color: #2c3e50;
+  font-size: 1rem;
   outline: none;
 }
+
 .message-input input::placeholder {
-  color: #888;
-}
-.send-btn {
-  background: #2563eb !important;
-  color: #fff !important;
-}
-.send-btn:disabled {
-  background: #e5e7eb !important;
-  color: #888 !important;
-  cursor: not-allowed;
+  color: #7f8c8d;
 }
 
-.empty-state {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: #888;
-}
-.empty-icon {
-  font-size: 64px;
-  margin-bottom: 16px;
-  opacity: 0.5;
-}
-.empty-state h3 {
-  margin: 0 0 8px 0;
-  font-size: 20px;
-  font-weight: 600;
-  color: #222;
-}
-.empty-state p {
-  margin: 0;
-  font-size: 14px;
-}
 .closed-notice {
-  margin-top: 10px;
-  color: #b91c1c;
+  margin: 20px 25px;
+  color: #e74c3c;
   background: #fef2f2;
   border: 1px solid #fecaca;
   border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 14px;
+  padding: 12px 15px;
+  font-size: 0.95rem;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
-/* Scrollbar */
 .customer-list::-webkit-scrollbar,
 .messages-container::-webkit-scrollbar {
   width: 4px;
 }
+
 .customer-list::-webkit-scrollbar-track,
 .messages-container::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .customer-list::-webkit-scrollbar-thumb,
-.messages-container::-webkit-scrollbar-thumb {
-  background: #e5e7eb;
+.messages-container::-webkit-thumb {
+  background: #e1e8ed;
   border-radius: 2px;
 }
+
 .customer-list::-webkit-scrollbar-thumb:hover,
 .messages-container::-webkit-scrollbar-thumb:hover {
   background: #d1d5db;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .chat-container {
+    padding: 15px;
+  }
+
+  .sidebar {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .section-title {
+    font-size: 1.2rem;
+  }
+
+  .filters {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .customer-item {
+    padding: 10px 15px;
+  }
+
+  .chat-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+
+  .messages-container {
+    padding: 15px;
+  }
+
+  .input-container {
+    flex-wrap: wrap;
+  }
+
+  .message-input {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .customer-item {
+    font-size: 0.9rem;
+  }
+
+  .customer-name {
+    font-size: 0.9rem;
+  }
+
+  .last-message {
+    font-size: 0.8rem;
+  }
+
+  .btn {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+
+  .btn-sm {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
 }
 </style>

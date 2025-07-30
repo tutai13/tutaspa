@@ -78,12 +78,12 @@
     <aside class="sidebar" v-if="authStore.isAuthenticated">
       <div class="menu">
         <div class="menu-title">HOME</div>
-        <router-link to="/" class="menu-item" exact-active-class="active" title="Dashboard">
-          <i class="fas fa-th-large"></i>
-        </router-link>
         
         <!-- Menu cho Admin -->
         <template v-if="authStore.isAdmin">
+        <router-link to="/" class="menu-item" exact-active-class="active" title="Dashboard">
+          <i class="fas fa-th-large"></i>
+        </router-link>
           <router-link to="/QlDichVu" class="menu-item" exact-active-class="active" title="Quản lý dịch vụ">
             <i class="fas fa-globe"></i>
           </router-link>

@@ -35,19 +35,26 @@
         </div>
 
         <!-- Đăng nhập và Xem lịch -->
-        <div class="d-flex align-items-center gap-2">
-          <router-link
+        <div class="d-flex align-items-center gap-2" >
+          <router-link v-if="!state.isAuthenticated"
             to="/login"
             class="btn btn-outline-dark btn-sm d-flex align-items-center gap-1"
           >
             <i class="fa-solid fa-user"></i> Đăng nhập
           </router-link>
-          <router-link
+          <router-link v-if="state.isAuthenticated"
             to="/lich-hen"
             class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1"
           >
             <i class="fa-regular fa-calendar-check"></i> Xem lịch
           </router-link>
+          <button v-if="state.isAuthenticated"
+            to="/lich-hen"
+            class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1"
+            @click="state.logout"
+          >
+            <i class="fa-regular fa-quit"></i> Đăng Xuất
+          </button>
         </div>
       </div>
     </div>
@@ -124,16 +131,15 @@
 
     <!-- Chat Window -->
     <div v-if="chatOpen" class="chat-window">
-      <div class="chat-header">
-        <h3>Hỗ trợ khách hàng</h3>
-        <p>Chúng tôi luôn sẵn sàng hỗ trợ bạn</p>
-        <div
-          :class="['status-indicator', isConnected ? 'connected' : '']"
-        ></div>
-        <button @click="toggleChat" class="close-btn">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
+        <div class="chat-header">
+      <h3>Hỗ trợ khách hàng</h3>
+      <p v-if="assignedAdmin.name">Bạn đang trò chuyện với <strong>{{ assignedAdmin.name }}</strong></p>
+      <p v-else>Chúng tôi luôn sẵn sàng hỗ trợ bạn</p>
+      <div :class="['status-indicator', isConnected ? 'connected' : '']"></div>
+      <button @click="toggleChat" class="close-btn">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
 
       <!-- Welcome Screen -->
       <div v-if="!chatStarted" class="welcome-screen">
@@ -199,7 +205,6 @@
       <!-- Nút bắt đầu phiên mới khi admin disconnect -->
       <div v-if="chatStarted && adminDisconnected" class="new-session-section">
         <div class="disconnect-notice">
-          <p>Nhân viên hỗ trợ đã kết thúc phiên làm việc</p>
           <button @click="startNewSession" class="start-new-session-btn">
             Bắt đầu phiên hỗ trợ mới
           </button>
@@ -353,6 +358,7 @@
 <script setup>
 import { onMounted, onUnmounted, ref, nextTick } from "vue";
 import * as signalR from "@microsoft/signalr";
+import { useAuthState } from "./services/authstate";
 
 const chatClosed = ref(false);
 const adminDisconnected = ref(false); // Thêm biến theo dõi trạng thái admin disconnect
@@ -373,7 +379,7 @@ const assignedAdmin = ref({ id: null, name: null });
 
 const isNavbarHidden = ref(false);
 let lastScroll = 0;
-
+const state = useAuthState();
 onMounted(() => {
   window.addEventListener("scroll", () => {
     const currentScroll =
@@ -457,7 +463,7 @@ function setupChatEventHandlers() {
   connection.value.on("AdminAssigned", (data) => {
     console.log("Admin assigned:", data);
     // Lưu admin vào biến để hiện ở header
-    assignedAdmin.value = { id: data.AdminId, name: data.AdminName };
+    assignedAdmin.value = { id: data.adminId, name: data.adminName };
     // Reset trạng thái admin disconnect khi có admin mới
     adminDisconnected.value = false;
     // Hiện thông báo inline
@@ -484,19 +490,19 @@ function setupChatEventHandlers() {
     }
   });
 
-  connection.value.on("ChatClosed", (msg) => {
-    chatStarted.value = false;
-    // Ẩn phần nhập tin nhắn
+  connection.value.on("ChatClosed", handleSessionEnded);
+  connection.value.on("AdminDisconnected", handleSessionEnded);
+
+  function handleSessionEnded(data) {
+    // Ẩn phần nhập tin nhắn, hiện new-session-section
+    chatStarted.value = true; // Để giữ khung chat đang mở
+    adminDisconnected.value = true; // Hiện new-session-section
     chatClosed.value = true;
-    adminDisconnected.value = false; // Reset trạng thái admin disconnect
-    // Hiện lại màn hình bắt đầu chat
     addInlineSystemNotice(
-      typeof msg === "string"
-        ? msg
-        : msg?.message ||
-            "Phiên chat đã kết thúc. Vui lòng bắt đầu cuộc trò chuyện mới."
+      (data?.Message || data?.message) ??
+        "Phiên chat đã kết thúc. Vui lòng bắt đầu phiên hỗ trợ mới."
     );
-  });
+  }
 
   connection.value.on("MessageSent", (message) => {
     console.log("Message sent successfully:", message.messageId);
@@ -598,30 +604,23 @@ async function startChat() {
 
 // Thêm function mới để xử lý khi nhấn nút bắt đầu phiên mới
 async function startNewSession() {
-  try {
-    // Reset các trạng thái về ban đầu
-    chatStarted.value = false;
-    adminDisconnected.value = false;
-    chatClosed.value = false;
-    sessionId.value = null;
-    userName.value = null;
-    messages.value = [];
-    assignedAdmin.value = { id: null, name: null };
+  // Reset trạng thái về ban đầu
+  chatStarted.value = false;
+  adminDisconnected.value = false;
+  chatClosed.value = false;
+  sessionId.value = null;
+  userName.value = null;
+  messages.value = [];
+  assignedAdmin.value = { id: null, name: null };
 
-    // Disconnect connection hiện tại nếu có
-    if (
-      connection.value &&
-      connection.value.state === signalR.HubConnectionState.Connected
-    ) {
-      await connection.value.stop();
-    }
-
-    // Mở lại welcome screen để user có thể nhập tên mới nếu muốn
-    // chatStarted.value đã được set = false ở trên nên welcome screen sẽ hiện
-  } catch (error) {
-    console.error("Lỗi khi bắt đầu phiên mới:", error);
-    addSystemMessage("Có lỗi xảy ra. Vui lòng thử lại.", "error");
+  // Disconnect connection hiện tại nếu có
+  if (
+    connection.value &&
+    connection.value.state === signalR.HubConnectionState.Connected
+  ) {
+    await connection.value.stop();
   }
+  // Welcome screen sẽ hiện lại cho nhập tên
 }
 
 async function sendMessage() {
@@ -1142,5 +1141,352 @@ body {
 .user-link:hover,
 .calendar-link:hover {
   color: #007bff;
+}
+
+
+new-session-section {
+    padding: 16px;
+  }
+  .start-new-session-btn {
+  background: linear-gradient(135deg, #ff6b6b, #ff5252);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.start-new-session-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+  background: linear-gradient(135deg, #ff5252, #ff4444);
+}
+
+.start-new-session-btn:active {
+  transform: translateY(0);
+}
+/* Chat Popup Styles */
+.chat-popup-wrapper {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.chat-toggle-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-toggle-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+}
+
+.notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #ff4444;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.chat-window {
+  width: 350px;
+  height: 500px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chat-header {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  padding: 20px;
+  text-align: center;
+  position: relative;
+}
+
+.chat-header h3 {
+  margin: 0 0 5px 0;
+  font-size: 1.2em;
+}
+
+.chat-header p {
+  margin: 0;
+  font-size: 0.8em;
+  opacity: 0.9;
+}
+
+.status-indicator {
+  position: absolute;
+  top: 15px;
+  right: 40px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ff4444;
+  animation: pulse 2s infinite;
+}
+
+.status-indicator.connected {
+  background: #4CAF50;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.welcome-screen {
+  padding: 30px 20px;
+  text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.welcome-screen h4 {
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.welcome-screen p {
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 0.9em;
+}
+
+.welcome-screen input {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #ddd;
+  border-radius: 20px;
+  font-size: 14px;
+  margin-bottom: 15px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.welcome-screen input:focus {
+  border-color: #4CAF50;
+}
+
+.start-chat-btn {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.start-chat-btn:hover {
+  transform: translateY(-2px);
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
+  background: #f8f9fa;
+}
+
+.message {
+  margin-bottom: 15px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.message.user {
+  justify-content: flex-end;
+}
+
+.message.support {
+  justify-content: flex-start;
+}
+
+.message-bubble {
+  max-width: 70%;
+  padding: 10px 14px;
+  border-radius: 18px;
+  font-size: 13px;
+  line-height: 1.4;
+  position: relative;
+  animation: slideIn 0.3s ease;
+}
+
+.message.user .message-bubble {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.message.support .message-bubble {
+  background: white;
+  color: #333;
+  border: 1px solid #e0e0e0;
+  border-bottom-left-radius: 4px;
+}
+
+.message-time {
+  font-size: 10px;
+  opacity: 0.7;
+  margin-top: 5px;
+}
+
+.message.user .message-time {
+  text-align: right;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.message.support .message-time {
+  color: #666;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chat-input {
+  padding: 15px;
+  background: white;
+  border-top: 1px solid #e0e0e0;
+}
+
+.input-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.message-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 2px solid #ddd;
+  border-radius: 20px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.message-input:focus {
+  border-color: #4CAF50;
+}
+
+.send-btn {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.send-btn:hover {
+  transform: scale(1.05);
+}
+
+.send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .chat-popup-wrapper {
+    bottom: 10px;
+    right: 10px;
+  }
+  
+  .chat-window {
+    width: 320px;
+    height: 450px;
+  }
+}
+
+.inline-system-notice {
+  width: 100%;
+  text-align: center;
+  background: #e5e7eb;
+  color: #444;
+  border-radius: 8px;
+  padding: 7px 12px;
+  margin: 10px 0;
+  font-size: 0.95em;
+  font-style: italic;
+  opacity: 0.85;
 }
 </style>
