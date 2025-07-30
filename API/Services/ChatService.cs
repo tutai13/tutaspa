@@ -1,16 +1,19 @@
 ﻿using API.Data;
 using API.Models.Chat;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace TutaSpa.API.IService
 {
     public class ChatService : IChatService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IMemoryCache _cache;
 
-        public ChatService(ApplicationDbContext context)
+        public ChatService(ApplicationDbContext context, IMemoryCache cache)
         {
             _context = context;
+            _cache = cache;
         }
 
         #region Session Management
@@ -43,9 +46,21 @@ namespace TutaSpa.API.IService
 
         public async Task<ChatSession?> GetSessionByIdAsync(string sessionId)
         {
-            return await _context.ChatSessions
+            string cacheKey = $"ChatSession_{sessionId}";
+            if (_cache.TryGetValue(cacheKey, out ChatSession cachedSession))
+            {
+                return cachedSession;
+            }
+
+            var session = await _context.ChatSessions
                 .Include(s => s.Messages.OrderBy(m => m.Timestamp))
                 .FirstOrDefaultAsync(s => s.SessionId == sessionId);
+
+            if (session != null)
+            {
+                _cache.Set(cacheKey, session, TimeSpan.FromMinutes(5));
+            }
+            return session;
         }
 
         public async Task<ChatSession?> GetActiveSessionByCustomerIdAsync(string customerId)
@@ -56,7 +71,7 @@ namespace TutaSpa.API.IService
                                     s.Status == ChatSessionStatus.Active);
         }
 
-        public async Task<bool> AssignAdminToSessionAsync(string sessionId, string adminId, string adminName)
+       public async Task<bool> AssignAdminToSessionAsync(string sessionId, string adminId, string adminName)
         {
             var session = await _context.ChatSessions
                 .FirstOrDefaultAsync(s => s.SessionId == sessionId);
@@ -69,6 +84,15 @@ namespace TutaSpa.API.IService
             session.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
+
+            // Xóa cache của session và danh sách active sessions
+            _cache.Remove($"ChatSession_{sessionId}");
+            _cache.Remove("ActiveChatSessions");
+
+            _cache.Remove($"RecentSessions_{adminId}_72_50");
+
+            
+
             return true;
         }
 
@@ -89,10 +113,19 @@ namespace TutaSpa.API.IService
 
         public async Task<List<ChatSession>> GetActiveSessionsAsync()
         {
-            return await _context.ChatSessions
+            string cacheKey = "ActiveChatSessions";
+            if (_cache.TryGetValue(cacheKey, out List<ChatSession> cachedList))
+            {
+                return cachedList;
+            }
+
+            var sessions = await _context.ChatSessions
                 .Where(s => s.Status == ChatSessionStatus.Active || s.Status == ChatSessionStatus.Assigned)
                 .OrderByDescending(s => s.StartTime)
                 .ToListAsync();
+
+            _cache.Set(cacheKey, sessions, TimeSpan.FromMinutes(2));
+            return sessions;
         }
 
         public async Task<List<ChatSession>> GetSessionsByAdminIdAsync(string adminId, int pageSize = 50, int pageNumber = 1)
@@ -106,12 +139,34 @@ namespace TutaSpa.API.IService
                 .ToListAsync();
         }
 
+        public async Task<List<ChatSession>> GetRecentSessionsAsync(string adminId, int hours = 24, int pageSize = 50)
+        {
+            string cacheKey = $"RecentSessions_{adminId}_{hours}_{pageSize}";
+            if (_cache.TryGetValue(cacheKey, out List<ChatSession> cachedList))
+            {
+                return cachedList;
+            }
+
+            var cutoffTime = DateTime.UtcNow.AddHours(-hours);
+
+            var sessions = await _context.ChatSessions
+                .Where(s => s.StartTime >= cutoffTime && s.AdminId == adminId)
+                .OrderByDescending(s => s.StartTime)
+                .Take(pageSize)
+                .Include(s => s.Messages.OrderByDescending(m => m.Timestamp).Take(1))
+                .ToListAsync();
+
+            _cache.Set(cacheKey, sessions, TimeSpan.FromMinutes(2));
+            return sessions;
+        }
+
         #endregion
 
         #region Message Management
 
         public async Task<ChatMessage> SaveMessageAsync(ChatMessage messagea, string sessionId)
         {
+            Console.WriteLine("Đã lưu"); 
             var message = new ChatMessage
             {
                 MessageId = messagea.MessageId,
@@ -186,18 +241,6 @@ namespace TutaSpa.API.IService
                 .CountAsync(m => m.SessionId == sessionId &&
                                m.IsFromAdmin == isFromAdmin &&
                                !m.IsRead);
-        }
-
-        public async Task<List<ChatSession>> GetRecentSessionsAsync(string adminId, int hours = 24, int pageSize = 50)
-        {
-            var cutoffTime = DateTime.UtcNow.AddHours(-hours);
-
-            return await _context.ChatSessions
-                .Where(s => s.StartTime >= cutoffTime && s.AdminId == adminId)
-                .OrderByDescending(s => s.StartTime)
-                .Take(pageSize)
-                .Include(s => s.Messages.OrderByDescending(m => m.Timestamp).Take(1))
-                .ToListAsync();
         }
 
         #endregion

@@ -120,7 +120,7 @@ import { useRouter } from 'vue-router'
 
 
 const router = useRouter()
-const return_url = router.currentRoute.value.query.return_url || '/'
+const return_url = router.currentRoute.value.query.return_url 
 
 const loginForm = reactive({
   email: '',
@@ -169,13 +169,12 @@ const validateForm = () => {
 // Route to dashboard based on role
 const routeToDashboard = (role) => {
   const roleRoutes = {
-    admin: '/admin-dashboard',
-    manager: '/manager-dashboard',
-    user: '/user-dashboard'
+    Admin: '/',
+    Cashier: '/ThuNgan',
+    InventoryManager: '/kho'
   }
-  
-  const route = roleRoutes[role] || '/dashboard'
-  router.push(route)
+  const route = roleRoutes[role] || '/'
+  return route
 }
 
 // Handle login form submission
@@ -198,7 +197,9 @@ const handleLogin = async () => {
             timer : 1500
         })
     setTimeout(() => {
-      router.push(''+return_url)
+      const role = response.userInfo.role
+      const url  = return_url || routeToDashboard(role)
+      router.push(''+url)
     },2000)
     }
    catch (error) {
@@ -410,14 +411,14 @@ const handleLogin = async () => {
     .password-toggle {
     background: none;
     border: none;
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(0, 0, 0, 0.5);
     cursor: pointer;
     padding: 0 1rem;
     transition: color 0.3s ease;
     }
 
     .password-toggle:hover {
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(0, 0, 0, 0.8);
     }
 
     .error-message {

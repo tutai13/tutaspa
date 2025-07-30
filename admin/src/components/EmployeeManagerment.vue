@@ -86,8 +86,8 @@
                 required
               >
                 <option value="">Chọn vai trò</option>
-                <option value="0">Cashier</option>
-                <option value="1">Inventory Manager</option>
+                <option value="0">Thu ngân</option>
+                <option value="1">Quản lý kho</option>
               </select>
             </div>
           </div>

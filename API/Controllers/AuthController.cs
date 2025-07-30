@@ -92,8 +92,6 @@ namespace API.Controllers
             }
         }
 
-
-
         [HttpPost("Logout")]
         public async Task<IActionResult> Logout()
         {

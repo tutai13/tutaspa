@@ -5,4 +5,6 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import App from "./App.vue";
 import router from "./router/router";
-createApp(App).use(router).mount("#app");
+import { createPinia } from "pinia";
+const pinia = createPinia();
+createApp(App).use(pinia).use(router).mount("#app");

@@ -507,6 +507,7 @@ namespace ChatSupport.Hubs
                 }
             }
 
+
             // Nếu là admin
             var adminSession = _adminSessions.Values.FirstOrDefault(a => a.ConnectionId == Context.ConnectionId);
             if (adminSession != null)
@@ -556,6 +557,22 @@ namespace ChatSupport.Hubs
 
             await base.OnDisconnectedAsync(exception);
         }
+
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Cashier")]
+        public async Task CloseSession(string sessionId)
+        {
+            // Đóng trạng thái phiên chat trong database
+            await _chatService.CloseSessionAsync(sessionId);
+
+            // Tìm user đang thuộc phiên này
+            var userSession = _userSessions.Values.FirstOrDefault(u => u.SessionId == sessionId);
+
+            if (userSession != null && userSession.IsOnline)
+            {
+                await Clients.Client(userSession.ConnectionId).SendAsync("ChatClosed", new { sessionId = sessionId });
+            }
+        }
+
 
         private string GetAdminId()
         {
