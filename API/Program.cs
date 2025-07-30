@@ -134,7 +134,18 @@ builder.Services.AddControllers()
 
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient<IOTPService, OtpService>();
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowVueApp",
+        builder =>
+        {
+            builder
+                .WithOrigins("http://localhost:5173", "http://localhost:5174")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();// Quan trọng nếu dùng SignalR
+        });
+});
 
 
 

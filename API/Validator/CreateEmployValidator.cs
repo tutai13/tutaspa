@@ -28,6 +28,7 @@ namespace API.Validator
                     return !await CheckAvailablePhoneNumber(phoneNumber);
                 }).WithMessage("Số điện thoại đã tồn tại"); 
 
+
             RuleFor(x => x.Name).NotNull().WithMessage("Tên không được để trống");
             
 
