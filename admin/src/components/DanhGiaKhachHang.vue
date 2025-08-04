@@ -157,7 +157,6 @@
     </div>
 
     <!-- Danh sách đánh giá -->
-
     <div class="card">
       <div class="card-header">
         <h2 class="section-title">
@@ -169,36 +168,6 @@
           <span class="stat-item">
             <i class="fas fa-eye"></i>
             Hiển thị: {{ danhSachLoc.filter(r => r.isActive).length }}
-
-<div v-if="danhSachLoc.length === 0" class="text-center my-5 text-secondary fs-5">
-  <i class="fas fa-circle-info fa-2x text-muted mb-3 d-block"></i>
-  Không có đánh giá phù hợp.
-</div>
-
-<div v-else class="table-responsive shadow rounded-4 overflow-hidden">
-  <table class="table table-bordered table-hover align-middle mb-0">
-    <thead class="bg-gradient bg-primary text-white">
-      <tr class="text-center">
-        <th><i class="fas fa-briefcase me-1"></i> Dịch vụ</th>
-        <th><i class="fas fa-user me-1"></i> Người đánh giá</th>
-        <th><i class="fas fa-star me-1"></i> Sao</th>
-        <th><i class="fas fa-comment-dots me-1"></i> Nội dung</th>
-        <th><i class="fas fa-calendar-day me-1"></i> Ngày</th>
-        <th><i class="fas fa-check-circle me-1"></i> Trạng thái</th>
-        <th><i class="fas fa-tools me-1"></i> Hành động</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="dg in danhSachLoc" :key="dg.id" class="text-center">
-        <td class="fw-semibold text-primary">{{ dg.dichVu?.tenDichVu || 'Không rõ' }}</td>
-        <td>
-          <span v-if="dg.anDanh" class="text-muted fst-italic"><i class="fas fa-user-secret me-1"></i>Ẩn danh</span>
-          <span v-else>{{ dg.user?.name || 'Chưa rõ' }}</span>
-        </td>
-        <td>
-          <span v-for="n in 5" :key="n">
-            <i class="fa-star fas" :class="n <= dg.soSao ? 'text-warning' : 'text-secondary opacity-25'"></i>
-
           </span>
           <span class="stat-item">
             <i class="fas fa-hourglass-start"></i>
@@ -215,10 +184,10 @@
         <div v-else-if="danhSachLoc.length === 0" class="empty-state">
           <i class="fas fa-comment-slash"></i>
           <p>Không có đánh giá phù hợp với bộ lọc</p>
-          <!-- <button class="btn btn-primary" style="height: 100px ; width: 150px;   ;" @click="resetFilters">
+          <button class="btn btn-primary" @click="resetFilters">
             <i class="fas fa-undo"></i>
             Đặt lại bộ lọc
-          </button> -->
+          </button>
         </div>
 
         <div v-else class="table-responsive">

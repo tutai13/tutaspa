@@ -11,6 +11,9 @@ using Net.payOS;
 using Net.payOS.Types;
 using System.Text;
 using Twilio.TwiML.Voice;
+using DinkToPdf.Contracts;
+using API.Extensions;
+using DinkToPdf;
 
 namespace API.Controllers
 {
