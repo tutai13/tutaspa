@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using API.Data;
 using API.IRepository;
@@ -92,7 +92,7 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 .AddDefaultTokenProviders();
 
 
-builder.Services.AddSignalR(); 
+builder.Services.AddSignalR();
 
 
 
@@ -129,9 +129,6 @@ builder.Services.AddControllers()
 
 
 
-
-
-
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient<IOTPService, OtpService>();
 builder.Services.AddCors(options =>
@@ -163,7 +160,7 @@ if (app.Environment.IsDevelopment())
 
 }
 
-app.Use(async ( context, next) =>
+app.Use(async (context, next) =>
 {
     var path = context.Request.Path;
     var token = context.Request.Query["access_token"].ToString();
@@ -195,7 +192,7 @@ app.Use(async ( context, next) =>
         catch
         {
 
-            
+
             context.Response.StatusCode = 401;
             return;
         }
@@ -219,7 +216,7 @@ app.UseResponseCaching();
 app.UseEndpoints(enpoints =>
 {
     enpoints.MapControllers();
-    
+
     enpoints.MapHub<ChatHub>("/chat").RequireCors("AllowVueApp");
 }
 );
