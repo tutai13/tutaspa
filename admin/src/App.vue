@@ -20,12 +20,9 @@
           exact-active-class="active"
         >
           <i class="fas fa-shopping-cart"></i> Quản lý Khuyến mãi
-        </router-link>
-        <router-link to="/kho" class="menu-item" exact-active-class="active">
-          <i class="fas fa-columns"></i> Quản lý kho
-        </router-link>
+        </router-link>       
         <router-link to="/QuanLySanPham" class="menu-item" exact-active-class="active">
-          <i class="fas fa-columns"></i> Quản lý Sản Phẩm
+          <i class="fas fa-columns"></i> Quản lý Kho
         </router-link>
         <router-link to="/employees" class="menu-item" exact-active-class="active">
           <i class="fas fa-columns"></i> Quản lý nhân viên

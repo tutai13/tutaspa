@@ -12,7 +12,8 @@ namespace API.Data
         public DbSet<DichVu> DichVus { get; set; }
         public DbSet<LoaiDichVu> LoaiDichVus { get; set; }
         public DbSet<Product> Product { get; set; }
-        public DbSet<Category> Categorys { get; set; }
+		public DbSet<ProductBatch> ProductBatches { get; set; }
+		public DbSet<Category> Categorys { get; set; }
 
 		public DbSet<InventoryHistory> InventoryHistories { get; set; }
 
@@ -37,11 +38,34 @@ namespace API.Data
                 .HasIndex(u => u.Email)
                 .IsUnique();
 
-			modelBuilder.Entity<DichVu>(entity =>
-			{
-				entity.Property(e => e.Gia)
-					  .HasColumnType("decimal(18,2)"); 
-			});
+            modelBuilder.Entity<DichVu>(entity =>
+            {
+                entity.Property(e => e.Gia)
+                      .HasColumnType("decimal(18,2)");
+            });
+
+			// Giá bán của sản phẩm
+			modelBuilder.Entity<Product>()
+				.Property(p => p.CurrentSellingPrice)
+				.HasColumnType("decimal(18,2)");
+
+			// Thiết lập mối quan hệ 1-n Product → ProductBatch
+			modelBuilder.Entity<ProductBatch>()
+				.Property(b => b.ImportPrice)
+				.HasColumnType("decimal(18,2)");
+
+			modelBuilder.Entity<Product>()
+				.HasMany(p => p.ProductBatches)
+				.WithOne(b => b.Product)
+				.HasForeignKey(b => b.ProductId)
+				.OnDelete(DeleteBehavior.Cascade); // hoặc Restrict nếu muốn cứng hơn
+
+			// Quan hệ InventoryHistory → ProductBatch
+			modelBuilder.Entity<InventoryHistory>()
+				.HasOne(h => h.Batch)
+				.WithMany()
+				.HasForeignKey(h => h.BatchId)
+				.OnDelete(DeleteBehavior.Restrict);
 		}
     }
 

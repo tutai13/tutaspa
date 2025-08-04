@@ -70,7 +70,7 @@ builder.Services.AddAuthorization(options =>
 // Cấu hình db
 builder.Services.AddDbContext<ApplicationDbContext>(options => options
                 .UseSqlServer(builder.Configuration
-                .GetConnectionString("Defaultconnection"))
+                .GetConnectionString("DefaultConnection"))
     );
 
 builder.Services.AddIdentity<User, IdentityRole>(options =>
@@ -91,6 +91,7 @@ builder.Services.AddScoped<IOTPService, OtpService>();
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IProductBatchService, ProductBatchService>();
 
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 

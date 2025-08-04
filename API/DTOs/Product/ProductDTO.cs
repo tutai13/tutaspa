@@ -13,12 +13,26 @@
     }
     public class ProductCreateDTO
     {
-        public string ProductName { get; set; }
-        public decimal Price { get; set; }
-        public int Quantity { get; set; }
-        public string Description { get; set; }
-        public int CategoryId { get; set; }
-        public IFormFile Image { get; set; }  // Đây là ảnh upload
-    }
+		public string ProductName { get; set; }
+		public string Description { get; set; }
+		public int CategoryId { get; set; }
+		public IFormFile Image { get; set; }
+
+		// Lô hàng đầu tiên
+		public decimal ImportPrice { get; set; }
+		public decimal SellingPrice { get; set; }
+		public int Quantity { get; set; }
+		public string SupplierName { get; set; }
+		public DateTime ManufactureDate { get; set; }
+		public DateTime ExpiryDate { get; set; }
+	}
+	public class ProductUpdateDTO
+	{
+		public string ProductName { get; set; }
+		public string Description { get; set; }
+		public decimal SellingPrice { get; set; }
+		public int CategoryId { get; set; }
+		public IFormFile? Image { get; set; } // Ảnh có thể bỏ qua nếu không cập nhật
+	}
 
 }
