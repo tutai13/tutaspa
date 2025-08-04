@@ -81,7 +81,7 @@
       </div>
       <div class="card-body">
         <!-- Empty State -->
-        <div v-if="!loaiDichVus.length" class="empty-state">
+        <div v-if="!loaiDichVus?.length" class="empty-state">
           <i class="fa fa-folder-open"></i>
           <p>Không có loại dịch vụ nào</p>
         </div>
@@ -122,6 +122,7 @@
             </tbody>
           </table>
         </div>
+
       </div>
     </div>
 
@@ -143,10 +144,9 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import apiClient from "../utils/axiosClient";
-
 // State
-const loaiDichVus = ref([]);
-const allLoaiDichVus = ref([]); // lưu tất cả để reset khi xóa tìm kiếm
+const loaiDichVus = ref([]);        // Dữ liệu hiển thị
+const allLoaiDichVus = ref([]);     // Dữ liệu gốc từ API
 const form = ref({
   loaiDichVuID: 0,
   tenLoai: ''
@@ -182,11 +182,11 @@ const getToastIcon = (type) => {
 const fetchData = async () => {
   try {
     const res = await apiClient.get('/LoaiDichVu');
-    loaiDichVus.value = res.data;
-    allLoaiDichVus.value = res.data;
+    allLoaiDichVus.value = res;
+    loaiDichVus.value = res;
   } catch (error) {
     showToast("Lỗi khi tải danh sách loại dịch vụ", 'error');
-    console.error("Lỗi khi tải danh sách loại dịch vụ:", error);
+    console.error(error);
   }
 };
 
@@ -202,7 +202,7 @@ const createLoaiDichVu = async () => {
     fetchData();
   } catch (error) {
     showToast("Lỗi khi thêm loại dịch vụ", 'error');
-    console.error("Lỗi khi thêm loại dịch vụ:", error);
+    console.error(error);
   }
 };
 
@@ -214,7 +214,7 @@ const updateLoaiDichVu = async () => {
     fetchData();
   } catch (error) {
     showToast("Lỗi khi cập nhật loại dịch vụ", 'error');
-    console.error("Lỗi khi cập nhật loại dịch vụ:", error);
+    console.error(error);
   }
 };
 
@@ -223,10 +223,10 @@ const deleteLoaiDichVu = async (id) => {
     try {
       await apiClient.delete(`/LoaiDichVu/${id}`);
       showToast("Xóa loại dịch vụ thành công!", 'success');
-      fetchData();
+      fetchData();  
     } catch (error) {
       showToast("Lỗi khi xóa loại dịch vụ", 'error');
-      console.error("Lỗi khi xóa loại dịch vụ:", error);
+      console.error(error);
     }
   }
 };
@@ -246,6 +246,10 @@ const resetForm = () => {
 
 const searchByName = () => {
   const keyword = searchName.value.trim().toLowerCase();
+  if (!keyword) {
+    loaiDichVus.value = [...allLoaiDichVus.value];
+    return;
+  }
   loaiDichVus.value = allLoaiDichVus.value.filter(item =>
     item.tenLoai.toLowerCase().includes(keyword)
   );

@@ -16,10 +16,11 @@ namespace API.Controllers
     public class DichVuController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-
-        public DichVuController(ApplicationDbContext context)
+        private readonly IWebHostEnvironment _env;
+        public DichVuController(ApplicationDbContext context, IWebHostEnvironment env )
         {
             _context = context;
+            _env = env;
         }
         [HttpGet]
         public async Task<ActionResult<IEnumerable<DichVu>>> GetDichVus()
@@ -181,6 +182,47 @@ namespace API.Controllers
             {
                 return StatusCode(500, new { Message = "Lỗi khi cập nhật trạng thái.", Error = ex.Message });
             }
+        }
+        [HttpPost("image")]
+        public async Task<IActionResult> UploadImage(IFormFile file, [FromForm] string tenDichVu)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest(new { message = "Không có file ảnh." });
+
+            if (string.IsNullOrWhiteSpace(tenDichVu))
+                return BadRequest(new { message = "Tên dịch vụ không được rỗng." });
+
+            var uploadsFolder = Path.Combine(_env.WebRootPath, "images");
+            if (!Directory.Exists(uploadsFolder))
+                Directory.CreateDirectory(uploadsFolder);
+
+            // Chuyển tên dịch vụ thành slug (bỏ dấu, viết thường, gạch nối)
+            string slug = tenDichVu
+                .ToLower()
+                .Normalize(System.Text.NormalizationForm.FormD)
+                .Replace("[\\u0300-\\u036f]", "") // bỏ dấu
+                .Replace("đ", "d") // riêng chữ đ
+                .Replace(" ", "-")
+                .Replace("[^a-z0-9-]", ""); // chỉ giữ a-z, số, -
+
+            string extension = Path.GetExtension(file.FileName);
+            string fileName = $"{slug}{extension}";
+            string filePath = Path.Combine(uploadsFolder, fileName);
+
+            // Nếu trùng tên ảnh thì thêm hậu tố chuỗi ngẫu nhiên
+            while (System.IO.File.Exists(filePath))
+            {
+                string randomSuffix = Path.GetRandomFileName().Substring(0, 6); // ví dụ: 'abc123'
+                fileName = $"{slug}_{randomSuffix}{extension}";
+                filePath = Path.Combine(uploadsFolder, fileName);
+            }
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            return Ok(new { fileName });
         }
         private bool DichVuExists(int id)
         {

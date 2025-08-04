@@ -18,6 +18,7 @@
       </div>
       <div class="card-body">
         <div class="filter-grid">
+          <!-- Tìm kiếm theo tên -->
           <div class="filter-group">
             <label class="filter-label">
               <i class="fa fa-search me-1"></i> Tìm theo tên
@@ -34,6 +35,7 @@
             </div>
           </div>
 
+          <!-- Lọc theo giá -->
           <div class="filter-group price-filter">
             <label class="filter-label">
               <i class="fa fa-filter me-1"></i> Lọc giá
@@ -47,6 +49,7 @@
             </div>
           </div>
 
+          <!-- Xem tất cả -->
           <div class="filter-group">
             <button class="btn btn-outline-primary" @click="fetchDichVus">
               <i class="fa fa-list me-1"></i> Tất cả
@@ -81,9 +84,9 @@
                   <label class="form-label">Thời gian (phút) <span class="required">*</span></label>
                   <input v-model.number="dichVu.thoiGian" type="number" class="form-control" min="0" required />
                 </div>
-                <div class="form-group">
+                 <div class="form-group">
                   <label class="form-label">Hình ảnh</label>
-                  <input v-model="dichVu.hinhAnh" class="form-control" placeholder="image-name" />
+                  <input type="file" class="form-control" @change="handleFileChange" accept="image/*" />
                 </div>
                 <div class="form-group full-width">
                   <label class="form-label">Mô tả</label>
@@ -150,7 +153,7 @@
                     <td class="service-time">{{ dv.thoiGian }} phút</td>
                     <td class="service-image">
                       <img 
-                        :src="'http://localhost:5055/images/' + dv.hinhAnh + '.jpg'" 
+                        :src="'https://localhost:7183/images/' + dv.hinhAnh" 
                         class="service-img" 
                         alt="Service image"
                       />
@@ -239,10 +242,11 @@ const dichVu = ref({
   trangThai: 1,
   loaiDichVuID: 1,
 });
+const selectedImage = ref(null);
 const isEditing = ref(false);
 const searchName = ref("");
 const priceMin = ref(0);
-const priceMax = ref(1000000);
+const priceMax = ref(0);
 
 const currentPage = ref(1);
 const pageSize = ref(5);
@@ -253,6 +257,10 @@ const paginatedDichVus = computed(() => {
   return dichVus.value.slice(start, start + pageSize.value);
 });
 
+const handleFileChange = (e) => {
+  selectedImage.value = e.target.files[0];
+};
+
 const goToPage = (page) => {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page;
@@ -261,9 +269,9 @@ const goToPage = (page) => {
 
 const fetchDichVus = async () => {
   try {
-    const response = await apiClient.get("DichVu/all");
-    dichVus.value = response.data;
-    totalItems.value = response.data.length;
+    const data = await apiClient.get("/DichVu/all");
+    dichVus.value = data;
+    totalItems.value = data.length;
     currentPage.value = 1;
   } catch (error) {
     console.error("Lỗi lấy danh sách dịch vụ:", error);
@@ -272,8 +280,8 @@ const fetchDichVus = async () => {
 
 const fetchLoaiDichVus = async () => {
   try {
-    const res = await apiClient.get("DichVu/loai");
-    loaiDichVus.value = res;
+    const data = await apiClient.get("/DichVu/loai");
+    loaiDichVus.value = data;
   } catch (error) {
     console.error("Lỗi lấy loại dịch vụ:", error);
   }
@@ -282,9 +290,9 @@ const fetchLoaiDichVus = async () => {
 const searchByName = async () => {
   if (!searchName.value.trim()) return fetchDichVus();
   try {
-    const response = await apiClient.get(`DichVu/name?ten=${searchName.value}`);
-    dichVus.value = response;
-    totalItems.value = response.length;
+    const data = await apiClient.get(`/DichVu/name?ten=${searchName.value}`);
+    dichVus.value = data;
+    totalItems.value = data.length;
     currentPage.value = 1;
   } catch (error) {
     console.error("Không tìm thấy dịch vụ:", error);
@@ -292,11 +300,22 @@ const searchByName = async () => {
 };
 
 const filterByPrice = async () => {
-  if (priceMin.value < 0 || priceMax.value < 0) return alert("Giá không được nhỏ hơn 0");
+  if (priceMin.value < 0 || priceMax.value < 0) {
+    return alert("Giá không được nhỏ hơn 0");
+  }
+
+  if (priceMax.value === 0 && priceMin.value > 0) {
+    priceMax.value = priceMin.value;
+  }
+
+  if (priceMin.value > priceMax.value) {
+    return alert("Giá tối thiểu không được lớn hơn giá tối đa");
+  }
+
   try {
-    const response = await apiClient.get(`DichVu/filter-by-price?min=${priceMin.value}&max=${priceMax.value}`);
-    dichVus.value = response.data;
-    totalItems.value = response.data.length;
+    const data = await apiClient.get(`/DichVu/filter-by-price?min=${priceMin.value}&max=${priceMax.value}`);
+    dichVus.value = data;
+    totalItems.value = data.length;
     currentPage.value = 1;
   } catch (error) {
     console.error("Lỗi lọc giá:", error);
@@ -305,13 +324,30 @@ const filterByPrice = async () => {
 
 const saveDichVu = async () => {
   try {
-    const payload = { ...dichVu.value };
+    let imageName = dichVu.value.hinhAnh;
+
+    if (selectedImage.value) {
+      const formData = new FormData();
+      formData.append("file", selectedImage.value);
+      formData.append("tenDichVu", dichVu.value.tenDichVu);
+
+      const uploadRes = await apiClient.post("/DichVu/image", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      imageName = uploadRes.fileName || uploadRes;
+    }
+
+    const payload = { ...dichVu.value, hinhAnh: imageName };
+
     if (isEditing.value) {
       await apiClient.put(`/DichVu/${payload.dichVuID}`, payload);
     } else {
-      await apiClient.post("DichVu", payload);
+      await apiClient.post("/DichVu", payload);
     }
+
     resetForm();
+    selectedImage.value = null;
     fetchDichVus();
   } catch (error) {
     console.error("Lỗi lưu dịch vụ:", error);
@@ -654,12 +690,12 @@ onMounted(() => {
 }
 
 .service-time {
-  color: #7f8c8d;
+  color: #7f818d;
 }
 
 .service-img {
-  width: 80px;
-  height: 60px;
+  width: 90px;
+  height: 70px;
   object-fit: cover;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -671,24 +707,33 @@ onMounted(() => {
 }
 
 .type-badge {
+  display: inline-block;
+  min-width: 80px; /* Đảm bảo badge có kích thước đồng đều */
+  text-align: center;
   background: linear-gradient(135deg, #9b59b6, #8e44ad);
   color: white;
   padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.85rem;
+  border-radius: 16px;
+  font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  white-space: nowrap; /* Không xuống dòng */
 }
 
 .status-badge {
+  display: inline-block;
+  min-width: 100px; /* Đảm bảo badge trạng thái cân đối */
+  text-align: center;
   padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.85rem;
+  border-radius: 16px;
+  font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  white-space: nowrap;
 }
+
 
 .status-badge.active {
   background: linear-gradient(135deg, #27ae60, #229954);
@@ -812,5 +857,6 @@ onMounted(() => {
     width: 60px;
     height: 45px;
   }
+  
 }
 </style>
