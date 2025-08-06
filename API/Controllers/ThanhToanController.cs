@@ -100,19 +100,21 @@ namespace API.Controllers
             try
             {
                 var tongTien = request.ChiTietHoaDon.Sum(x => x.ThanhTien);
+                var voucherId = await _context.Voucher
+                .FirstOrDefaultAsync(v => v.MaCode == request.MaGiamGia);
 
                 var hoaDon = new HoaDon
                 {
                     NgayTao = request.NgayTao,
-                    //MaGiamGia = request.MaGiamGia,
                     HinhThucThanhToan = request.HinhThucThanhToan,
                     TrangThai = request.TrangThai,
                     TienKhachDua = request.TienKhachDua,
                     TienThoiLai = request.TienThoiLai,
                     TongTien = tongTien,
-                    // TongTienSauGiamGia = tongSauGiamGia,
+                    GiaTriGiam = request.tienGiam,
                     NhanVienID = request.NhanVienID,
-                    UserID = request.UserID
+                    UserID = request.UserID,
+                    VoucherID = voucherId?.VoucherID,
                 };
 
                 _context.hoaDons.Add(hoaDon);
@@ -190,6 +192,7 @@ namespace API.Controllers
         public IActionResult XuatHoaDon(int hoaDonId)
         {
             var hoaDon = _context.hoaDons
+                .Include(vc => vc.voucher)
                 .Include(h => h.ChiTietHoaDons)
                     .ThenInclude(ct => ct.SanPham)
                 .Include(h => h.ChiTietHoaDons)
@@ -247,16 +250,25 @@ namespace API.Controllers
                     <td class='right'>{gia:N0}đ x {soLuong}</td>
                     <td class='right'>{thanhTien:N0}đ</td>
                 </tr>");
-                            }
+            }
 
-                            html.Append("</tbody></table>");
-                            html.Append("<div class='line'></div>");
+            html.Append("</tbody></table>");
+            html.Append("<div class='line'></div>");
 
-                            html.Append($@"
-                <p class='right'><strong>Tổng: </strong> {hoaDon.TongTien:N0}đ<br>
-                <strong>Khách đưa: </strong> {hoaDon.TienKhachDua:N0}đ<br>
-                <strong>Thối lại: </strong> {hoaDon.TienThoiLai:N0}đ</p>
-                ");
+            html.Append($@"
+                <p class='right'>
+                    <strong>Tổng: </strong> {hoaDon.TongTien:N0}đ<br>");
+
+                        if (hoaDon.GiaTriGiam != null)
+                        {
+                            html.Append($@"<strong>Giảm giá: </strong> {hoaDon.GiaTriGiam:N0}đ<br>");
+                        }
+
+                        html.Append($@"
+                    <strong>Khách đưa: </strong> {hoaDon.TienKhachDua:N0}đ<br>
+                    <strong>Thối lại: </strong> {hoaDon.TienThoiLai:N0}đ
+                </p>
+            ");
 
             html.Append("<div style='margin-top:15px;text-align:center;'>Cảm ơn quý khách!</div>");
             html.Append("</body></html>");

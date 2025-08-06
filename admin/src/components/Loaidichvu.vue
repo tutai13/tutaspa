@@ -1,141 +1,266 @@
 <template>
   <div class="loai-dich-vu-management">
-    <!-- Header -->
-    <div class="header">
-      <h1 class="title">
-        <i class="fa fa-list-alt"></i>
-        Quản lý Loại Dịch Vụ
-      </h1>
+    <!-- Background Animation -->
+    <div class="background-animation">
+      <div class="floating-shape shape-1"></div>
+      <div class="floating-shape shape-2"></div>
+      <div class="floating-shape shape-3"></div>
     </div>
 
-    <!-- Form Section -->
-    <div class="card form-section">
-      <div class="card-header">
-        <h2 class="section-title">
-          <i class="fa" :class="isEditing ? 'fa-edit' : 'fa-plus-circle'"></i>
-          {{ isEditing ? 'Cập nhật' : 'Thêm mới' }} Loại Dịch Vụ
-        </h2>
-      </div>
-      <div class="card-body">
-        <form @submit.prevent="isEditing ? updateLoaiDichVu() : createLoaiDichVu()" class="service-type-form">
-          <div class="form-group-container">
-            <div class="form-group">
-              <label class="form-label">Tên loại dịch vụ <span class="required">*</span></label>
-              <input 
-                type="text" 
-                class="form-control" 
-                v-model="form.tenLoai" 
-                placeholder="Nhập tên loại dịch vụ..." 
-                required
-              />
+    <!-- Header with Glass Effect -->
+    <div class="header-container">
+      <div class="header-glass">
+        <div class="header-content">
+          <div class="title-section">
+            <div class="icon-wrapper">
+              <i class="fa fa-list-alt"></i>
             </div>
-            <button type="submit" class="btn btn-success form-submit-btn">
-              <i class="fa" :class="isEditing ? 'fa-save' : 'fa-plus'"></i>
-              {{ isEditing ? 'Cập nhật' : 'Thêm mới' }}
-            </button>
+            <div>
+              <h1 class="title">Quản lý Loại Dịch Vụ</h1>
+              <p class="subtitle">Quản lý và tổ chức các loại dịch vụ của bạn</p>
+            </div>
           </div>
-          <div class="form-actions" v-if="isEditing">
-            <button 
-              type="button"
-              class="btn btn-secondary" 
-              @click="resetForm"
-            >
-              <i class="fa fa-undo"></i> Hủy
-            </button>
+          <div class="stats-section">
+            <div class="stat-card">
+              <div class="stat-number">{{ loaiDichVus?.length || 0 }}</div>
+              <div class="stat-label">Tổng loại dịch vụ</div>
+            </div>
           </div>
-        </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Section with Modern Card -->
+    <div class="form-container">
+      <div class="modern-card">
+        <div class="card-header-modern">
+          <div class="header-left">
+            <div class="icon-badge" :class="isEditing ? 'editing' : 'creating'">
+              <i class="fa" :class="isEditing ? 'fa-edit' : 'fa-plus-circle'"></i>
+            </div>
+            <div>
+              <h2 class="card-title">{{ isEditing ? 'Cập nhật' : 'Thêm mới' }} Loại Dịch Vụ</h2>
+              <p class="card-subtitle">{{ isEditing ? 'Chỉnh sửa thông tin loại dịch vụ' : 'Thêm loại dịch vụ mới vào hệ thống' }}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body-modern">
+          <form @submit.prevent="isEditing ? updateLoaiDichVu() : createLoaiDichVu()" class="modern-form">
+            <div class="form-row">
+              <div class="input-group">
+                <label class="modern-label">
+                  <span class="label-text">Tên loại dịch vụ</span>
+                  <span class="required-indicator">*</span>
+                </label>
+                <div class="input-wrapper">
+                  <input 
+                    type="text" 
+                    class="modern-input" 
+                    v-model="form.tenLoai" 
+                    placeholder="Nhập tên loại dịch vụ..."
+                    required
+                  />
+                  <div class="input-focus-line"></div>
+                </div>
+              </div>
+              
+              <div class="button-group">
+                <button type="submit" class="btn-primary-modern">
+                  <i class="fa" :class="isEditing ? 'fa-save' : 'fa-plus'"></i>
+                  <span>{{ isEditing ? 'Cập nhật' : 'Thêm mới' }}</span>
+                </button>
+                
+                <button 
+                  v-if="isEditing"
+                  type="button"
+                  class="btn-secondary-modern" 
+                  @click="resetForm"
+                >
+                  <i class="fa fa-undo"></i>
+                  <span>Hủy</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Import Section -->
+            <div class="import-section">
+              <div class="import-card">
+                <div class="import-header">
+                  <i class="fa fa-file-import"></i>
+                  <span>Import từ Excel</span>
+                </div>
+                <div class="import-actions">
+                  <label class="file-upload-btn">
+                    <i class="fa fa-cloud-upload-alt"></i>
+                    <span>Chọn file</span>
+                    <input 
+                      type="file" 
+                      ref="fileInput"
+                      accept=".xlsx,.xls"
+                      @change="handleFileChange"
+                    />
+                  </label>
+                  <div class="file-info" v-if="selectedFile">
+                    <i class="fa fa-file-excel"></i>
+                    <span>{{ selectedFile.name }}</span>
+                  </div>
+                  <button 
+                    type="button"
+                    class="btn-upload"
+                    @click="importLoaiDichVu"
+                    :disabled="!selectedFile"
+                  >
+                    <i class="fa fa-upload"></i>
+                    <span>Tải lên</span>
+                  </button>
+                  <button class="btn btn-outline-light btn-sm" @click="downloadTemplate">
+                    <i class="fa fa-download me-1"></i>
+                    Tải file mẫu
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
 
     <!-- List Section -->
-    <div class="card list-section">
-      <div class="card-header">
-        <h2 class="section-title">
-          <i class="fa fa-table"></i>
-          Danh sách loại dịch vụ
-        </h2>
-        <div class="list-controls">
-          <div class="search-container">
-            <input
-              v-model="searchName"
-              @input="searchByName"
-              type="text"
-              class="search-input"
-              placeholder="Tìm theo tên loại dịch vụ..."
-            />
-            <i class="fa fa-search search-icon"></i>
-            <button
-              v-if="searchName"
-              @click="resetSearch"
-              class="clear-search"
-              title="Xóa tìm kiếm"
-            >
-              <i class="fa fa-times"></i>
+    <div class="list-container">
+      <div class="modern-card">
+        <div class="card-header-modern">
+          <div class="header-left">
+            <div class="icon-badge list">
+              <i class="fa fa-table"></i>
+            </div>
+            <div>
+              <h2 class="card-title">Danh sách loại dịch vụ</h2>
+              <p class="card-subtitle">Quản lý và tìm kiếm các loại dịch vụ</p>
+            </div>
+          </div>
+          
+          <div class="header-actions">
+            <div class="search-modern">
+              <div class="search-input-wrapper">
+                <i class="fa fa-search"></i>
+                <input
+                  v-model="searchName"
+                  @input="searchByName"
+                  type="text"
+                  class="search-input-modern"
+                  placeholder="Tìm kiếm loại dịch vụ..."
+                />
+                <button
+                  v-if="searchName"
+                  @click="resetSearch"
+                  class="clear-search-modern"
+                >
+                  <i class="fa fa-times"></i>
+                </button>
+              </div>
+            </div>
+            
+            <button @click="fetchData" class="btn-refresh">
+              <i class="fa fa-sync-alt"></i>
+              <span>Làm mới</span>
             </button>
           </div>
-          <button @click="fetchData" class="btn btn-outline-primary">
-            <i class="fa fa-sync-alt"></i>
-            Làm mới
-          </button>
         </div>
-      </div>
-      <div class="card-body">
-        <!-- Empty State -->
-        <div v-if="!loaiDichVus.length" class="empty-state">
-          <i class="fa fa-folder-open"></i>
-          <p>Không có loại dịch vụ nào</p>
-        </div>
+        
+        <div class="card-body-modern">
+          <!-- Empty State -->
+          <div v-if="!loaiDichVus?.length" class="empty-state-modern">
+            <div class="empty-icon">
+              <i class="fa fa-folder-open"></i>
+            </div>
+            <h3>Chưa có loại dịch vụ nào</h3>
+            <p>Hãy thêm loại dịch vụ đầu tiên để bắt đầu</p>
+            <button @click="() => {}" class="btn-primary-modern">
+              <i class="fa fa-plus"></i>
+              <span>Thêm loại dịch vụ</span>
+            </button>
+          </div>
 
-        <!-- Table -->
-        <div v-else class="table-responsive">
-          <table class="service-types-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Tên Loại</th>
-                <th>Hành động</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="item in loaiDichVus" :key="item.loaiDichVuID" class="service-type-row">
-                <td class="service-id">{{ item.loaiDichVuID }}</td>
-                <td class="service-name">{{ item.tenLoai }}</td>
-                <td class="service-actions">
-                  <div class="action-buttons">
-                    <button 
-                      class="btn btn-sm btn-info" 
-                      @click="editLoaiDichVu(item)"
-                      title="Chỉnh sửa"
-                    >
-                      <i class="fa fa-edit"></i>
-                    </button>
-                    <button 
-                      class="btn btn-sm btn-danger" 
-                      @click="deleteLoaiDichVu(item.loaiDichVuID)"
-                      title="Xóa"
-                    >
-                      <i class="fa fa-trash"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <!-- Modern Table -->
+          <div v-else class="table-container-modern">
+            <div class="table-wrapper">
+              <table class="modern-table">
+                <thead>
+                  <tr>
+                    <th class="th-id">
+                      <span>ID</span>
+                    </th>
+                    <th class="th-name">
+                      <span>Tên Loại Dịch Vụ</span>
+                    </th>
+                    <th class="th-actions">
+                      <span>Hành động</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr 
+                    v-for="(item, index) in loaiDichVus" 
+                    :key="item.loaiDichVuID" 
+                    class="table-row"
+                    :style="{ animationDelay: `${index * 0.05}s` }"
+                  >
+                    <td class="td-id">
+                      <div class="id-badge">{{ item.loaiDichVuID }}</div>
+                    </td>
+                    <td class="td-name">
+                      <div class="name-content">
+                        <div class="name-text">{{ item.tenLoai }}</div>
+                      </div>
+                    </td>
+                    <td class="td-actions">
+                      <div class="action-buttons-modern">
+                        <button 
+                          class="action-btn edit-btn" 
+                          @click="editLoaiDichVu(item)"
+                          title="Chỉnh sửa"
+                        >
+                          <i class="fa fa-edit"></i>
+                        </button>
+                        <button 
+                          class="action-btn delete-btn" 
+                          @click="deleteLoaiDichVu(item.loaiDichVuID)"
+                          title="Xóa"
+                        >
+                          <i class="fa fa-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Toast Notifications -->
-    <div class="toast-container">
-      <div 
-        v-for="toast in toasts" 
-        :key="toast.id" 
-        class="toast" 
-        :class="toast.type"
-      >
-        <i class="fa" :class="getToastIcon(toast.type)"></i>
-        {{ toast.message }}
-      </div>
+    <!-- Modern Toast Notifications -->
+    <div class="toast-container-modern">
+      <transition-group name="toast" tag="div">
+        <div 
+          v-for="toast in toasts" 
+          :key="toast.id" 
+          class="toast-modern" 
+          :class="toast.type"
+        >
+          <div class="toast-icon">
+            <i class="fa" :class="getToastIcon(toast.type)"></i>
+          </div>
+          <div class="toast-content">
+            <div class="toast-message">{{ toast.message }}</div>
+          </div>
+          <button class="toast-close" @click="removeToast(toast.id)">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+      </transition-group>
     </div>
   </div>
 </template>
@@ -146,7 +271,7 @@ import apiClient from "../utils/axiosClient";
 
 // State
 const loaiDichVus = ref([]);
-const allLoaiDichVus = ref([]); // lưu tất cả để reset khi xóa tìm kiếm
+const allLoaiDichVus = ref([]);
 const form = ref({
   loaiDichVuID: 0,
   tenLoai: ''
@@ -154,6 +279,38 @@ const form = ref({
 const isEditing = ref(false);
 const searchName = ref('');
 const toasts = ref([]);
+const fileInput = ref(null);
+const selectedFile = ref(null);
+
+// File handling
+const handleFileChange = (event) => {
+  const file = event.target.files[0];
+  selectedFile.value = file || null;
+};
+
+const importLoaiDichVu = async () => {
+  if (!selectedFile.value) {
+    showToast("Vui lòng chọn file Excel để import", "warning");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", selectedFile.value);
+
+  try {
+    const res = await apiClient.post("/LoaiDichVu/import", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    showToast(`Import thành công ${res.count || 0} loại dịch vụ!`, "success");
+
+    selectedFile.value = null;
+    if (fileInput.value) fileInput.value.value = "";
+    fetchData();
+  } catch (error) {
+    console.error(error);
+    showToast("Lỗi khi import loại dịch vụ", "error");
+  }
+};
 
 // Toast methods
 const showToast = (message, type = 'info') => {
@@ -164,9 +321,13 @@ const showToast = (message, type = 'info') => {
   }
   toasts.value.push(toast)
   setTimeout(() => {
-    const index = toasts.value.findIndex(t => t.id === toast.id)
-    if (index > -1) toasts.value.splice(index, 1)
-  }, 3000)
+    removeToast(toast.id)
+  }, 5000)
+}
+
+const removeToast = (id) => {
+  const index = toasts.value.findIndex(t => t.id === id)
+  if (index > -1) toasts.value.splice(index, 1)
 }
 
 const getToastIcon = (type) => {
@@ -178,15 +339,15 @@ const getToastIcon = (type) => {
   }
 }
 
-// Methods
+// API methods
 const fetchData = async () => {
   try {
     const res = await apiClient.get('/LoaiDichVu');
-    loaiDichVus.value = res.data;
-    allLoaiDichVus.value = res.data;
+    allLoaiDichVus.value = res;
+    loaiDichVus.value = res;
   } catch (error) {
     showToast("Lỗi khi tải danh sách loại dịch vụ", 'error');
-    console.error("Lỗi khi tải danh sách loại dịch vụ:", error);
+    console.error(error);
   }
 };
 
@@ -202,7 +363,7 @@ const createLoaiDichVu = async () => {
     fetchData();
   } catch (error) {
     showToast("Lỗi khi thêm loại dịch vụ", 'error');
-    console.error("Lỗi khi thêm loại dịch vụ:", error);
+    console.error(error);
   }
 };
 
@@ -214,7 +375,7 @@ const updateLoaiDichVu = async () => {
     fetchData();
   } catch (error) {
     showToast("Lỗi khi cập nhật loại dịch vụ", 'error');
-    console.error("Lỗi khi cập nhật loại dịch vụ:", error);
+    console.error(error);
   }
 };
 
@@ -223,10 +384,10 @@ const deleteLoaiDichVu = async (id) => {
     try {
       await apiClient.delete(`/LoaiDichVu/${id}`);
       showToast("Xóa loại dịch vụ thành công!", 'success');
-      fetchData();
+      fetchData();  
     } catch (error) {
       showToast("Lỗi khi xóa loại dịch vụ", 'error');
-      console.error("Lỗi khi xóa loại dịch vụ:", error);
+      console.error(error);
     }
   }
 };
@@ -235,7 +396,15 @@ const editLoaiDichVu = (item) => {
   form.value = { ...item };
   isEditing.value = true;
 };
-
+const downloadTemplate = () => {
+  const link = document.createElement("a");
+  link.href =
+    "https://drive.google.com/uc?export=download&id=1bf_a4YgEFKGOcyT6gbmyE_J6DfU3r6XQ";
+  link.download = "LDV_DV_LSP_SP.xlsx";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 const resetForm = () => {
   form.value = {
     loaiDichVuID: 0,
@@ -246,6 +415,10 @@ const resetForm = () => {
 
 const searchByName = () => {
   const keyword = searchName.value.trim().toLowerCase();
+  if (!keyword) {
+    loaiDichVus.value = [...allLoaiDichVus.value];
+    return;
+  }
   loaiDichVus.value = allLoaiDichVus.value.filter(item =>
     item.tenLoai.toLowerCase().includes(keyword)
   );
@@ -256,375 +429,835 @@ const resetSearch = () => {
   loaiDichVus.value = [...allLoaiDichVus.value];
 };
 
-// Fetch data on mount
 onMounted(() => {
   fetchData();
 });
 </script>
 
 <style scoped>
-.loai-dich-vu-management {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+* {
+  box-sizing: border-box;
 }
 
-.header {
+.loai-dich-vu-management {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Background Animation */
+.background-animation {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.floating-shape {
+  position: absolute;
+  opacity: 0.1;
+  animation: float 20s infinite ease-in-out;
+}
+
+.shape-1 {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, #ff6b6b, #feca57);
+  border-radius: 50%;
+  top: 10%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.shape-2 {
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, #48dbfb, #0abde3);
+  border-radius: 50%;
+  top: 60%;
+  right: 10%;
+  animation-delay: -7s;
+}
+
+.shape-3 {
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, #ff9ff3, #f368e0);
+  border-radius: 50%;
+  bottom: 20%;
+  left: 20%;
+  animation-delay: -14s;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  25% { transform: translateY(-20px) rotate(90deg); }
+  50% { transform: translateY(0px) rotate(180deg); }
+  75% { transform: translateY(-10px) rotate(270deg); }
+}
+
+/* Header Section */
+.header-container {
+  position: relative;
+  z-index: 10;
   margin-bottom: 30px;
 }
 
+.header-glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 30px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 30px;
+}
+
+.title-section {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.icon-wrapper {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #ff6b6b, #feca57);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: white;
+  box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+}
+
 .title {
-  color: #2c3e50;
   font-size: 2.5rem;
-  font-weight: 600;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 5px 0;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.8);
   margin: 0;
+}
+
+.stats-section {
+  text-align: center;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 20px 30px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: white;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 5px;
+}
+
+/* Modern Card */
+.form-container, .list-container {
+  position: relative;
+  z-index: 10;
+  margin-bottom: 30px;
+}
+
+.modern-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.modern-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+}
+
+.card-header-modern {
+  padding: 25px 30px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.icon-badge {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: white;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.icon-badge.creating {
+  background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+}
+
+.icon-badge.editing {
+  background: linear-gradient(135deg, #f093fb, #f5576c);
+}
+
+.icon-badge.list {
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 5px 0;
+}
+
+.card-subtitle {
+  font-size: 0.95rem;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.header-actions {
   display: flex;
   align-items: center;
   gap: 15px;
 }
 
-.title i {
-  color: #3498db;
+.card-body-modern {
+  padding: 30px;
 }
 
-.card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
-  margin-bottom: 30px;
-  overflow: hidden;
-  border: 1px solid #e1e8ed;
+/* Modern Form */
+.modern-form {
+  max-width: 100%;
 }
 
-.card-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 20px 25px;
+.form-row {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 25px;
 }
 
-.section-title {
-  margin: 0;
-  font-size: 1.4rem;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.input-group {
+  flex: 1;
 }
 
-.card-body {
-  padding: 25px;
+.modern-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 0.95rem;
 }
 
-.list-controls {
-  display: flex;
-  gap: 10px;
+.label-text {
+  margin-right: 5px;
 }
 
-/* Search Section */
-.search-container {
+.required-indicator {
+  color: #e53e3e;
+  font-weight: 700;
+}
+
+.input-wrapper {
   position: relative;
-  max-width: 500px;
-  margin: 0 auto;
 }
 
-.search-input {
+.modern-input {
   width: 100%;
-  padding: 12px 45px 12px 15px;
-  border: 2px solid #e1e8ed;
-  border-radius: 25px;
+  padding: 16px 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
   font-size: 1rem;
-  background: rgba(255, 255, 255, 0.9);
-  color: #2c3e50;
+  background: #f7fafc;
+  color: #2d3748;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.modern-input:focus {
+  border-color: #667eea;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.modern-input:focus + .input-focus-line {
+  transform: scaleX(1);
+}
+
+.input-focus-line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+  border-radius: 1px;
+}
+
+.button-group {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+/* Modern Buttons */
+.btn-primary-modern {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary-modern:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+}
+
+.btn-secondary-modern {
+  background: linear-gradient(135deg, #a0aec0, #718096);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   transition: all 0.3s ease;
 }
 
-.search-input:focus {
-  outline: none;
-  border-color: #3498db;
+.btn-secondary-modern:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(160, 174, 192, 0.4);
+}
+
+.btn-refresh {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.btn-refresh:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Import Section */
+.import-section {
+  margin-top: 30px;
+  padding-top: 30px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.import-card {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  border-radius: 16px;
+  padding: 20px;
+  color: white;
+}
+
+.import-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.import-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.file-upload-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px dashed rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+  padding: 12px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.file-upload-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+.file-upload-btn input {
+  display: none;
+}
+
+.file-info {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 8px 15px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.btn-upload {
+  background: rgba(255, 255, 255, 0.9);
+  color: #f5576c;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn-upload:hover:not(:disabled) {
   background: white;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
-.search-input::placeholder {
-  color: rgba(67, 63, 63, 0.7);
+.btn-upload:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-.search-icon {
+/* Search Modern */
+.search-modern {
+  position: relative;
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input-wrapper i {
+  position: absolute;
+  left: 15px;
+  color: rgba(255, 255, 255, 0.7);
+  z-index: 2;
+}
+
+.search-input-modern {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  padding: 12px 45px 12px 45px;
+  color: white;
+  font-size: 0.95rem;
+  width: 300px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.search-input-modern::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.search-input-modern:focus {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+.clear-search-modern {
   position: absolute;
   right: 15px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #7f8c8d;
-  font-size: 1.1rem;
-}
-
-.clear-search {
-  position: absolute;
-  right: 40px;
-  top: 50%;
-  transform: translateY(-50%);
   background: none;
   border: none;
-  color: #7f8c8d;
+  color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
   padding: 5px;
   border-radius: 50%;
   transition: all 0.3s ease;
 }
 
-.clear-search:hover {
-  background: rgba(127, 140, 141, 0.1);
-  color: #2c3e50;
-}
-
-/* Form Section */
-.service-type-form {
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.form-group-container {
-  display: flex;
-  align-items: flex-end;
-  gap: 15px;
-  margin-bottom: 25px;
-}
-
-.form-group {
-  flex: 1;
-  margin-bottom: 0;
-}
-
-.form-label {
-  font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 8px;
-  font-size: 0.95rem;
-  display: block;
-}
-
-.required {
-  color: #e74c3c;
-}
-
-.form-control {
-  padding: 12px 15px;
-  border: 2px solid #e1e8ed;
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  background: #fafbfc;
-  width: 100%;
-}
-
-.form-control:focus {
-  outline: none;
-  border-color: #3498db;
-  background: white;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-}
-
-.form-submit-btn {
-  padding: 12px 24px;
-}
-
-.form-actions {
-  display: flex;
-  justify-content: center;
-}
-
-/* Button Styles */
-.btn {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.3s ease;
-  text-decoration: none;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.btn-success {
-  background: linear-gradient(135deg, #27ae60, #229954);
+.clear-search-modern:hover {
+  background: rgba(255, 255, 255, 0.2);
   color: white;
 }
 
-.btn-success:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
-}
-
-.btn-secondary {
-  background: linear-gradient(135deg, #95a5a6, #7f8c8d);
-  color: white;
-}
-
-.btn-info {
-  background: linear-gradient(135deg, #3498db, #2980b9);
-  color: white;
-}
-
-.btn-danger {
-  background: linear-gradient(135deg, #e74c3c, #c0392b);
-  color: white;
-}
-
-.btn-outline-primary {
-  background: transparent;
-  color: #3498db;
-  border: 2px solid #3498db;
-}
-
-.btn-outline-primary:hover:not(:disabled) {
-  background: #3498db;
-  color: white;
-}
-
-.btn-sm {
-  padding: 8px 12px;
-  font-size: 0.85rem;
-}
-
-/* Empty State */
-.empty-state {
+/* Empty State Modern */
+.empty-state-modern {
   text-align: center;
-  padding: 60px 20px;
-  color: #7f8c8d;
-  font-size: 1.1rem;
+  padding: 80px 20px;
+  color: #718096;
 }
 
-.empty-state i {
-  font-size: 4rem;
-  margin-bottom: 20px;
-  display: block;
-  color: #bdc3c7;
+.empty-icon {
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(135deg, #e2e8f0, #cbd5e0);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 30px;
+  font-size: 3rem;
+  color: #a0aec0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
-/* Table Styles */
-.table-responsive {
-  overflow-x: auto;
+.empty-state-modern h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 10px;
+  color: #4a5568;
 }
 
-.service-types-table {
-  width: 100%;
-  border-collapse: collapse;
+.empty-state-modern p {
+  font-size: 1rem;
+  margin: 0 0 30px;
+  color: #718096;
+}
+
+/* Modern Table */
+.table-container-modern {
   margin-top: 20px;
 }
 
-.service-types-table th {
-  background: linear-gradient(135deg, #34495e, #2c3e50);
-  color: white;
-  padding: 15px 12px;
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.modern-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.modern-table thead {
+  background: linear-gradient(135deg, #2d3748, #4a5568);
+}
+
+.modern-table th {
+  padding: 20px 25px;
   text-align: left;
   font-weight: 600;
   font-size: 0.95rem;
-  border-bottom: 3px solid #3498db;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: none;
 }
 
-.service-types-table th:first-child {
+.th-id {
   width: 15%;
   text-align: center;
 }
 
-.service-types-table th:last-child {
-  width: 25%;
+.th-actions {
+  width: 20%;
   text-align: center;
 }
 
-.service-types-table td {
-  padding: 15px 12px;
-  border-bottom: 1px solid #ecf0f1;
+.modern-table tbody tr {
+  transition: all 0.3s ease;
+  border-bottom: 1px solid #e2e8f0;
+  animation: fadeInUp 0.5s ease forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.modern-table tbody tr:hover {
+  background: linear-gradient(135deg, #f7fafc, #edf2f7);
+  transform: translateX(5px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.modern-table td {
+  padding: 20px 25px;
+  border: none;
   vertical-align: middle;
 }
 
-.service-type-row:hover {
-  background: #f8f9fa;
-}
-
-.service-id {
-  text-align: center;
-  font-family: 'Courier New', monospace;
-  font-weight: 600;
-  color: #7f8c8d;
-  font-size: 0.9rem;
-}
-
-.service-name {
-  font-weight: 600;
-  color: #2c3e50;
-}
-
-.service-actions {
+.td-id {
   text-align: center;
 }
 
-.action-buttons {
+.id-badge {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  display: inline-block;
+  min-width: 50px;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+}
+
+.td-name .name-content {
   display: flex;
-  gap: 8px;
-  justify-content: center;
   align-items: center;
+  gap: 15px;
 }
 
-/* Toast Notifications */
-.toast-container {
+.name-text {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #2d3748;
+}
+
+.td-actions {
+  text-align: center;
+}
+
+.action-buttons-modern {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.action-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  color: white;
+  font-weight: 500;
+}
+
+.edit-btn {
+  background: linear-gradient(135deg, #48bb78, #38a169);
+  box-shadow: 0 2px 10px rgba(72, 187, 120, 0.3);
+}
+
+.edit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(72, 187, 120, 0.5);
+}
+
+.delete-btn {
+  background: linear-gradient(135deg, #f56565, #e53e3e);
+  box-shadow: 0 2px 10px rgba(245, 101, 101, 0.3);
+}
+
+.delete-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(245, 101, 101, 0.5);
+}
+
+/* Toast Notifications Modern */
+.toast-container-modern {
   position: fixed;
   top: 20px;
   right: 20px;
-  z-index: 1100;
+  z-index: 1000;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  max-width: 400px;
 }
 
-.toast {
-  padding: 15px 20px;
-  border-radius: 8px;
-  color: white;
-  font-weight: 500;
+.toast-modern {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-width: 250px;
-  animation: slideIn 0.3s ease;
+  gap: 15px;
+  backdrop-filter: blur(20px);
+  position: relative;
+  overflow: hidden;
 }
 
-.toast.success {
-  background: linear-gradient(135deg, #27ae60, #229954);
+.toast-modern::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--toast-color);
 }
 
-.toast.error {
-  background: linear-gradient(135deg, #e74c3c, #c0392b);
+.toast-modern.success {
+  --toast-color: #48bb78;
 }
 
-.toast.warning {
-  background: linear-gradient(135deg, #f39c12, #e67e22);
+.toast-modern.error {
+  --toast-color: #f56565;
 }
 
-.toast.info {
-  background: linear-gradient(135deg, #3498db, #2980b9);
+.toast-modern.warning {
+  --toast-color: #ed8936;
 }
 
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
+.toast-modern.info {
+  --toast-color: #4299e1;
+}
+
+.toast-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.toast-modern.success .toast-icon {
+  background: linear-gradient(135deg, #48bb78, #38a169);
+}
+
+.toast-modern.error .toast-icon {
+  background: linear-gradient(135deg, #f56565, #e53e3e);
+}
+
+.toast-modern.warning .toast-icon {
+  background: linear-gradient(135deg, #ed8936, #dd6b20);
+}
+
+.toast-modern.info .toast-icon {
+  background: linear-gradient(135deg, #4299e1, #3182ce);
+}
+
+.toast-content {
+  flex: 1;
+}
+
+.toast-message {
+  font-weight: 500;
+  color: #2d3748;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  color: #a0aec0;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.toast-close:hover {
+  background: #f7fafc;
+  color: #4a5568;
+}
+
+/* Toast Animations */
+.toast-enter-active, .toast-leave-active {
+  transition: all 0.4s ease;
+}
+
+.toast-enter-from {
+  opacity: 0;
+  transform: translateX(100%) scale(0.8);
+}
+
+.toast-enter-to {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+.toast-leave-from {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+.toast-leave-to {
+  opacity: 0;
+  transform: translateX(100%) scale(0.8);
+}
+
+/* Table Animation */
+@keyframes fadeInUp {
   to {
-    transform: translateX(0);
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -634,71 +1267,125 @@ onMounted(() => {
     padding: 15px;
   }
 
+  .header-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 25px;
+  }
+
   .title {
     font-size: 2rem;
   }
 
-  .card-header {
+  .title-section {
     flex-direction: column;
-    gap: 15px;
-    align-items: stretch;
+    text-align: center;
   }
 
-  .form-group-container {
+  .card-header-modern {
     flex-direction: column;
-    align-items: stretch;
+    gap: 20px;
+    text-align: center;
   }
 
-  .form-submit-btn {
+  .header-actions {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .search-input-modern {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .form-row {
+    gap: 20px;
+  }
+
+  .button-group {
+    flex-direction: column;
     width: 100%;
   }
 
-  .service-types-table {
+  .btn-primary-modern,
+  .btn-secondary-modern {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .import-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .file-upload-btn,
+  .btn-upload {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .modern-table {
     font-size: 0.9rem;
   }
 
-  .service-types-table th,
-  .service-types-table td {
-    padding: 10px 8px;
+  .modern-table th,
+  .modern-table td {
+    padding: 15px 10px;
   }
 
-  .action-buttons {
+  .action-buttons-modern {
     flex-direction: column;
-    gap: 5px;
+    gap: 8px;
   }
 
-  .toast-container {
-    left: 10px;
-    right: 10px;
-  }
-
-  .toast {
-    min-width: auto;
+  .toast-container-modern {
+    left: 15px;
+    right: 15px;
+    max-width: none;
   }
 }
 
 @media (max-width: 480px) {
-  .table-responsive {
+  .icon-wrapper {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+
+  .title {
+    font-size: 1.8rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+  }
+
+  .icon-badge {
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+  }
+
+  .card-title {
+    font-size: 1.3rem;
+  }
+
+  .modern-table th,
+  .modern-table td {
+    padding: 12px 8px;
+  }
+
+  .action-btn {
+    width: 35px;
+    height: 35px;
     font-size: 0.8rem;
   }
-  
-  .service-types-table th,
-  .service-types-table td {
-    padding: 8px 6px;
-  }
-  
-  .btn {
-    padding: 10px 16px;
-    font-size: 0.9rem;
-  }
-  
-  .btn-sm {
-    padding: 6px 10px;
+
+  .id-badge {
+    padding: 4px 8px;
     font-size: 0.8rem;
-  }
-  
-  .form-actions {
-    align-items: stretch;
+    min-width: 40px;
   }
 }
 </style>

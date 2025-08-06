@@ -6,26 +6,36 @@
         <a href="/" style="text-decoration: none">
           <img src="/src/assets/img/logo.png" alt="Logo" class="logo-img" />
           <span class="brand">TutaSpa </span>
+        <a href="/" style="text-decoration: none">
+          <img src="/src/assets/img/logo.png" alt="Logo" class="logo-img" />
+          <span class="brand">TutaSpa </span>
         </a>
       </div>
       <div class="nav-right" v-if="authStore.isAuthenticated">
+      <div class="nav-right" v-if="authStore.isAuthenticated">
         <!-- Chỉ hiển thị thông báo cho Cashier -->
+        <div style="position: relative">
         <div style="position: relative">
           <i
             v-if="authStore.isCashier"
             class="fas fa-bell notification-icon"
             @click="toggleNotifications"
             style="cursor: pointer"
+            style="cursor: pointer"
           ></i>
           <!-- Dấu chấm đỏ -->
           <span v-if="hasUnread" class="notification-dot"></span>
+          <span v-if="hasUnread" class="notification-dot"></span>
           <!-- Popup danh sách thông báo -->
+          <div v-if="showNotifications" class="notification-list" @click.stop>
           <div v-if="showNotifications" class="notification-list" @click.stop>
             <div v-if="notifications.length === 0" class="notification-empty">
               Không có thông báo mới
             </div>
             <ul v-else>
               <li v-for="(noti, idx) in notifications" :key="idx">
+                <router-link :to="`/chat?sessionId=${noti.sessionId}`">
+                  <span v-if="noti.type === 'message'">💬</span>
                 <router-link :to="`/chat?sessionId=${noti.sessionId}`">
                   <span v-if="noti.type === 'message'">💬</span>
                   <span v-else>👤</span>
@@ -47,12 +57,30 @@
               alt="User"
               class="avatar-img"
             />
+          <button
+            class="btn btn-light dropdown-toggle"
+            id="dropdownUser"
+            data-bs-toggle="dropdown"
+          >
+            <img
+              src="/src/assets/img/user-1.jpg"
+              alt="User"
+              class="avatar-img"
+            />
           </button>
           <ul
             class="dropdown-menu dropdown-menu-end mt-2 shadow rounded-3 p-3"
             aria-labelledby="dropdownUser"
           >
+          <ul
+            class="dropdown-menu dropdown-menu-end mt-2 shadow rounded-3 p-3"
+            aria-labelledby="dropdownUser"
+          >
             <li>
+              <a
+                class="dropdown-item d-flex align-items-center gap-2 text-secondary"
+                href="/profile"
+              >
               <a
                 class="dropdown-item d-flex align-items-center gap-2 text-secondary"
                 href="/profile"
@@ -65,10 +93,18 @@
                 class="dropdown-item d-flex align-items-center gap-2 text-secondary"
                 href="#"
               >
+              <a
+                class="dropdown-item d-flex align-items-center gap-2 text-secondary"
+                href="/ChangePassword"
+              >
                 <i class="fas fa-envelope fs-6"></i> Đổi mật khẩu
               </a>
             </li>
             <li>
+              <a
+                class="dropdown-item d-flex align-items-center gap-2 text-secondary"
+                href="/ve-da-dat"
+              >
               <a
                 class="dropdown-item d-flex align-items-center gap-2 text-secondary"
                 href="/ve-da-dat"
@@ -91,8 +127,23 @@
       <div class="menu">
         <div class="menu-title">HOME</div>
 
+
         <!-- Menu cho Admin -->
         <template v-if="authStore.isAdmin">
+          <router-link
+            to="/"
+            class="menu-item"
+            exact-active-class="active"
+            title="Dashboard"
+          >
+            <i class="fas fa-th-large"></i>
+          </router-link>
+          <router-link
+            to="/QlDichVu"
+            class="menu-item"
+            exact-active-class="active"
+            title="Quản lý dịch vụ"
+          >
           <router-link
             to="/"
             class="menu-item"
@@ -115,8 +166,20 @@
             exact-active-class="active"
             title="Quản lý Khuyến mãi"
           >
+          <router-link
+            to="/khuyenMai"
+            class="menu-item"
+            exact-active-class="active"
+            title="Quản lý Khuyến mãi"
+          >
             <i class="fas fa-shopping-cart"></i>
           </router-link>
+          <router-link
+            to="/QuanLySanPham"
+            class="menu-item"
+            exact-active-class="active"
+            title="Quản lý Sản phẩm"
+          >
           <router-link
             to="/QuanLySanPham"
             class="menu-item"
@@ -131,8 +194,20 @@
             exact-active-class="active"
             title="Quản lý nhân viên"
           >
+          <router-link
+            to="/employees"
+            class="menu-item"
+            exact-active-class="active"
+            title="Quản lý nhân viên"
+          >
             <i class="fas fa-user-friends"></i>
           </router-link>
+          <router-link
+            to="/DanhGiaKhachHang"
+            class="menu-item"
+            exact-active-class="active"
+            title="Quản lý Đánh Giá"
+          >
           <router-link
             to="/DanhGiaKhachHang"
             class="menu-item"
@@ -151,6 +226,12 @@
             exact-active-class="active"
             title="Quản lý kho"
           >
+          <router-link
+            to="/kho"
+            class="menu-item"
+            exact-active-class="active"
+            title="Quản lý kho"
+          >
             <i class="fas fa-columns"></i>
           </router-link>
         </template>
@@ -163,8 +244,20 @@
             exact-active-class="active"
             title="Thu Ngân"
           >
+          <router-link
+            to="/ThuNgan"
+            class="menu-item"
+            exact-active-class="active"
+            title="Thu Ngân"
+          >
             <i class="fa-solid fa-wallet"></i>
           </router-link>
+          <router-link
+            to="/chat"
+            class="menu-item"
+            exact-active-class="active"
+            title="Chat"
+          >
           <router-link
             to="/chat"
             class="menu-item"
@@ -183,10 +276,24 @@
           exact-active-class="active"
           title="Thống kê"
         >
+        <router-link
+          v-if="authStore.isAdmin || authStore.isManager"
+          to="/apps/ecommerce"
+          class="menu-item"
+          exact-active-class="active"
+          title="Thống kê"
+        >
           <i class="fas fa-store"></i>
         </router-link>
 
+
         <!-- User Profile - Hiển thị cho tất cả role -->
+        <router-link
+          to="/apps/profile"
+          class="menu-item"
+          exact-active-class="active"
+          title="User Profile"
+        >
         <router-link
           to="/apps/profile"
           class="menu-item"
@@ -218,7 +325,19 @@ import {
   getConnectionState,
   createSignalRConnection,
 } from "./services/chatService";
+import { ref, onMounted, h } from "vue";
+import { useRouter } from "vue-router";
+import { authAPI } from "./services/authservice";
+import { useAuthStore } from "./services/authStore";
+import {
+  getSignalRConnection,
+  registerSignalREvent,
+  getConnectionState,
+  createSignalRConnection,
+} from "./services/chatService";
 
+const router = useRouter();
+const authStore = useAuthStore();
 const router = useRouter();
 const authStore = useAuthStore();
 
@@ -226,7 +345,11 @@ const authStore = useAuthStore();
 const notifications = ref([]);
 const showNotifications = ref(false);
 const hasUnread = ref(false);
+const notifications = ref([]);
+const showNotifications = ref(false);
+const hasUnread = ref(false);
 
+console.log("Current User Role:", authStore.role);
 console.log("Current User Role:", authStore.role);
 
 // Kiểm tra authentication khi component mount
@@ -235,24 +358,38 @@ onMounted(() => {
     if (router.currentRoute.value.path !== "/forget-password") {
       router.push("/login");
       return;
+    if (router.currentRoute.value.path !== "/forget-password") {
+      router.push("/login");
+      return;
     }
   }
 
   if (authStore.isCashier) {
     if (getConnectionState() === "Disconnected") {
+    if (getConnectionState() === "Disconnected") {
       // Tạo kết nối SignalR nếu chưa có
       createSignalRConnection(authStore.token);
+      createSignalRConnection(authStore.token);
     } else {
+      console.log("SignalR connection already exists");
       console.log("SignalR connection already exists");
     }
 
     // Khi nhận tin nhắn mới
     registerSignalREvent("ReceiveMessage", (message) => {
       console.log("New message received:", message);
+    registerSignalREvent("ReceiveMessage", (message) => {
+      console.log("New message received:", message);
       notifications.value.unshift({
         sessionId: message.sessionId,
         type: "message",
+        type: "message",
         content: `Tin nhắn mới từ ${message.fromUserName}: ${message.message}`,
+        time: new Date().toLocaleTimeString(),
+      });
+      hasUnread.value = true;
+    });
+
         time: new Date().toLocaleTimeString(),
       });
       hasUnread.value = true;
@@ -261,15 +398,23 @@ onMounted(() => {
     // Khi được gán user
     registerSignalREvent("UserAssigned", (user) => {
       console.log("User assigned:", user);
+    registerSignalREvent("UserAssigned", (user) => {
+      console.log("User assigned:", user);
       notifications.value.unshift({
         sessionId: user.sessionId,
+        type: "assign",
         type: "assign",
         content: `Có khách hàng mới cần hỗ trợ: ${user.customerName}`,
         time: new Date().toLocaleTimeString(),
       });
       hasUnread.value = true;
     });
+        time: new Date().toLocaleTimeString(),
+      });
+      hasUnread.value = true;
+    });
   }
+});
 });
 
 async function Logout() {
@@ -277,7 +422,12 @@ async function Logout() {
     // Gọi logout từ auth store
     authStore.logout();
     await authAPI.logout();
+    authStore.logout();
+    await authAPI.logout();
     // Xóa các dữ liệu khác nếu có
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("user-info");
+
     localStorage.removeItem("accessToken");
     localStorage.removeItem("user-info");
 
@@ -285,9 +435,14 @@ async function Logout() {
     router.push("/login");
 
     console.log("Logout successful");
+    router.push("/login");
+
+    console.log("Logout successful");
   } catch (error) {
     console.error("Logout error:", error);
+    console.error("Logout error:", error);
     // Vẫn chuyển hướng về login dù có lỗi
+    router.push("/login");
     router.push("/login");
   }
 }
@@ -295,14 +450,18 @@ async function Logout() {
 // Xử lý click chuông
 function toggleNotifications() {
   showNotifications.value = !showNotifications.value;
+  showNotifications.value = !showNotifications.value;
   if (showNotifications.value) {
+    hasUnread.value = false;
     hasUnread.value = false;
   }
 }
 
 const HanleReciveNotification = (notification) => {
   console.log("Received notification:", notification);
+  console.log("Received notification:", notification);
   // Xử lý thông báo ở đây
+};
 };
 </script>
 <style scoped>
@@ -457,6 +616,7 @@ const HanleReciveNotification = (notification) => {
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   padding: 10px 0;
   z-index: 1000;
 }
@@ -490,3 +650,4 @@ const HanleReciveNotification = (notification) => {
   font-size: 15px;
 }
 </style>
+

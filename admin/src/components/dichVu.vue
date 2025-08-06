@@ -8,6 +8,87 @@
       </h1>
     </div>
 
+    <!-- Import Section -->
+    <div class="card import-section">
+      <div class="card-header">
+        <h2 class="section-title">
+          <i class="fa fa-file-excel"></i>
+          Import Dịch vụ từ Excel
+        </h2>
+        <button class="btn btn-outline-light btn-sm" @click="downloadTemplate">
+          <i class="fa fa-download"></i>
+          Tải file mẫu
+        </button>
+      </div>
+      <div class="card-body">
+        <div class="import-container">
+          <div class="upload-zone" :class="{ 'dragover': isDragOver }" 
+               @drop="handleDrop" 
+               @dragover.prevent="isDragOver = true" 
+               @dragleave="isDragOver = false"
+               @click="triggerFileInput">
+            <div class="upload-content">
+              <i class="fa fa-cloud-upload-alt upload-icon"></i>
+              <h3>Kéo thả file Excel vào đây</h3>
+              <p>hoặc <span class="upload-link">nhấn để chọn file</span></p>
+              <small class="upload-note">Chỉ hỗ trợ file .xlsx</small>
+            </div>
+            <input 
+              ref="fileInput" 
+              type="file" 
+              accept=".xlsx" 
+              @change="handleFileSelect" 
+              style="display: none"
+            />
+          </div>
+          
+          <div v-if="selectedFile" class="selected-file">
+            <div class="file-info">
+              <i class="fa fa-file-excel file-icon"></i>
+              <div class="file-details">
+                <span class="file-name">{{ selectedFile.name }}</span>
+                <small class="file-size">{{ formatFileSize(selectedFile.size) }}</small>
+              </div>
+              <button class="btn btn-sm btn-danger" @click="removeFile">
+                <i class="fa fa-times"></i>
+              </button>
+            </div>
+            <div class="import-actions">
+              <button class="btn btn-success" @click="importFile" :disabled="importing">
+                <i class="fa fa-upload" :class="{ 'fa-spin': importing }"></i>
+                {{ importing ? 'Đang import...' : 'Import dữ liệu' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Import Progress -->
+          <div v-if="importing" class="import-progress">
+            <div class="progress-bar">
+              <div class="progress-fill" :style="{ width: importProgress + '%' }"></div>
+            </div>
+            <p class="progress-text">Đang xử lý... {{ importProgress }}%</p>
+          </div>
+
+          <!-- Import Result -->
+          <div v-if="importResult" class="import-result" :class="importResult.success ? 'success' : 'error'">
+            <div class="result-icon">
+              <i class="fa" :class="importResult.success ? 'fa-check-circle' : 'fa-exclamation-circle'"></i>
+            </div>
+            <div class="result-content">
+              <h4>{{ importResult.success ? 'Import thành công!' : 'Import thất bại!' }}</h4>
+              <p v-if="importResult.success">
+                Đã import thành công {{ importResult.count }} dịch vụ
+              </p>
+              <p v-else>{{ importResult.message }}</p>
+            </div>
+            <button class="btn btn-sm btn-outline-secondary" @click="clearResult">
+              <i class="fa fa-times"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Bộ lọc -->
     <div class="card filter-section">
       <div class="card-header">
@@ -18,9 +99,10 @@
       </div>
       <div class="card-body">
         <div class="filter-grid">
+          <!-- Tìm kiếm theo tên -->
           <div class="filter-group">
             <label class="filter-label">
-              <i class="fa fa-search me-1"></i> Tìm theo tên
+            <i class="fa-solid fa-magnifying-glass me-1" style="color:#e83e8c;"></i> Tìm theo tên
             </label>
             <div class="search-container">
               <input 
@@ -34,22 +116,24 @@
             </div>
           </div>
 
+          <!-- Lọc theo giá -->
           <div class="filter-group price-filter">
             <label class="filter-label">
-              <i class="fa fa-filter me-1"></i> Lọc giá
+            <i class="fa-solid fa-sliders me-1"></i> Lọc giá
             </label>
             <div class="price-inputs">
               <input v-model.number="priceMin" type="number" class="form-control" placeholder="Từ" min="0" />
               <input v-model.number="priceMax" type="number" class="form-control" placeholder="Đến" min="0" />
-              <button class="btn btn-success" @click="filterByPrice">
+              <button class="btn btn-primary" @click="filterByPrice">
                 <i class="fa fa-sort-amount-down-alt"></i> Lọc
               </button>
             </div>
           </div>
 
+          <!-- Xem tất cả -->
           <div class="filter-group">
             <button class="btn btn-outline-primary" @click="fetchDichVus">
-              <i class="fa fa-list me-1"></i> Tất cả
+            <i class="fa fa-list me-1"></i> Tất cả
             </button>
           </div>
         </div>
@@ -81,9 +165,9 @@
                   <label class="form-label">Thời gian (phút) <span class="required">*</span></label>
                   <input v-model.number="dichVu.thoiGian" type="number" class="form-control" min="0" required />
                 </div>
-                <div class="form-group">
+                 <div class="form-group">
                   <label class="form-label">Hình ảnh</label>
-                  <input v-model="dichVu.hinhAnh" class="form-control" placeholder="image-name" />
+                  <input type="file" class="form-control" @change="handleFileChange" accept="image/*" />
                 </div>
                 <div class="form-group full-width">
                   <label class="form-label">Mô tả</label>
@@ -107,10 +191,10 @@
                 </div>
               </div>
               <div class="form-actions">
-                <button type="submit" class="btn btn-success">
+                <button type="submit" class="btn btn-primary">
                   <i class="fa fa-save"></i> {{ isEditing ? "Cập nhật" : "Thêm" }}
                 </button>
-                <button type="button" class="btn btn-secondary" @click="resetForm">
+                <button type="button" class="btn btn-danger" @click="resetForm">
                   <i class="fa fa-undo"></i> Hủy
                 </button>
               </div>
@@ -150,7 +234,7 @@
                     <td class="service-time">{{ dv.thoiGian }} phút</td>
                     <td class="service-image">
                       <img 
-                        :src="'http://localhost:5055/images/' + dv.hinhAnh + '.jpg'" 
+                        :src="'https://localhost:7183/images/' + dv.hinhAnh" 
                         class="service-img" 
                         alt="Service image"
                       />
@@ -225,7 +309,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import apiClient from "../utils/axiosClient";
-
+import Swal from "sweetalert2";
 const dichVus = ref([]);
 const loaiDichVus = ref([]);
 const dichVu = ref({
@@ -239,10 +323,19 @@ const dichVu = ref({
   trangThai: 1,
   loaiDichVuID: 1,
 });
+const selectedImage = ref(null);
 const isEditing = ref(false);
 const searchName = ref("");
 const priceMin = ref(0);
-const priceMax = ref(1000000);
+const priceMax = ref(0);
+
+// Import related refs
+const selectedFile = ref(null);
+const isDragOver = ref(false);
+const importing = ref(false);
+const importProgress = ref(0);
+const importResult = ref(null);
+const fileInput = ref(null);
 
 const currentPage = ref(1);
 const pageSize = ref(5);
@@ -253,6 +346,124 @@ const paginatedDichVus = computed(() => {
   return dichVus.value.slice(start, start + pageSize.value);
 });
 
+const handleFileChange = (e) => {
+  selectedImage.value = e.target.files[0];
+};
+
+// Import functions
+const triggerFileInput = () => {
+  fileInput.value.click();
+};
+
+const handleFileSelect = (e) => {
+  const file = e.target.files[0];
+  if (file && file.name.endsWith('.xlsx')) {
+    selectedFile.value = file;
+    importResult.value = null;
+  } else {
+    alert('Chỉ hỗ trợ file .xlsx');
+  }
+};
+
+const handleDrop = (e) => {
+  e.preventDefault();
+  isDragOver.value = false;
+  const file = e.dataTransfer.files[0];
+  if (file && file.name.endsWith('.xlsx')) {
+    selectedFile.value = file;
+    importResult.value = null;
+  } else {
+    alert('Chỉ hỗ trợ file .xlsx');
+  }
+};
+
+const removeFile = () => {
+  selectedFile.value = null;
+  if (fileInput.value) {
+    fileInput.value.value = '';
+  }
+};
+
+const formatFileSize = (bytes) => {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+};
+
+const importFile = async () => {
+  if (!selectedFile.value) return;
+
+  importing.value = true;
+  importProgress.value = 0;
+  importResult.value = null;
+
+  try {
+    const formData = new FormData();
+    formData.append('file', selectedFile.value);
+
+    // Simulate progress
+    const progressInterval = setInterval(() => {
+      if (importProgress.value < 90) {
+        importProgress.value += 10;
+      }
+    }, 200);
+
+    const response = await apiClient.post('/DichVu/import', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    clearInterval(progressInterval);
+    importProgress.value = 100;
+
+    setTimeout(() => {
+      importing.value = false;
+      importResult.value = {
+        success: true,
+        count: response.count || 0,
+        message: `Import thành công ${response.count || 0} dịch vụ`
+      };
+      
+      // Refresh the list
+      fetchDichVus();
+      
+      // Clear file after successful import
+      setTimeout(() => {
+        selectedFile.value = null;
+        if (fileInput.value) {
+          fileInput.value.value = '';
+        }
+      }, 3000);
+    }, 500);
+
+  } catch (error) {
+    importing.value = false;
+    importProgress.value = 0;
+    importResult.value = {
+      success: false,
+      message: error.response?.data?.message || 'Có lỗi xảy ra khi import file'
+    };
+    console.error('Import error:', error);
+  }
+};
+
+const downloadTemplate = () => {
+  const link = document.createElement('a');
+  link.href = 'https://drive.google.com/uc?export=download&id=1bf_a4YgEFKGOcyT6gbmyE_J6DfU3r6XQ';
+  link.download = 'LDV_DV_LSP_SP.xlsx';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+
+const clearResult = () => {
+  importResult.value = null;
+};
+
 const goToPage = (page) => {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page;
@@ -261,9 +472,9 @@ const goToPage = (page) => {
 
 const fetchDichVus = async () => {
   try {
-    const response = await apiClient.get("DichVu/all");
-    dichVus.value = response.data;
-    totalItems.value = response.data.length;
+    const data = await apiClient.get("/DichVu/all");
+    dichVus.value = data;
+    totalItems.value = data.length;
     currentPage.value = 1;
   } catch (error) {
     console.error("Lỗi lấy danh sách dịch vụ:", error);
@@ -272,8 +483,8 @@ const fetchDichVus = async () => {
 
 const fetchLoaiDichVus = async () => {
   try {
-    const res = await apiClient.get("DichVu/loai");
-    loaiDichVus.value = res;
+    const data = await apiClient.get("/DichVu/loai");
+    loaiDichVus.value = data;
   } catch (error) {
     console.error("Lỗi lấy loại dịch vụ:", error);
   }
@@ -282,9 +493,9 @@ const fetchLoaiDichVus = async () => {
 const searchByName = async () => {
   if (!searchName.value.trim()) return fetchDichVus();
   try {
-    const response = await apiClient.get(`DichVu/name?ten=${searchName.value}`);
-    dichVus.value = response;
-    totalItems.value = response.length;
+    const data = await apiClient.get(`/DichVu/name?ten=${searchName.value}`);
+    dichVus.value = data;
+    totalItems.value = data.length;
     currentPage.value = 1;
   } catch (error) {
     console.error("Không tìm thấy dịch vụ:", error);
@@ -292,29 +503,73 @@ const searchByName = async () => {
 };
 
 const filterByPrice = async () => {
-  if (priceMin.value < 0 || priceMax.value < 0) return alert("Giá không được nhỏ hơn 0");
+  if (priceMin.value < 0 || priceMax.value < 0) {
+    return alert("Giá không được nhỏ hơn 0");
+  }
+
+  if (priceMax.value === 0 && priceMin.value > 0) {
+    priceMax.value = priceMin.value;
+  }
+
+  if (priceMin.value > priceMax.value) {
+    return alert("Giá tối thiểu không được lớn hơn giá tối đa");
+  }
+
   try {
-    const response = await apiClient.get(`DichVu/filter-by-price?min=${priceMin.value}&max=${priceMax.value}`);
-    dichVus.value = response.data;
-    totalItems.value = response.data.length;
+    const data = await apiClient.get(`/DichVu/filter-by-price?min=${priceMin.value}&max=${priceMax.value}`);
+    dichVus.value = data;
+    totalItems.value = data.length;
     currentPage.value = 1;
   } catch (error) {
     console.error("Lỗi lọc giá:", error);
   }
 };
-
 const saveDichVu = async () => {
   try {
-    const payload = { ...dichVu.value };
+    let imageName = dichVu.value.hinhAnh;
+
+    if (selectedImage.value) {
+      const formData = new FormData();
+      formData.append("file", selectedImage.value);
+      formData.append("tenDichVu", dichVu.value.tenDichVu);
+
+      const uploadRes = await apiClient.post("/DichVu/image", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      imageName = uploadRes.fileName || uploadRes;
+    }
+
+    const payload = { ...dichVu.value, hinhAnh: imageName };
+
     if (isEditing.value) {
       await apiClient.put(`/DichVu/${payload.dichVuID}`, payload);
+      Swal.fire({
+        icon: "success",
+        title: "Cập nhật dịch vụ thành công!",
+        showConfirmButton: false,
+        timer: 2000
+      });
     } else {
-      await apiClient.post("DichVu", payload);
+      await apiClient.post("/DichVu", payload);
+      Swal.fire({
+        icon: "success",
+        title: "Thêm dịch vụ thành công!",
+        showConfirmButton: false,
+        timer: 2000
+      });
     }
+
     resetForm();
+    selectedImage.value = null;
     fetchDichVus();
   } catch (error) {
     console.error("Lỗi lưu dịch vụ:", error);
+    Swal.fire({
+      icon: "error",
+      title: "Lỗi khi lưu dịch vụ!",
+      text: "Vui lòng thử lại sau.",
+    });
   }
 };
 
@@ -409,6 +664,204 @@ onMounted(() => {
 
 .card-body {
   padding: 25px;
+}
+
+/* Import Section Styles */
+.import-section {
+  margin-bottom: 30px;
+}
+
+.import-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.upload-zone {
+  border: 3px dashed #cbd5e0;
+  border-radius: 12px;
+  padding: 40px 20px;
+  text-align: center;
+  background: #f8f9fa;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.upload-zone:hover,
+.upload-zone.dragover {
+  border-color: #3498db;
+  background: rgba(52, 152, 219, 0.05);
+  transform: translateY(-2px);
+}
+
+.upload-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.upload-icon {
+  font-size: 3rem;
+  color: #3498db;
+  margin-bottom: 10px;
+}
+
+.upload-zone h3 {
+  color: #2c3e50;
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+.upload-zone p {
+  color: #7f8c8d;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.upload-link {
+  color: #3498db;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.upload-note {
+  color: #95a5a6;
+  font-style: italic;
+}
+
+.selected-file {
+  background: white;
+  border: 2px solid #e1e8ed;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e1e8ed;
+}
+
+.file-icon {
+  font-size: 2rem;
+  color: #27ae60;
+}
+
+.file-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.file-name {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 1.1rem;
+}
+
+.file-size {
+  color: #7f8c8d;
+  font-size: 0.9rem;
+}
+
+.import-actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.import-progress {
+  background: white;
+  border: 2px solid #e1e8ed;
+  border-radius: 12px;
+  padding: 25px;
+  text-align: center;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #ecf0f1;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 15px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3498db, #2ecc71);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  color: #2c3e50;
+  font-weight: 600;
+  margin: 0;
+}
+
+.import-result {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  border-radius: 12px;
+  border-left: 5px solid;
+}
+
+.import-result.success {
+  background: rgba(39, 174, 96, 0.1);
+  border-left-color: #27ae60;
+}
+
+.import-result.error {
+  background: rgba(231, 76, 60, 0.1);
+  border-left-color: #e74c3c;
+}
+
+.result-icon {
+  font-size: 2rem;
+}
+
+.import-result.success .result-icon {
+  color: #27ae60;
+}
+
+.import-result.error .result-icon {
+  color: #e74c3c;
+}
+
+.result-content {
+  flex: 1;
+}
+
+.result-content h4 {
+  margin: 0 0 5px 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.import-result.success .result-content h4 {
+  color: #27ae60;
+}
+
+.import-result.error .result-content h4 {
+  color: #e74c3c;
+}
+
+.result-content p {
+  margin: 0;
+  color: #7f8c8d;
+  font-size: 1rem;
 }
 
 /* Filter Section Styles */
@@ -588,6 +1041,11 @@ onMounted(() => {
   color: white;
 }
 
+.btn-danger {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: white;
+}
+
 .btn-outline-primary {
   background: transparent;
   color: #3498db;
@@ -603,6 +1061,17 @@ onMounted(() => {
   background: transparent;
   color: #95a5a6;
   border: 2px solid #95a5a6;
+}
+
+.btn-outline-light {
+  background: transparent;
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-outline-light:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: white;
 }
 
 .btn-sm {
@@ -658,8 +1127,8 @@ onMounted(() => {
 }
 
 .service-img {
-  width: 80px;
-  height: 60px;
+  width: 90px;
+  height: 70px;
   object-fit: cover;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -671,23 +1140,31 @@ onMounted(() => {
 }
 
 .type-badge {
+  display: inline-block;
+  min-width: 80px;
+  text-align: center;
   background: linear-gradient(135deg, #9b59b6, #8e44ad);
   color: white;
   padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.85rem;
+  border-radius: 16px;
+  font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
 .status-badge {
+  display: inline-block;
+  min-width: 100px;
+  text-align: center;
   padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.85rem;
+  border-radius: 16px;
+  font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
 .status-badge.active {
@@ -733,6 +1210,16 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Animation for import progress */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.fa-spin {
+  animation: spin 1s linear infinite;
 }
 
 /* Responsive Design */
@@ -786,6 +1273,38 @@ onMounted(() => {
     flex-direction: column;
     gap: 15px;
   }
+
+  .upload-zone {
+    padding: 30px 15px;
+  }
+
+  .upload-icon {
+    font-size: 2.5rem;
+  }
+
+  .upload-zone h3 {
+    font-size: 1.3rem;
+  }
+
+  .upload-zone p {
+    font-size: 1rem;
+  }
+
+  .file-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .import-actions {
+    justify-content: center;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -811,6 +1330,18 @@ onMounted(() => {
   .service-img {
     width: 60px;
     height: 45px;
+  }
+
+  .upload-zone {
+    padding: 20px 10px;
+  }
+
+  .upload-icon {
+    font-size: 2rem;
+  }
+
+  .upload-zone h3 {
+    font-size: 1.1rem;
   }
 }
 </style>

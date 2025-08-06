@@ -13,6 +13,8 @@
             <th>Hình thức</th>
             <th>Trạng thái</th>
             <th>Dịch vụ</th>
+            <th>Mã giảm giá</th>
+            <th>Giá trị giảm</th>
             <th>Tải hóa đơn</th>
           </tr>
         </thead>
@@ -40,6 +42,8 @@
                 </li>
               </ul>
             </td>
+            <td>{{ hd.voucher?.maCode ?? "Không có" }}</td>
+            <td>{{ hd.giaTriGiam }}</td>
             <td>
               <button
                 class="btn btn-sm btn-outline-primary"
@@ -61,15 +65,14 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import axios from "axios";
+import apiClient from "../utils/axiosClient";
 
 const danhSachHoaDon = ref([]);
 
 const layDanhSach = async () => {
   try {
-    const res = await axios.get(
-      "https://localhost:7183/api/ThongKe/thongKeHoaDon"
-    );
-    danhSachHoaDon.value = res.data;
+    const res = await apiClient.get("/ThongKe/thongKeHoaDon");
+    danhSachHoaDon.value = res;
   } catch (err) {
     console.error("Lỗi lấy danh sách hóa đơn:", err);
   }
@@ -84,12 +87,12 @@ const formatDateTime = (dateStr) => {
 };
 const taiHoaDon = async (hoaDonID) => {
   try {
-    const response = await axios.get(
-      `https://localhost:7183/api/ThanhToan/xuat-hoadon/${hoaDonID}`,
+    const response = await apiClient.get(
+      `/ThanhToan/xuat-hoadon/${hoaDonID}`,
       { responseType: "blob" } // để nhận file PDF
     );
 
-    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const url = window.URL.createObjectURL(new Blob([response]));
     const link = document.createElement("a");
     link.href = url;
     link.setAttribute("download", `HoaDon_${hoaDonID}.pdf`);

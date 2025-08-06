@@ -46,14 +46,13 @@
       <div id="container1" style="width: 49%; height: 500px"></div>
     </div>
   </div>
-
 </template>
 
 <script setup>
 import { onMounted, ref } from "vue";
 import axios from "axios";
 import anychart from "anychart";
-
+import apiClient from "../utils/axiosClient";
 // Các số liệu thống kê
 const visits = ref(44023); // (cứng)
 const comments = ref(56150); // (cứng)
@@ -63,22 +62,16 @@ const profits = ref(0); // lấy từ API: /TongTienHomNay
 onMounted(async () => {
   try {
     // 👉 Lấy số liệu tổng tiền tháng này
-    const salesRes = await axios.get(
-      "http://localhost:5055/api/ThongKe/TongTienThangNay"
-    );
-    sales.value = salesRes.data.tongTien;
+    const salesRes = await apiClient.get("/ThongKe/TongTienThangNay");
+    sales.value = salesRes.tongTien;
 
     // 👉 Lấy số liệu tổng tiền hôm nay
-    const profitRes = await axios.get(
-      "http://localhost:5055/api/ThongKe/TongTienHomNay"
-    );
-    profits.value = profitRes.data.tongTien;
+    const profitRes = await apiClient.get("/ThongKe/TongTienHomNay");
+    profits.value = profitRes.tongTien;
 
     // 📦 Biểu đồ 1: Sản phẩm
-    const spRes = await axios.get(
-      "http://localhost:5055/api/ThongKe/SoLuongSanPham"
-    );
-    const spData = spRes.data;
+    const spRes = await apiClient.get("/ThongKe/SoLuongSanPham");
+    const spData = spRes;
     const spChartData = spData.map((item) => [item.productName, item.soLuong]);
 
     const spChart = anychart.pie(spChartData);
@@ -91,10 +84,8 @@ onMounted(async () => {
     spChart.draw();
 
     // 📦 Biểu đồ 2: Dịch vụ
-    const dvRes = await axios.get(
-      "http://localhost:5055/api/ThongKe/SoLuongDichVu"
-    );
-    const dvData = dvRes.data;
+    const dvRes = await apiClient.get("/ThongKe/SoLuongDichVu");
+    const dvData = dvRes;
     const dvChartData = dvData.map((item) => [item.serviceName, item.soLuong]);
 
     const dvChart = anychart.pie(dvChartData);
@@ -107,10 +98,8 @@ onMounted(async () => {
     dvChart.draw();
 
     // 📈 Biểu đồ đường: Doanh thu từng ngày
-    const dtRes = await axios.get(
-      "http://localhost:5055/api/ThongKe/DoanhThuTungNgayTrongThang"
-    );
-    const dtData = dtRes.data;
+    const dtRes = await apiClient.get("/ThongKe/DoanhThuTungNgayTrongThang");
+    const dtData = dtRes;
 
     // Giữ nguyên dữ liệu gốc từ API
     const dtChartData = dtData.map((item) => ({
