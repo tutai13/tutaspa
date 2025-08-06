@@ -21,7 +21,7 @@ namespace API.Services
 		{
 			var baseUrl = "https://localhost:7183/images/";
 
-			return await _context.Product
+			return await _context.Products
 				.Include(p => p.ProductBatches)
 				.Select(p => new ProductDTO
 				{
@@ -42,7 +42,7 @@ namespace API.Services
 		{
 			var baseUrl = "https://localhost:7183/images/";
 
-			var product = await _context.Product
+			var product = await _context.Products
 				.Include(p => p.ProductBatches)
 				.FirstOrDefaultAsync(p => p.ProductId == id);
 
@@ -87,7 +87,7 @@ namespace API.Services
 				}
 			};
 
-			_context.Product.Add(product);
+			_context.Products.Add(product);
 			await _context.SaveChangesAsync();
 
 			return new ProductDTO
@@ -104,7 +104,7 @@ namespace API.Services
 
 		public async Task<bool> UpdateAsync(int id, ProductUpdateDTO dto)
 		{
-			var product = await _context.Product
+			var product = await _context.Products
 				.FirstOrDefaultAsync(p => p.ProductId == id);
 
 			if (product == null) return false;
@@ -120,7 +120,7 @@ namespace API.Services
 				product.Images = imageName;
 			}
 
-			_context.Product.Update(product);
+			_context.Products.Update(product);
 			await _context.SaveChangesAsync();
 			return true;
 		}
@@ -128,10 +128,10 @@ namespace API.Services
 
 		public async Task<bool> DeleteAsync(int id)
 		{
-			var product = await _context.Product.FindAsync(id);
+			var product = await _context.Products.FindAsync(id);
 			if (product == null) return false;
 
-			_context.Product.Remove(product);
+			_context.Products.Remove(product);
 			await _context.SaveChangesAsync();
 			return true;
 		}
@@ -158,7 +158,7 @@ namespace API.Services
 		public async Task<IEnumerable<ProductDTO>> SearchByNameAsync(string name)
 		{
 			var baseUrl = "https://localhost:7183/images/";
-			return await _context.Product
+			return await _context.Products
 				.Include(p => p.ProductBatches)
 				.Where(p => p.ProductName.Contains(name))
 				.Select(p => new ProductDTO
@@ -179,7 +179,7 @@ namespace API.Services
 		public async Task<IEnumerable<ProductDTO>> FilterByPriceAsync(decimal min, decimal max)
 		{
 			var baseUrl = "https://localhost:7183/images/";
-			return await _context.Product
+			return await _context.Products
 				.Include(p => p.ProductBatches)
 				.Where(p => p.CurrentSellingPrice >= min && p.CurrentSellingPrice <= max)
 				.Select(p => new ProductDTO

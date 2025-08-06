@@ -21,7 +21,7 @@ namespace API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<DatLich>>> GetDatLich()
         {
-            var result = await _context.datLiches
+            var result = await _context.DatLiches
                     .Include(dl => dl.ChiTietDichVus)
                     .ThenInclude(ct => ct.DichVu)
                     .ToListAsync();
@@ -55,7 +55,7 @@ namespace API.Controllers
             {
                 var khung = startTime.AddMinutes(i * 30);
 
-                int count = _context.datLiches
+                int count = _context.DatLiches
                     .Count(x =>
                         x.ThoiGian <= khung &&
                         x.ThoiGian.AddMinutes(x.ThoiLuong) > khung
@@ -76,7 +76,7 @@ namespace API.Controllers
                 GhiChu = request.GhiChu
             };
 
-            _context.datLiches.Add(datLich);
+            _context.DatLiches.Add(datLich);
             _context.SaveChanges();
 
             // Nếu có dịch vụ, lưu ChiTietDatLich
@@ -84,7 +84,7 @@ namespace API.Controllers
             {
                 foreach (var dv in danhSachDichVu)
                 {
-                    _context.chiTietDatLiches.Add(new ChiTietDatLich
+                    _context.ChiTietDatLiches.Add(new ChiTietDatLich
                     {
                         DatLichID = datLich.DatLichID,
                         DichVuID = dv.DichVuID
@@ -99,7 +99,7 @@ namespace API.Controllers
         [HttpPut("{id}")]
         public IActionResult CapNhatDatLich(int id, [FromBody] DatLichDTO request)
         {
-            var datLich = _context.datLiches.FirstOrDefault(d => d.DatLichID == id);
+            var datLich = _context.DatLiches.FirstOrDefault(d => d.DatLichID == id);
             if (datLich == null)
                 return NotFound("Không tìm thấy lịch đặt");
 
@@ -126,7 +126,7 @@ namespace API.Controllers
             {
                 var khung = startTime.AddMinutes(i * 30);
 
-                int count = _context.datLiches
+                int count = _context.DatLiches
                     .Count(x =>
                         x.DatLichID != id && // bỏ qua lịch hiện tại
                         x.ThoiGian <= khung &&
@@ -144,18 +144,18 @@ namespace API.Controllers
             datLich.GhiChu = request.GhiChu;
 
             // Xóa các chi tiết dịch vụ cũ
-            var chiTietCu = _context.chiTietDatLiches
+            var chiTietCu = _context.ChiTietDatLiches
                 .Where(c => c.DatLichID == datLich.DatLichID)
                 .ToList();
 
-            _context.chiTietDatLiches.RemoveRange(chiTietCu);
+            _context.ChiTietDatLiches.RemoveRange(chiTietCu);
 
             // Thêm mới chi tiết dịch vụ
             if (danhSachDichVu.Any())
             {
                 foreach (var dv in danhSachDichVu)
                 {
-                    _context.chiTietDatLiches.Add(new ChiTietDatLich
+                    _context.ChiTietDatLiches.Add(new ChiTietDatLich
                     {
                         DatLichID = datLich.DatLichID,
                         DichVuID = dv.DichVuID
@@ -170,7 +170,7 @@ namespace API.Controllers
         [HttpPut("doitrangthai/{id}")]
         public IActionResult DoiTrangThai(int id)
         {
-            var datLich = _context.datLiches.FirstOrDefault(d => d.DatLichID == id);
+            var datLich = _context.DatLiches.FirstOrDefault(d => d.DatLichID == id);
             if (datLich == null)
                 return NotFound("Không tìm thấy lịch hẹn.");
 
@@ -194,7 +194,7 @@ namespace API.Controllers
         [HttpPut("capnhat-thanhtoan/{id}")]
         public async Task<IActionResult> CapNhatThanhToan(int id)
         {
-            var datLich = await _context.datLiches.FindAsync(id);
+            var datLich = await _context.DatLiches.FindAsync(id);
             if (datLich == null)
                 return NotFound();
 
@@ -217,7 +217,7 @@ namespace API.Controllers
                 khungGioList.Add(new DateTime(ngay.Year, ngay.Month, ngay.Day, h, 30, 0));
             }
 
-            var lich = _context.datLiches
+            var lich = _context.DatLiches
                 .Where(x => x.ThoiGian.Date == ngay.Date)
                 .ToList();
 

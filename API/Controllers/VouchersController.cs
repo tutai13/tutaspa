@@ -26,14 +26,14 @@ namespace API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Voucher>>> GetVoucher()
         {
-            return await _context.Voucher.ToListAsync();
+            return await _context.Vouchers.ToListAsync();
         }
 
         // GET: api/Vouchers/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Voucher>> GetVoucher(int id)
         {
-            var voucher = await _context.Voucher.FindAsync(id);
+            var voucher = await _context.Vouchers.FindAsync(id);
 
             if (voucher == null)
             {
@@ -82,7 +82,7 @@ namespace API.Controllers
             // Viết hoa mã code
             voucher.MaCode = voucher.MaCode?.ToUpper() ?? string.Empty;
 
-            _context.Voucher.Add(voucher);
+            _context.Vouchers.Add(voucher);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetVoucher", new { id = voucher.VoucherID }, voucher);
@@ -93,13 +93,13 @@ namespace API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteVoucher(int id)
         {
-            var voucher = await _context.Voucher.FindAsync(id);
+            var voucher = await _context.Vouchers.FindAsync(id);
             if (voucher == null)
             {
                 return NotFound();
             }
 
-            _context.Voucher.Remove(voucher);
+            _context.Vouchers.Remove(voucher);
             await _context.SaveChangesAsync();
 
             return NoContent();
@@ -107,12 +107,12 @@ namespace API.Controllers
 
         private bool VoucherExists(int id)
         {
-            return _context.Voucher.Any(e => e.VoucherID == id);
+            return _context.Vouchers.Any(e => e.VoucherID == id);
         }
         [HttpGet("status")]
         public IActionResult GetVoucherStatuses()
         {
-            var vouchers = _context.Voucher.ToList();
+            var vouchers = _context.Vouchers.ToList();
             var now = DateTime.Now;
             var result = vouchers.Select(v => new VoucherStatusDTO
             {

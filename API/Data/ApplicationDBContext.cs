@@ -7,38 +7,35 @@ namespace API.Data
 {
     public class ApplicationDbContext : IdentityDbContext<User>
     {
-        public DbSet<User> User { get; set; } 
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
+
+        // -------------------------- DbSet --------------------------
+        public DbSet<User> Users { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
-        // --------------------------
+
         public DbSet<DichVu> DichVus { get; set; }
         public DbSet<LoaiDichVu> LoaiDichVus { get; set; }
-        public DbSet<Product> Product { get; set; }
-		public DbSet<ProductBatch> ProductBatches { get; set; }
-		public DbSet<Category> Categorys { get; set; }
+        public DbSet<Product> Products { get; set; }
+        public DbSet<ProductBatch> ProductBatches { get; set; }
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<InventoryHistory> InventoryHistories { get; set; }
+        public DbSet<DanhGia> DanhGias { get; set; }
 
-		public DbSet<InventoryHistory> InventoryHistories { get; set; }
-        public DbSet<DanhGia> DanhGiass{ get; set; }
-        //public DbSet<Banggiadichvu> BangGiaDichVus { get; set; }
-        public DbSet<HoaDon> hoaDons { get; set; }
-        public DbSet<ChiTietHoaDon> chiTietHoaDons { get; set; }
-        public DbSet<API.Models.Voucher> Voucher { get; set; } = default!;
-        public DbSet<DatLich> datLiches { get; set; }
-        public DbSet<ChiTietDatLich> chiTietDatLiches { get; set; }
-
-
+        public DbSet<HoaDon> HoaDons { get; set; }
+        public DbSet<ChiTietHoaDon> ChiTietHoaDons { get; set; }
+        public DbSet<Voucher> Vouchers { get; set; }
+        public DbSet<DatLich> DatLiches { get; set; }
+        public DbSet<ChiTietDatLich> ChiTietDatLiches { get; set; }
 
         public DbSet<ChatSession> ChatSessions { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
 
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
-        {
-
-        }
-
+        // -------------------------- Fluent API --------------------------
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
+            // User
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Id)
                 .IsUnique();
@@ -47,46 +44,42 @@ namespace API.Data
                 .HasIndex(u => u.Email)
                 .IsUnique();
 
+            // DichVu
             modelBuilder.Entity<DichVu>(entity =>
             {
                 entity.Property(e => e.Gia)
                       .HasColumnType("decimal(18,2)");
             });
 
-			// Giá bán của sản phẩm
-			modelBuilder.Entity<Product>()
-				.Property(p => p.CurrentSellingPrice)
-				.HasColumnType("decimal(18,2)");
+            // Product
+            modelBuilder.Entity<Product>()
+                .Property(p => p.CurrentSellingPrice)
+                .HasColumnType("decimal(18,2)");
 
-			// Thiết lập mối quan hệ 1-n Product → ProductBatch
-			modelBuilder.Entity<ProductBatch>()
-				.Property(b => b.ImportPrice)
-				.HasColumnType("decimal(18,2)");
+            modelBuilder.Entity<Product>()
+                .HasMany(p => p.ProductBatches)
+                .WithOne(b => b.Product)
+                .HasForeignKey(b => b.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-			modelBuilder.Entity<Product>()
-				.HasMany(p => p.ProductBatches)
-				.WithOne(b => b.Product)
-				.HasForeignKey(b => b.ProductId)
-				.OnDelete(DeleteBehavior.Cascade); // hoặc Restrict nếu muốn cứng hơn
+            // ProductBatch
+            modelBuilder.Entity<ProductBatch>()
+                .Property(b => b.ImportPrice)
+                .HasColumnType("decimal(18,2)");
 
-			// Quan hệ InventoryHistory → ProductBatch
-			modelBuilder.Entity<InventoryHistory>()
-				.HasOne(h => h.Batch)
-				.WithMany()
-				.HasForeignKey(h => h.BatchId)
-				.OnDelete(DeleteBehavior.Restrict);
-		}
-			modelBuilder.Entity<DichVu>(entity =>
-			{
-				entity.Property(e => e.Gia)
-					  .HasColumnType("decimal(18,2)"); 
-			});
+            // InventoryHistory → ProductBatch
+            modelBuilder.Entity<InventoryHistory>()
+                .HasOne(h => h.Batch)
+                .WithMany()
+                .HasForeignKey(h => h.BatchId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-
+            // ChatSession
             modelBuilder.Entity<ChatSession>(entity =>
             {
                 entity.ToTable("ChatSessions");
                 entity.HasKey(e => e.Id);
+
                 entity.HasIndex(e => e.SessionId).IsUnique();
                 entity.HasIndex(e => e.CustomerId);
                 entity.HasIndex(e => e.AdminId);
@@ -99,11 +92,12 @@ namespace API.Data
                 entity.Property(e => e.UserAgent).HasMaxLength(500);
             });
 
-            // ChatMessageEntity Configuration
+            // ChatMessage
             modelBuilder.Entity<ChatMessage>(entity =>
             {
                 entity.ToTable("ChatMessages");
                 entity.HasKey(e => e.Id);
+
                 entity.HasIndex(e => e.MessageId).IsUnique();
                 entity.HasIndex(e => e.SessionId);
                 entity.HasIndex(e => e.FromUserId);
@@ -114,7 +108,6 @@ namespace API.Data
                 entity.Property(e => e.FromUserName).HasMaxLength(100);
                 entity.Property(e => e.Message).HasMaxLength(2000);
 
-                // Foreign Key Relationship
                 entity.HasOne(m => m.ChatSession)
                       .WithMany(s => s.Messages)
                       .HasForeignKey(m => m.SessionId)
@@ -123,6 +116,4 @@ namespace API.Data
             });
         }
     }
-
-
-
+}
