@@ -14,6 +14,8 @@ import SanPham from "../components/sanpham.vue";
 import DanhGiaKhachHang from "../components/DanhGiaKhachHang.vue";
 import Banggiadichvu from "../components/Banggiadichvu.vue";
 import Chat from "../components/Chat.vue";
+import ThongKe from "../components/ThongKe.vue";
+import ChangePassword from "../components/ChangePassword.vue";
 const routes = [
   { path: "/", name: "Dashboard", component: Dashboard },
   { path: "/khuyenMai", name: "khuyenMai", component: khuyenMai },
@@ -25,7 +27,13 @@ const routes = [
   { path: "/employees", name: "employees", component: EmployeeManagerment },
   { path: "/QuanLySanPham", name: "QuanLySanPham", component: QuanLySanPham },
   { path: "/categories", name: "LoaiSanPham", component: LoaiSanPham },
-  {path : "/chat", name: "Chat", component: Chat},
+  { path: "/chat", name: "Chat", component: Chat },
+  { path: "/ThongKe", name: "ThongKe", component: ThongKe },
+  {
+    path: "/ChangePassword",
+    name: "ChangePassword",
+    component: ChangePassword,
+  },
   { path: "/Products", name: "sanpham", component: SanPham },
   {
     path: "/DanhGiaKhachHang",

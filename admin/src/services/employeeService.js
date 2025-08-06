@@ -1,84 +1,88 @@
-import axios from 'axios'
-import { authAPI } from '../services/authservice'
+import axios from "axios";
+import { authAPI } from "../services/authservice";
 
 // Cấu hình base URL cho API
-const API_BASE_URL = import.meta.env.VITE_BASE_URL
-import router from '../router/router.js'
+const API_BASE_URL = import.meta.env.VITE_BASE_URL;
+import router from "../router/router.js";
 
 // Tạo instance của axios với cấu hình mặc định
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
   timeout: 15000, // 10 seconds timeout
-})
+});
 
 // Interceptor để thêm token vào request headers
 apiClient.interceptors.request.use(
   (config) => {
     // Lấy token từ localStorage hoặc store
-    const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken')
+    const token =
+      localStorage.getItem("accessToken") ||
+      sessionStorage.getItem("accessToken");
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
-    else {
-      router.push('/login?return_url=employees')
-      return ;
+      config.headers.Authorization = `Bearer ${token}`;
+    } else {
+      router.push("/login?return_url=employees");
+      return;
     }
 
-    return config
+    return config;
   },
   (error) => {
-    return Promise.reject(error)
+    return Promise.reject(error);
   }
-)
-
+);
 
 // ✅ Biến để theo dõi refresh token đang được thực hiện
 let isRefreshing = false;
 let failedQueue = [];
 
 const processQueue = (error, token = null) => {
-  failedQueue.forEach(prom => {
+  failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
     } else {
       prom.resolve(token);
     }
   });
-  
+
   failedQueue = [];
 };
 
 // Interceptor để xử lý response và error
 apiClient.interceptors.response.use(
   (response) => {
-    return response
+    return response;
   },
- async (error) => {
+  async (error) => {
     const originalRequest = error.config;
 
     if (error.response) {
-      const { status, data } = error.response
-      
+      const { status, data } = error.response;
+
       switch (status) {
         case 401:
           // ✅ Kiểm tra nếu đã thử refresh token rồi
           if (originalRequest._retry) {
             // Đã thử refresh nhưng vẫn 401 -> logout
-            localStorage.removeItem('accessToken')
-            localStorage.removeItem('user-info')
-            router.push('/login?return_url=' + router.currentRoute.value.fullPath)
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("user-info");
+            router.push(
+              "/login?return_url=" + router.currentRoute.value.fullPath
+            );
             return Promise.reject(error);
           }
 
           // ✅ Kiểm tra nếu request này là refresh-token
-          if (originalRequest.url.includes('/auth/refresh-token')) {
+          if (originalRequest.url.includes("/auth/refresh-token")) {
             // Refresh token cũng bị 401 -> logout
-            localStorage.removeItem('accessToken')
-            localStorage.removeItem('user-info')
-            router.push('/login?return_url=' + router.currentRoute.value.fullPath)
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("user-info");
+            router.push(
+              "/login?return_url=" + router.currentRoute.value.fullPath
+            );
             return Promise.reject(error);
           }
 
@@ -88,12 +92,14 @@ apiClient.interceptors.response.use(
             // ✅ Nếu đang refresh, đợi kết quả
             return new Promise((resolve, reject) => {
               failedQueue.push({ resolve, reject });
-            }).then(token => {
-              originalRequest.headers.Authorization = `Bearer ${token}`;
-              return apiClient(originalRequest);
-            }).catch(err => {
-              return Promise.reject(err);
-            });
+            })
+              .then((token) => {
+                originalRequest.headers.Authorization = `Bearer ${token}`;
+                return apiClient(originalRequest);
+              })
+              .catch((err) => {
+                return Promise.reject(err);
+              });
           }
 
           isRefreshing = true;
@@ -101,53 +107,55 @@ apiClient.interceptors.response.use(
           try {
             // ✅ Gọi refresh token API
             const response = await authAPI.refreshToken();
-            
+
             if (response.accessToken) {
-              localStorage.setItem('accessToken', response.accessToken);
-              
+              localStorage.setItem("accessToken", response.accessToken);
+
               // ✅ Cập nhật header cho request gốc
               originalRequest.headers.Authorization = `Bearer ${response.accessToken}`;
-              
+
               // ✅ Xử lý các request đang chờ
               processQueue(null, response.accessToken);
-              
+
               // ✅ Retry request gốc
               return apiClient(originalRequest);
             }
           } catch (refreshError) {
             // ✅ Refresh token thất bại -> logout
             processQueue(refreshError, null);
-            localStorage.removeItem('accessToken')
-            localStorage.removeItem('user-info')
-            router.push('/login?return_url=' + router.currentRoute.value.fullPath)
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("user-info");
+            router.push(
+              "/login?return_url=" + router.currentRoute.value.fullPath
+            );
             return Promise.reject(refreshError);
           } finally {
             isRefreshing = false;
           }
           break;
         case 403:
-          console.error('Unauthorized access - redirecting to login')
-          router.push('/login?return_url=employees')
-          localStorage.removeItem('accessToken')
-          break
+          console.error("Unauthorized access - redirecting to login");
+          router.push("/login?return_url=employees");
+          localStorage.removeItem("accessToken");
+          break;
         case 404:
-          console.error('Resource not found')
-          break
+          console.error("Resource not found");
+          break;
         case 500:
-          console.error('Internal server error')
-          break
+          console.error("Internal server error");
+          break;
         default:
-          throw error
+          throw error;
       }
     } else if (error.request) {
-      console.error('Network error - no response received')
+      console.error("Network error - no response received");
     } else {
-      console.error('Request setup error:', error.message)
+      console.error("Request setup error:", error.message);
     }
-    
-    return Promise.reject(error)
+
+    return Promise.reject(error);
   }
-)
+);
 
 /**
  * Service class để xử lý các API calls liên quan đến Employee
@@ -160,11 +168,11 @@ class EmployeeService {
    */
   static async getEmployees(page = 1) {
     try {
-      const response = await apiClient.get(`/employees?page=${page}`)
-      console.log('Response data:', response.data)
-      return response.data
+      const response = await apiClient.get(`/employees?page=${page}`);
+      console.log("Response data:", response);
+      return response;
     } catch (error) {
-      throw this.handleError(error, 'Lỗi khi lấy danh sách nhân viên')
+      throw this.handleError(error, "Lỗi khi lấy danh sách nhân viên");
     }
   }
 
@@ -181,22 +189,22 @@ class EmployeeService {
   static async createEmployee(employeeData) {
     try {
       // Validate dữ liệu đầu vào
-      this.validateEmployeeData(employeeData)
-      
+      this.validateEmployeeData(employeeData);
+
       // Chuyển đổi Role thành số
       const payload = {
         ...employeeData,
-        Role: parseInt(employeeData.Role)
-      }
-      
-      const response = await apiClient.post('/employees', payload)
+        Role: parseInt(employeeData.Role),
+      };
+
+      const response = await apiClient.post("/employees", payload);
       return {
         success: true,
         data: response.data.data || response.data,
-        message: 'Tạo nhân viên thành công'
-      }
+        message: "Tạo nhân viên thành công",
+      };
     } catch (error) {
-      throw this.handleError(error, 'Lỗi khi tạo nhân viên')
+      throw this.handleError(error, "Lỗi khi tạo nhân viên");
     }
   }
 
@@ -211,20 +219,19 @@ class EmployeeService {
    * @returns {Promise} Promise chứa kết quả cập nhật
    */
   static async updateEmployee(employeeData) {
-
-    console.log(employeeData)
+    console.log(employeeData);
     try {
       // Validate dữ liệu đầu vào
-      this.validateUpdateEmployeeData(employeeData)
-      
-      const response = await apiClient.put('/employees', employeeData)
+      this.validateUpdateEmployeeData(employeeData);
+
+      const response = await apiClient.put("/employees", employeeData);
       return {
         success: true,
         data: response.data.data || response.data,
-        message: 'Cập nhật nhân viên thành công'
-      }
+        message: "Cập nhật nhân viên thành công",
+      };
     } catch (error) {
-      throw this.handleError(error, 'Lỗi khi cập nhật nhân viên')
+      throw this.handleError(error, "Lỗi khi cập nhật nhân viên");
     }
   }
 
@@ -237,17 +244,21 @@ class EmployeeService {
   static async updateEmployeeStatus(empId, status) {
     try {
       if (!empId) {
-        throw new Error('ID nhân viên không được để trống')
+        throw new Error("ID nhân viên không được để trống");
       }
-      
-      const response = await apiClient.patch(`/employees/status/${empId}?status=${status}`)
+
+      const response = await apiClient.patch(
+        `/employees/status/${empId}?status=${status}`
+      );
       return {
         success: true,
         data: response.data.data || response.data,
-        message: `Trạng thái nhân viên đã được ${status ? 'kích hoạt' : 'vô hiệu hóa'}`
-      }
+        message: `Trạng thái nhân viên đã được ${
+          status ? "kích hoạt" : "vô hiệu hóa"
+        }`,
+      };
     } catch (error) {
-      throw this.handleError(error, 'Lỗi khi cập nhật trạng thái nhân viên')
+      throw this.handleError(error, "Lỗi khi cập nhật trạng thái nhân viên");
     }
   }
 
@@ -260,22 +271,24 @@ class EmployeeService {
   static async updateEmployeeRole(empId, role) {
     try {
       if (!empId) {
-        throw new Error('ID nhân viên không được để trống')
+        throw new Error("ID nhân viên không được để trống");
       }
-      
+
       // Validate role
       if (![0, 1].includes(parseInt(role))) {
-        throw new Error('Vai trò không hợp lệ')
+        throw new Error("Vai trò không hợp lệ");
       }
-      
-      const response = await apiClient.patch(`/employees/role/${empId}?role=${role}`)
+
+      const response = await apiClient.patch(
+        `/employees/role/${empId}?role=${role}`
+      );
       return {
         success: true,
         data: response.data.data || response.data,
-        message: 'Vai trò nhân viên đã được cập nhật'
-      }
+        message: "Vai trò nhân viên đã được cập nhật",
+      };
     } catch (error) {
-      throw this.handleError(error, 'Lỗi khi cập nhật vai trò nhân viên')
+      throw this.handleError(error, "Lỗi khi cập nhật vai trò nhân viên");
     }
   }
 
@@ -287,17 +300,17 @@ class EmployeeService {
   static async deleteEmployee(empId) {
     try {
       if (!empId) {
-        throw new Error('ID nhân viên không được để trống')
+        throw new Error("ID nhân viên không được để trống");
       }
-      
-      const response = await apiClient.delete(`/employees/${empId}`)
+
+      const response = await apiClient.delete(`/employees/${empId}`);
       return {
         success: true,
         data: response.data.data || response.data,
-        message: 'Xóa nhân viên thành công'
-      }
+        message: "Xóa nhân viên thành công",
+      };
     } catch (error) {
-      throw this.handleError(error, 'Lỗi khi xóa nhân viên')
+      throw this.handleError(error, "Lỗi khi xóa nhân viên");
     }
   }
 
@@ -309,17 +322,17 @@ class EmployeeService {
   static async getEmployeeById(empId) {
     try {
       if (!empId) {
-        throw new Error('ID nhân viên không được để trống')
+        throw new Error("ID nhân viên không được để trống");
       }
-      
-      const response = await apiClient.get(`/employees/${empId}`)
+
+      const response = await apiClient.get(`/employees/${empId}`);
       return {
         success: true,
         data: response.data.data || response.data,
-        message: 'Lấy thông tin nhân viên thành công'
-      }
+        message: "Lấy thông tin nhân viên thành công",
+      };
     } catch (error) {
-      throw this.handleError(error, 'Lỗi khi lấy thông tin nhân viên')
+      throw this.handleError(error, "Lỗi khi lấy thông tin nhân viên");
     }
   }
 
@@ -331,10 +344,12 @@ class EmployeeService {
    */
   static async searchEmployees(keyword, page = 1) {
     try {
-      const response = await apiClient.get(`/employees?keyword=${encodeURIComponent(keyword)}&page=${page}`)
-      return response.data
+      const response = await apiClient.get(
+        `/employees?keyword=${encodeURIComponent(keyword)}&page=${page}`
+      );
+      return response.data;
     } catch (error) {
-      throw this.handleError(error, 'Lỗi khi tìm kiếm nhân viên')
+      throw this.handleError(error, "Lỗi khi tìm kiếm nhân viên");
     }
   }
 
@@ -343,29 +358,34 @@ class EmployeeService {
    * @param {Object} employeeData - Dữ liệu nhân viên
    */
   static validateEmployeeData(employeeData) {
-    const requiredFields = ['Email', 'Name', 'PhoneNumber', 'Address', 'Role']
-    
+    const requiredFields = ["Email", "Name", "PhoneNumber", "Address", "Role"];
+
     for (const field of requiredFields) {
-      if (!employeeData[field] || employeeData[field].toString().trim() === '') {
-        throw new Error(`Trường ${this.getFieldName(field)} không được để trống`)
+      if (
+        !employeeData[field] ||
+        employeeData[field].toString().trim() === ""
+      ) {
+        throw new Error(
+          `Trường ${this.getFieldName(field)} không được để trống`
+        );
       }
     }
-    
+
     // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(employeeData.Email)) {
-      throw new Error('Định dạng email không hợp lệ')
+      throw new Error("Định dạng email không hợp lệ");
     }
-    
+
     // Validate phone number (basic validation)
-    const phoneRegex = /^[\d\s\-\+\(\)]+$/
+    const phoneRegex = /^[\d\s\-\+\(\)]+$/;
     if (!phoneRegex.test(employeeData.PhoneNumber)) {
-      throw new Error('Số điện thoại không hợp lệ')
+      throw new Error("Số điện thoại không hợp lệ");
     }
-    
+
     // Validate role
-    if (![0, 1, '0', '1'].includes(employeeData.Role)) {
-      throw new Error('Vai trò không hợp lệ')
+    if (![0, 1, "0", "1"].includes(employeeData.Role)) {
+      throw new Error("Vai trò không hợp lệ");
     }
   }
 
@@ -374,24 +394,29 @@ class EmployeeService {
    * @param {Object} employeeData - Dữ liệu nhân viên
    */
   static validateUpdateEmployeeData(employeeData) {
-    const requiredFields = ['EmpId', 'Email', 'Name', 'PhoneNumber', 'Address']
-    
+    const requiredFields = ["EmpId", "Email", "Name", "PhoneNumber", "Address"];
+
     for (const field of requiredFields) {
-      if (!employeeData[field] || employeeData[field].toString().trim() === '') {
-        throw new Error(`Trường ${this.getFieldName(field)} không được để trống`)
+      if (
+        !employeeData[field] ||
+        employeeData[field].toString().trim() === ""
+      ) {
+        throw new Error(
+          `Trường ${this.getFieldName(field)} không được để trống`
+        );
       }
     }
-    
+
     // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(employeeData.Email)) {
-      throw new Error('Định dạng email không hợp lệ')
+      throw new Error("Định dạng email không hợp lệ");
     }
-    
+
     // Validate phone number
-    const phoneRegex = /^[\d\s\-\+\(\)]+$/
+    const phoneRegex = /^[\d\s\-\+\(\)]+$/;
     if (!phoneRegex.test(employeeData.PhoneNumber)) {
-      throw new Error('Số điện thoại không hợp lệ')
+      throw new Error("Số điện thoại không hợp lệ");
     }
   }
 
@@ -402,15 +427,15 @@ class EmployeeService {
    */
   static getFieldName(fieldName) {
     const fieldNames = {
-      Email: 'Email',
-      FirtName: 'Tên',
-      LastName: 'Họ',
-      PhoneNumber: 'Số điện thoại',
-      Address: 'Địa chỉ',
-      Role: 'Vai trò',
-      EmpId: 'ID nhân viên'
-    }
-    return fieldNames[fieldName] || fieldName
+      Email: "Email",
+      FirtName: "Tên",
+      LastName: "Họ",
+      PhoneNumber: "Số điện thoại",
+      Address: "Địa chỉ",
+      Role: "Vai trò",
+      EmpId: "ID nhân viên",
+    };
+    return fieldNames[fieldName] || fieldName;
   }
 
   /**
@@ -420,17 +445,20 @@ class EmployeeService {
    * @returns {Error} Lỗi đã được xử lý
    */
   static handleError(error, defaultMessage) {
-    let message = defaultMessage
-    
+    let message = defaultMessage;
+
     if (error.response && error.response.data) {
       // Lỗi từ server
-      message = error.response.data.message || error.response.data.error || defaultMessage
+      message =
+        error.response.data.message ||
+        error.response.data.error ||
+        defaultMessage;
     } else if (error.message) {
       // Lỗi từ client hoặc network
-      message = error.message
+      message = error.message;
     }
-    
-    return new Error(message)
+
+    return new Error(message);
   }
 
   /**
@@ -440,14 +468,14 @@ class EmployeeService {
    */
   static formatRole(role) {
     const roleMap = {
-      0: 'Cashier',
-      1: 'InventoryManager',
-      '0': 'Cashier',
-      '1': 'InventoryManager',
-      'Cashier': 'Cashier',
-      'InventoryManager': 'InventoryManager'
-    }
-    return roleMap[role] || 'Unknown'
+      0: "Cashier",
+      1: "InventoryManager",
+      0: "Cashier",
+      1: "InventoryManager",
+      Cashier: "Cashier",
+      InventoryManager: "InventoryManager",
+    };
+    return roleMap[role] || "Unknown";
   }
 
   /**
@@ -457,14 +485,14 @@ class EmployeeService {
    */
   static formatRoleVietnamese(role) {
     const roleMap = {
-      0: 'Thu ngân',
-      1: 'Quản lý kho',
-      '0': 'Thu ngân',
-      '1': 'Quản lý kho',
-      'Cashier': 'Thu ngân',
-      'InventoryManager': 'Quản lý kho'
-    }
-    return roleMap[role] || 'Không xác định'
+      0: "Thu ngân",
+      1: "Quản lý kho",
+      0: "Thu ngân",
+      1: "Quản lý kho",
+      Cashier: "Thu ngân",
+      InventoryManager: "Quản lý kho",
+    };
+    return roleMap[role] || "Không xác định";
   }
 
   /**
@@ -473,8 +501,8 @@ class EmployeeService {
    * @returns {boolean} True nếu email hợp lệ
    */
   static isValidEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(email)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
   }
 
   /**
@@ -483,8 +511,8 @@ class EmployeeService {
    * @returns {boolean} True nếu số điện thoại hợp lệ
    */
   static isValidPhone(phone) {
-    const phoneRegex = /^[\d\s\-\+\(\)]+$/
-    return phoneRegex.test(phone) && phone.replace(/\D/g, '').length >= 10
+    const phoneRegex = /^[\d\s\-\+\(\)]+$/;
+    return phoneRegex.test(phone) && phone.replace(/\D/g, "").length >= 10;
   }
 
   /**
@@ -493,19 +521,16 @@ class EmployeeService {
    * @returns {string} Số điện thoại đã format
    */
   static formatPhone(phone) {
-    const cleaned = phone.replace(/\D/g, '')
-    const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/)
+    const cleaned = phone.replace(/\D/g, "");
+    const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
     if (match) {
-      return `(${match[1]}) ${match[2]}-${match[3]}`
+      return `(${match[1]}) ${match[2]}-${match[3]}`;
     }
-    return phone
+    return phone;
   }
 }
 
-export default EmployeeService
+export default EmployeeService;
 
 // Export các utility functions nếu cần sử dụng riêng lẻ
-export {
-  EmployeeService,
-  apiClient
-}
+export { EmployeeService, apiClient };

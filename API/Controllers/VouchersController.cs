@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using API.Data;
 using API.Models;
+using API.DTOs.ThongKe;
 
 namespace API.Controllers
 {
@@ -108,5 +109,25 @@ namespace API.Controllers
         {
             return _context.Voucher.Any(e => e.VoucherID == id);
         }
+        [HttpGet("status")]
+        public IActionResult GetVoucherStatuses()
+        {
+            var vouchers = _context.Voucher.ToList();
+            var now = DateTime.Now;
+            var result = vouchers.Select(v => new VoucherStatusDTO
+            {
+                MaCode = v.MaCode,
+                tienGiam = v.KieuGiamGia == 0
+                ? v.GiaTriGiam / 100: v.KieuGiamGia == 1 ? v.GiaTriGiam : 0, 
+                TrangThai =
+                    now < v.NgayBatDau ? "Chưa hiệu lực" :
+                    now > v.NgayKetThuc ? "Hết hạn" :
+                    v.SoLuong == 0 ? "Hết lượt sử dụng" :
+                    "true"
+            }).ToList();
+
+            return Ok(result);
+        }
+
     }
 }

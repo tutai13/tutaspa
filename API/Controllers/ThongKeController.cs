@@ -121,6 +121,7 @@ namespace API.Controllers
         public async Task<ActionResult<IEnumerable<HoaDon>>> GetHoaDon()
         {
             var result = await _context.hoaDons
+                    .Include(vc => vc.voucher)
                     .Include(dl => dl.ChiTietHoaDons)
                     .ThenInclude(ct => ct.DichVu)
                     .ToListAsync();
