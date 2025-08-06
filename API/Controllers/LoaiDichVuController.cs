@@ -100,7 +100,6 @@ namespace API.Controllers
 
             return NoContent();
         }
-
         private bool LoaiDichVuExists(int id)
         {
             return _context.LoaiDichVus.Any(e => e.LoaiDichVuID == id);
