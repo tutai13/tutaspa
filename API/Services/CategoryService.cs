@@ -17,7 +17,7 @@ namespace API.Services
 
         public async Task<IEnumerable<CategoryDTO>> GetAllAsync()
         {
-            return await _context.Categorys
+            return await _context.Categories
                 .Select(c => new CategoryDTO
                 {
                     LoaiSanPhamId = c.CategoryId,
@@ -27,7 +27,7 @@ namespace API.Services
 
         public async Task<CategoryDTO> GetByIdAsync(int id)
         {
-            var category = await _context.Categorys.FindAsync(id);
+            var category = await _context.Categories.FindAsync(id);
             if (category == null) return null;
 
             return new CategoryDTO
@@ -44,7 +44,7 @@ namespace API.Services
                 CategoryName = dto.TenLoai
             };
 
-            _context.Categorys.Add(category);
+            _context.Categories.Add(category);
             await _context.SaveChangesAsync();
 
             dto.LoaiSanPhamId = category.CategoryId;
@@ -53,11 +53,11 @@ namespace API.Services
 
         public async Task<bool> UpdateAsync(int id, CategoryDTO dto)
         {
-            var category = await _context.Categorys.FindAsync(id);
+            var category = await _context.Categories.FindAsync(id);
             if (category == null) return false;
 
             category.CategoryName = dto.TenLoai;
-            _context.Categorys.Update(category);
+            _context.Categories.Update(category);
             await _context.SaveChangesAsync();
 
             return true;
@@ -65,17 +65,17 @@ namespace API.Services
 
         public async Task<bool> DeleteAsync(int id)
         {
-            var category = await _context.Categorys.FindAsync(id);
+            var category = await _context.Categories.FindAsync(id);
             if (category == null) return false;
 
-            _context.Categorys.Remove(category);
+            _context.Categories.Remove(category);
             await _context.SaveChangesAsync();
 
             return true;
         }
         public async Task<IEnumerable<CategoryDTO>> SearchByNameAsync(string ten)
         {
-            return await _context.Categorys
+            return await _context.Categories
                 .Where(c => c.CategoryName.Contains(ten))
                 .Select(c => new CategoryDTO
                 {

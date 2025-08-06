@@ -43,7 +43,7 @@ namespace API.Validator
 
         private Task<bool> CheckAvailablePhoneNumber(string phoneNumber)
         {
-            return _context.User.AnyAsync(x => x.PhoneNumber == phoneNumber);
+            return _context.Users.AnyAsync(x => x.PhoneNumber == phoneNumber);
         }
     }
 }

@@ -17,7 +17,7 @@ namespace API.Services
 
 		public async Task<bool> CreateBatchAsync(ProductBatchCreateDTO dto)
 		{
-			var product = await _context.Product
+			var product = await _context.Products
 				.Include(p => p.ProductBatches)
 				.FirstOrDefaultAsync(p => p.ProductId == dto.ProductId);
 

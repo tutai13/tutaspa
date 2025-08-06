@@ -23,7 +23,7 @@ namespace API.Controllers
         {
             try
             {
-                _context.DanhGiass.Add(model);
+                _context.DanhGias.Add(model);
                 await _context.SaveChangesAsync();
                 return Ok(new { message = "Đánh giá đã được gửi chờ duyệt." });
             }
@@ -37,7 +37,7 @@ namespace API.Controllers
         [HttpGet("dichvu/{maDichVu}")]
         public async Task<IActionResult> LayDanhGiaTheoDichVu(int maDichVu)
         {
-            var danhGias = await _context.DanhGiass
+            var danhGias = await _context.DanhGias
                 .Where(d => d.MaDichVu == maDichVu && d.DaDuyet && d.IsActive) // 👈 Bắt buộc thêm IsActive!
                 .Include(d => d.User)
                 .OrderByDescending(d => d.NgayTao)
@@ -51,7 +51,7 @@ namespace API.Controllers
         [HttpGet("admin")]
         public async Task<IActionResult> LayTatCa()
         {
-            var danhGias = await _context.DanhGiass
+            var danhGias = await _context.DanhGias
                 .Include(d => d.DichVu)
                 .Include(d => d.User)
                 .ToListAsync();
@@ -63,7 +63,7 @@ namespace API.Controllers
         [HttpPut("duyet/{id}")]
         public async Task<IActionResult> Duyet(int id)
         {
-            var dg = await _context.DanhGiass.FindAsync(id);
+            var dg = await _context.DanhGias.FindAsync(id);
             if (dg == null) return NotFound();
 
             dg.DaDuyet = true;
@@ -75,10 +75,10 @@ namespace API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Xoa(int id)
         {
-            var dg = await _context.DanhGiass.FindAsync(id);
+            var dg = await _context.DanhGias.FindAsync(id);
             if (dg == null) return NotFound();
 
-            _context.DanhGiass.Remove(dg);
+            _context.DanhGias.Remove(dg);  
             await _context.SaveChangesAsync();
             return Ok("Đã xoá đánh giá.");
         }
@@ -87,7 +87,7 @@ namespace API.Controllers
         [HttpGet("trungbinh/{maDichVu}")]
         public async Task<IActionResult> TinhTrungBinh(int maDichVu)
         {
-            var trungBinh = await _context.DanhGiass
+            var trungBinh = await _context.DanhGias
                 .Where(d => d.MaDichVu == maDichVu && d.DaDuyet)
                 .AverageAsync(d => (double?)d.SoSao) ?? 0;
 
@@ -97,7 +97,7 @@ namespace API.Controllers
         [HttpPut("toggle/{id}")]
         public async Task<IActionResult> ToggleTrangThaiDanhGia(int id)
         {
-            var dg = await _context.DanhGiass.FindAsync(id);
+            var dg = await _context.DanhGias.FindAsync(id);
             if (dg == null) return NotFound();
 
             dg.IsActive = !dg.IsActive; // Đảo trạng thái

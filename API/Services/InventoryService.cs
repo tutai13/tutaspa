@@ -17,7 +17,7 @@ public class InventoryService : IInventoryService
 
 	public async Task<bool> ImportWithBatchAsync(ImportProductRequest dto)
 	{
-		var product = await _context.Product
+		var product = await _context.Products
 			.FirstOrDefaultAsync(p => p.ProductName == dto.ProductName && p.CategoryId == dto.CategoryId);
 
 		if (product == null)
@@ -34,7 +34,7 @@ public class InventoryService : IInventoryService
 				ProductBatches = new List<ProductBatch>()
 			};
 
-			_context.Product.Add(product);
+			_context.Products.Add(product);
 			await _context.SaveChangesAsync();
 		}
 
@@ -73,7 +73,7 @@ public class InventoryService : IInventoryService
 
 	public async Task<bool> ExportWithBatchAsync(ExportProductRequest dto)
 	{
-		var product = await _context.Product
+		var product = await _context.Products
 			.Include(p => p.ProductBatches)
 			.FirstOrDefaultAsync(p => p.ProductId == dto.ProductId);
 		if (product == null || product.Quantity < dto.Quantity) return false;
@@ -190,7 +190,7 @@ public class InventoryService : IInventoryService
 
 	public async Task<bool> UpdateSellingPriceAsync(UpdateSellingPriceRequest dto)
 	{
-		var product = await _context.Product.FindAsync(dto.ProductId);
+		var product = await _context.Products.FindAsync(dto.ProductId);
 		if (product == null) return false;
 
 		product.CurrentSellingPrice = dto.NewPrice;

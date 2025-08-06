@@ -23,18 +23,18 @@ namespace API.Controllers
         public IActionResult GetSanPhamSoLuong()
         {
             var now = DateTime.Now;
-            var hoaDonIds = _context.hoaDons
+            var hoaDonIds = _context.HoaDons
                 .Where(h => h.NgayTao.Month == now.Month && h.NgayTao.Year == now.Year)
                 .Select(h => h.HoaDonID)
                 .ToList(); 
 
-            var chiTietSanPham = _context.chiTietHoaDons
+            var chiTietSanPham = _context.ChiTietHoaDons
                 .Where(c => c.SanPhamID != null && hoaDonIds.Contains(c.HoaDonID))
                 .ToList(); 
 
             var result = chiTietSanPham
                 .GroupBy(c => c.SanPhamID)
-                .Join(_context.Product.ToList(),
+                .Join(_context.Products.ToList(),
                       g => g.Key,
                       p => p.ProductId,
                       (g, p) => new ThongKeSanPhamDTO
@@ -51,12 +51,12 @@ namespace API.Controllers
         public IActionResult GetDichVuSoLuong()
         {
             var now = DateTime.Now;
-            var hoaDonIds = _context.hoaDons
+            var hoaDonIds = _context.HoaDons
                 .Where(h => h.NgayTao.Month == now.Month && h.NgayTao.Year == now.Year)
                 .Select(h => h.HoaDonID)
                 .ToList();
 
-            var chiTietDichVu = _context.chiTietHoaDons
+            var chiTietDichVu = _context.ChiTietHoaDons
                 .Where(c => c.DichVuID != null && hoaDonIds.Contains(c.HoaDonID))
                 .ToList();
 
@@ -80,7 +80,7 @@ namespace API.Controllers
         {
             var now = DateTime.Now;
 
-            var tongTien = _context.hoaDons
+            var tongTien = _context.HoaDons
                 .Where(h => h.NgayTao.Month == now.Month && h.NgayTao.Year == now.Year)
                 .Sum(h => (decimal?)h.TongTien) ?? 0;
 
@@ -92,7 +92,7 @@ namespace API.Controllers
         {
             var today = DateTime.Today;
 
-            var tongTien = _context.hoaDons
+            var tongTien = _context.HoaDons
                 .Where(h => h.NgayTao.Date == today)
                 .Sum(h => (decimal?)h.TongTien) ?? 0;
 
@@ -104,7 +104,7 @@ namespace API.Controllers
         {
             var now = DateTime.Now;
 
-            var result = _context.hoaDons
+            var result = _context.HoaDons
                 .Where(h => h.NgayTao.Month == now.Month && h.NgayTao.Year == now.Year)
                 .GroupBy(h => h.NgayTao.Date)
                 .Select(g => new
@@ -120,7 +120,7 @@ namespace API.Controllers
         [HttpGet("thongKeHoaDon")]
         public async Task<ActionResult<IEnumerable<HoaDon>>> GetHoaDon()
         {
-            var result = await _context.hoaDons
+            var result = await _context.HoaDons
                     .Include(vc => vc.voucher)
                     .Include(dl => dl.ChiTietHoaDons)
                     .ThenInclude(ct => ct.DichVu)

@@ -81,7 +81,7 @@ namespace API.Controllers
         public async Task<IActionResult> GetHoaDonByUser()
         {
             var userId = User.GetUserId();
-            var hoaDonList = await _context.hoaDons
+            var hoaDonList = await _context.HoaDons
                 .Where(h => h.UserID == userId)
                 .Include(h => h.ChiTietHoaDons)
                 .ThenInclude(ct => ct.DichVu)
@@ -100,7 +100,7 @@ namespace API.Controllers
             try
             {
                 var tongTien = request.ChiTietHoaDon.Sum(x => x.ThanhTien);
-                var voucherId = await _context.Voucher
+                var voucherId = await _context.Vouchers
                 .FirstOrDefaultAsync(v => v.MaCode == request.MaGiamGia);
 
                 var hoaDon = new HoaDon
@@ -117,7 +117,7 @@ namespace API.Controllers
                     VoucherID = voucherId?.VoucherID,
                 };
 
-                _context.hoaDons.Add(hoaDon);
+                _context.HoaDons.Add(hoaDon);
                 await _context.SaveChangesAsync();
 
                 foreach (var item in request.ChiTietHoaDon)
@@ -130,7 +130,7 @@ namespace API.Controllers
                         SoLuongSP = item.SoLuongSP,
                         ThanhTien = item.ThanhTien
                     };
-                    _context.chiTietHoaDons.Add(chiTiet);
+                    _context.ChiTietHoaDons.Add(chiTiet);
                 }
 
                 await _context.SaveChangesAsync();
@@ -191,7 +191,7 @@ namespace API.Controllers
         [HttpGet("xuat-hoadon/{hoaDonId}")]
         public IActionResult XuatHoaDon(int hoaDonId)
         {
-            var hoaDon = _context.hoaDons
+            var hoaDon = _context.HoaDons
                 .Include(vc => vc.voucher)
                 .Include(h => h.ChiTietHoaDons)
                     .ThenInclude(ct => ct.SanPham)
