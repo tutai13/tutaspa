@@ -3,7 +3,7 @@
     <div class="row">
       <!-- Danh sách đã chọn -->
       <div class="col-md-9">
-        <div class="card shadow-sm mb-3" style="height: 550px; font-size: 19px">
+        <div class="card shadow-sm mb-3" style="height: 525px; font-size: 19px">
           <div
             class="card-header bg-primary text-white d-flex justify-content-between align-items-center flex-wrap"
           >
@@ -21,7 +21,12 @@
                 v-model="soDienThoai"
                 placeholder="Nhập số điện thoại khách hàng"
                 style="width: 200px"
+                @input="filterNumeric"
+                @blur="validatePhone"
               />
+              <span v-if="errorMessage" style="color: red; font-size: 12px">{{
+                errorMessage
+              }}</span>
             </div>
 
             <!-- Số lượng mục đã chọn -->
@@ -124,54 +129,117 @@
               </div>
             </div>
 
-            <div v-if="hinhThuc === 'Tiền mặt'" class="mb-2">
-              <div class="d-flex align-items-center flex-wrap gap-2">
-                <label class="me-2 mb-0" style="white-space: nowrap"
-                  >Tiền khách đưa:</label
-                >
-                <input
-                  type="text"
-                  class="form-control"
-                  style="width: 150px"
-                  v-model="tienKhachDuaHienThi"
-                  @keypress="chiNhapSo"
-                  @blur="xuLyNhapTienKhach"
-                />
-                <div v-if="tienKhachDua < tongTien" class="text-danger small">
-                  ❌ Khách đưa chưa đủ tiền (thiếu
-                  {{ (tongTien - tienKhachDua).toLocaleString() }} ₫)
+            <div
+              class="d-flex flex-wrap align-items-start justify-content-between mb-2 gap-3"
+            >
+              <!-- Khối trái: Mã giảm giá, Tiền mặt hoặc Chuyển khoản -->
+              <div class="flex-grow-1 d-flex flex-wrap align-items-start gap-4">
+                <!-- Mã giảm giá -->
+                <div class="d-flex flex-column" style="min-width: 280px">
+                  <div class="d-flex align-items-center gap-2">
+                    <label
+                      class="form-label mb-0 me-1"
+                      style="white-space: nowrap"
+                    >
+                      Mã giảm giá:
+                    </label>
+                    <div class="input-group" style="width: 300px">
+                      <input
+                        type="text"
+                        class="form-control"
+                        v-model="maGiamGia"
+                        placeholder="Nhập mã"
+                      />
+                      <button
+                        class="btn btn-outline-success"
+                        @click="apDungMaGiamGia"
+                      >
+                        Áp dụng
+                      </button>
+                    </div>
+                  </div>
+                  <div v-if="trangThaiGiamGia" class="mt-1 small">
+                    <span
+                      :class="{
+                        'text-success': trangThaiGiamGia.startsWith('✅'),
+                        'text-danger': trangThaiGiamGia.startsWith('❌'),
+                      }"
+                    >
+                      {{ trangThaiGiamGia }}
+                    </span>
+                  </div>
                 </div>
-                <div v-else class="text-muted">
-                  Tiền thối lại:
-                  <strong class="text-success">
-                    {{ (tienKhachDua - tongTien).toLocaleString() }} ₫
-                  </strong>
+
+                <!-- Tiền mặt -->
+                <div
+                  v-if="hinhThuc === 'Tiền mặt'"
+                  class="d-flex flex-column"
+                  style="min-width: 250px"
+                >
+                  <div class="d-flex align-items-center gap-2">
+                    <label
+                      class="form-label mb-0 me-1"
+                      style="white-space: nowrap"
+                    >
+                      Tiền khách đưa:
+                    </label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      style="width: 250px"
+                      v-model="tienKhachDuaHienThi"
+                      @keypress="chiNhapSo"
+                      @blur="xuLyNhapTienKhach"
+                    />
+                  </div>
+                  <div class="mt-1 small">
+                    <div v-if="tienKhachDua < tongTien" class="text-danger">
+                      ❌ Thiếu
+                      {{ (tongTien - tienKhachDua).toLocaleString() }} ₫
+                    </div>
+                    <div v-else class="text-muted">
+                      Tiền thối lại:
+                      <strong class="text-success">
+                        {{ (tienKhachDua - tongTien).toLocaleString() }} ₫
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Chuyển khoản -->
+                <div
+                  v-if="hinhThuc === 'Chuyển khoản'"
+                  class="d-flex align-items-center"
+                  style="min-width: 200px"
+                >
+                  <button
+                    class="btn btn-warning"
+                    @click="taoMaChuyenKhoan"
+                    :disabled="danhSachChon.length === 0 || !soDienThoai.trim()"
+                  >
+                    <i class="fas fa-qrcode"></i> Tạo mã
+                  </button>
                 </div>
               </div>
-            </div>
 
-            <div v-if="hinhThuc === 'Chuyển khoản'" class="mb-2">
-              <button
-                class="btn btn-warning"
-                @click="taoMaChuyenKhoan"
-                :disabled="danhSachChon.length === 0"
-              >
-                <i class="fas fa-qrcode"></i> Tạo mã
-              </button>
-            </div>
-            <div class="mb-2 d-flex align-items-start">
-              <label
-                class="form-label me-2 mt-2"
-                style="white-space: nowrap; width: 70px"
-              >
-                Ghi chú:
-              </label>
-              <textarea
-                class="form-control"
-                v-model="ghiChu"
-                rows="2"
-                placeholder="Ghi chú thêm (nếu có)"
-              ></textarea>
+              <!-- Ghi chú (cố định bên phải) -->
+              <div style="width: 400px">
+                <div class="d-flex align-items-start">
+                  <label
+                    class="form-label me-2 mt-1"
+                    style="white-space: nowrap; min-width: 60px"
+                  >
+                    Ghi chú:
+                  </label>
+                  <textarea
+                    class="form-control"
+                    v-model="ghiChu"
+                    rows="2"
+                    placeholder="Ghi chú thêm (nếu có)"
+                    style="resize: none"
+                  ></textarea>
+                </div>
+              </div>
             </div>
 
             <div class="d-flex justify-content-between align-items-center">
@@ -199,7 +267,8 @@
                 :disabled="
                   danhSachChon.length === 0 ||
                   (hinhThuc === 'Tiền mặt' && tienKhachDua < tongTien) ||
-                  hinhThuc === 'Chuyển khoản'
+                  hinhThuc === 'Chuyển khoản' ||
+                  !soDienThoai.trim()
                 "
               >
                 <i class="fas fa-money-bill-wave me-1"></i> Tạo thanh toán
@@ -211,7 +280,7 @@
 
       <!-- Tabs: Dịch vụ / Sản phẩm -->
       <div class="col-md-3">
-        <div class="card shadow-sm" style="max-height: 550px">
+        <div class="card shadow-sm" style="max-height: 525px">
           <div class="card-header p-0">
             <ul class="nav nav-tabs nav-fill" role="tablist">
               <li class="nav-item">
@@ -342,6 +411,7 @@ import { ref, computed, onMounted } from "vue";
 import axios from "axios";
 import { useRoute } from "vue-router";
 import dayjs from "dayjs";
+import apiClient from "../utils/axiosClient";
 const route = useRoute();
 
 const tab = ref("dichVu");
@@ -356,6 +426,24 @@ const soDienThoai = ref("");
 const ghiChu = ref("");
 const isSuaLich = ref(false);
 const lichDangSua = ref(null);
+const errorMessage = ref("");
+const maGiamGia = ref("");
+const giamGia = ref(0);
+const trangThaiGiamGia = ref("");
+
+const filterNumeric = (event) => {
+  // Lọc chỉ giữ lại số
+  soDienThoai.value = event.target.value.replace(/[^0-9]/g, "");
+  validatePhone(); // Kiểm tra ngay khi nhập
+};
+
+const validatePhone = () => {
+  if (soDienThoai.value.length < 10 || soDienThoai.value.length >= 11) {
+    errorMessage.value = "Số điện thoại phải có ít nhất 10 chữ số!";
+  } else {
+    errorMessage.value = "";
+  }
+};
 
 const xuLyNhapTienKhach = () => {
   const so = parseInt(tienKhachDuaHienThi.value.replace(/\D/g, ""));
@@ -369,7 +457,11 @@ const chiNhapSo = (e) => {
 };
 
 const tongTien = computed(() => {
-  return danhSachChon.value.reduce((sum, item) => sum + item.thanhTien, 0);
+  const tongGoc = danhSachChon.value.reduce(
+    (sum, item) => sum + item.thanhTien,
+    0
+  );
+  return tongGoc - giamGia.value;
 });
 
 const chonDichVu = (dv) => {
@@ -417,6 +509,7 @@ const xoaItem = (index) => {
 };
 
 const taoThanhToan = async () => {
+  if (errorMessage.value) return;
   const tienKhach = hinhThuc.value === "Tiền mặt" ? tienKhachDua.value : null;
   const tienThoi =
     hinhThuc.value === "Tiền mặt"
@@ -424,13 +517,14 @@ const taoThanhToan = async () => {
       : null;
   const data = {
     ngayTao: new Date().toISOString(),
-    maGiamGia: "GG20",
+    maGiamGia: maGiamGia.value.toUpperCase(),
     hinhThucThanhToan: hinhThuc.value,
     trangThai: 1,
+    tienGiam: giamGia.value,
     tienKhachDua: tienKhach,
     tienThoiLai: tienThoi,
     nhanVienID: "6c5dad3a-b67c-4ad7-9ac5-ba64b0aabd5f",
-    userID: "6c5dad3a-b67c-4ad7-9ac5-ba64b0aabd5f",
+    userID: soDienThoai.value,
     chiTietHoaDon: danhSachChon.value.map((item) => ({
       sanPhamID: item.sanPhamID || null,
       dichVuID: item.dichVuID || null,
@@ -440,11 +534,12 @@ const taoThanhToan = async () => {
   };
 
   try {
-    await axios.post("http://localhost:5055/api/ThanhToan/tao-hoadon", data);
+    // await apiClient.post(`/ThanhToan/tao-hoadon`, data);
+    const response = await apiClient.post("/ThanhToan/tao-hoadon", data);
 
     if (isSuaLich.value && lichDangSua.value?.datLichID) {
-      await axios.put(
-        `http://localhost:5055/api/DatLich/capnhat-thanhtoan/${lichDangSua.value.datLichID}`
+      await apiClient.put(
+        `/DatLich/capnhat-thanhtoan/${lichDangSua.value.datLichID}`
       );
     }
     alert("Tạo hóa đơn thành công");
@@ -482,15 +577,12 @@ const taoMaChuyenKhoan = async () => {
   );
 
   try {
-    const response = await axios.post(
-      "http://localhost:5055/api/ThanhToan/create-link",
-      payload
-    );
+    const response = await apiClient.post("/ThanhToan/create-link", payload);
 
-    if (response.data && response.data.checkoutUrl) {
-      window.location.href = response.data.checkoutUrl;
+    if (response && response.checkoutUrl) {
+      window.location.href = response.checkoutUrl;
     } else {
-      console.error("Không có checkoutUrl trong phản hồi:", response.data);
+      console.error("Không có checkoutUrl trong phản hồi:", response);
     }
   } catch (error) {
     console.error("Lỗi tạo mã thanh toán:", error);
@@ -499,14 +591,14 @@ const taoMaChuyenKhoan = async () => {
 };
 const layDanhSach = async () => {
   try {
-    const resDL = await axios.get("https://localhost:7183/api/DatLich");
-    danhSachDatLich.value = resDL.data;
+    const resDL = await apiClient.get("/DatLich");
+    danhSachDatLich.value = resDL;
 
-    const resDV = await axios.get("http://localhost:5055/api/DichVu");
-    dichVus.value = resDV.data;
+    const resDV = await apiClient.get("/DichVu");
+    dichVus.value = resDV;
 
-    const resSP = await axios.get("http://localhost:5055/api/Product");
-    sanPhams.value = resSP.data;
+    const resSP = await apiClient.get("/Product");
+    sanPhams.value = resSP;
   } catch (err) {
     console.error("Lỗi lấy danh sách:", err);
   }
@@ -520,6 +612,7 @@ const formatDateTime = (dateStr) => {
 };
 
 const datLich = async () => {
+  if (errorMessage.value) return;
   const dichVuIDs = danhSachChon.value
     .filter((item) => item.dichVuID)
     .map((item) => item.dichVuID);
@@ -542,7 +635,7 @@ const datLich = async () => {
   };
 
   try {
-    const res = await axios.post("http://localhost:5055/api/DatLich", payload);
+    const res = await apiClient.post("/DatLich", payload);
     alert("📅 Đặt lịch thành công!");
 
     // Reset
@@ -557,9 +650,7 @@ const datLich = async () => {
 };
 const doiTrangThai = async (id) => {
   try {
-    const res = await axios.put(
-      `http://localhost:5055/api/DatLich/doitrangthai/${id}`
-    );
+    const res = await apiClient.put(`/DatLich/doitrangthai/${id}`);
     layDanhSach();
   } catch (err) {
     alert("Lỗi khi đổi trạng thái!");
@@ -601,10 +692,7 @@ const capNhatLich = async () => {
   };
 
   try {
-    await axios.put(
-      `http://localhost:5055/api/DatLich/${lichDangSua.value.datLichID}`,
-      payload
-    );
+    await apiClient.put(`/DatLich/${lichDangSua.value.datLichID}`, payload);
     alert("✅ Cập nhật lịch thành công!");
     isSuaLich.value = false;
     lichDangSua.value = null;
@@ -625,6 +713,42 @@ const huySua = () => {
   ghiChu.value = "";
 };
 
+const apDungMaGiamGia = async () => {
+  const code = maGiamGia.value.trim().toUpperCase();
+  giamGia.value = 0;
+  trangThaiGiamGia.value = "";
+
+  if (!code) return;
+
+  try {
+    const res = await apiClient.get("/Vouchers/status");
+    const vouchers = res;
+
+    const voucher = vouchers.find((v) => v.maCode.toUpperCase() === code);
+
+    if (!voucher) {
+      trangThaiGiamGia.value = "❌ Mã không tồn tại";
+      return;
+    }
+
+    if (voucher.trangThai !== "true") {
+      trangThaiGiamGia.value = `❌ Mã không hợp lệ: ${voucher.trangThai}`;
+      return;
+    }
+
+    // Áp dụng giảm giá
+    if (voucher.tienGiam < 1) {
+      giamGia.value = Math.round(tongTien.value * voucher.tienGiam);
+    } else {
+      giamGia.value = voucher.tienGiam;
+    }
+
+    trangThaiGiamGia.value = `✅ Đã áp dụng mã ${voucher.maCode}`;
+  } catch (err) {
+    console.error("Lỗi API mã giảm giá:", err);
+    trangThaiGiamGia.value = "❌ Lỗi hệ thống";
+  }
+};
 onMounted(async () => {
   try {
     const status = route.query.status;

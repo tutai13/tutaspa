@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250720055302_InitChatDB")]
-    partial class InitChatDB
+    [Migration("20250806071512_fixhoadon2")]
+    partial class fixhoadon2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,34 +24,6 @@ namespace API.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("API.Models.Banggiadichvu", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("DichVuID")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("Gia")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("KieuTinhGia")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("ThoiLuong")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DichVuID");
-
-                    b.ToTable("BangGiaDichVus");
-                });
 
             modelBuilder.Entity("API.Models.Category", b =>
                 {
@@ -198,6 +170,29 @@ namespace API.Migrations
                     b.ToTable("ChatSessions", (string)null);
                 });
 
+            modelBuilder.Entity("API.Models.ChiTietDatLich", b =>
+                {
+                    b.Property<int>("ChiTietDatLichID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ChiTietDatLichID"));
+
+                    b.Property<int>("DatLichID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DichVuID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ChiTietDatLichID");
+
+                    b.HasIndex("DatLichID");
+
+                    b.HasIndex("DichVuID");
+
+                    b.ToTable("chiTietDatLiches");
+                });
+
             modelBuilder.Entity("API.Models.ChiTietHoaDon", b =>
                 {
                     b.Property<int>("ChiTietHoaDonID")
@@ -230,6 +225,39 @@ namespace API.Migrations
                     b.HasIndex("SanPhamID");
 
                     b.ToTable("chiTietHoaDons");
+                });
+
+            modelBuilder.Entity("API.Models.DatLich", b =>
+                {
+                    b.Property<int>("DatLichID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DatLichID"));
+
+                    b.Property<bool>("DaThanhToan")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("GhiChu")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SoDienThoai")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ThoiGian")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ThoiLuong")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TrangThai")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("DatLichID");
+
+                    b.ToTable("datLiches");
                 });
 
             modelBuilder.Entity("API.Models.DichVu", b =>
@@ -285,18 +313,19 @@ namespace API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HoaDonID"));
 
+                    b.Property<decimal?>("GiaTriGiam")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("HinhThucThanhToan")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MaGiamGia")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("NgayTao")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("NhanVienID")
-                        .HasColumnType("int");
+                    b.Property<string>("NhanVienID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal?>("TienKhachDua")
                         .HasColumnType("decimal(18,2)");
@@ -307,19 +336,19 @@ namespace API.Migrations
                     b.Property<decimal>("TongTien")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal?>("TongTienSauGiamGia")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<byte>("TrangThai")
                         .HasColumnType("tinyint");
 
                     b.Property<string>("UserID")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("VoucherID")
+                        .HasColumnType("int");
 
                     b.HasKey("HoaDonID");
 
-                    b.HasIndex("UserID");
+                    b.HasIndex("VoucherID");
 
                     b.ToTable("hoaDons");
                 });
@@ -736,17 +765,6 @@ namespace API.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("API.Models.Banggiadichvu", b =>
-                {
-                    b.HasOne("API.Models.DichVu", "DichVu")
-                        .WithMany()
-                        .HasForeignKey("DichVuID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("DichVu");
-                });
-
             modelBuilder.Entity("API.Models.Chat.ChatMessage", b =>
                 {
                     b.HasOne("API.Models.Chat.ChatSession", "ChatSession")
@@ -757,6 +775,25 @@ namespace API.Migrations
                         .IsRequired();
 
                     b.Navigation("ChatSession");
+                });
+
+            modelBuilder.Entity("API.Models.ChiTietDatLich", b =>
+                {
+                    b.HasOne("API.Models.DatLich", "DatLich")
+                        .WithMany("ChiTietDichVus")
+                        .HasForeignKey("DatLichID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("API.Models.DichVu", "DichVu")
+                        .WithMany()
+                        .HasForeignKey("DichVuID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DatLich");
+
+                    b.Navigation("DichVu");
                 });
 
             modelBuilder.Entity("API.Models.ChiTietHoaDon", b =>
@@ -795,13 +832,11 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Models.HoaDon", b =>
                 {
-                    b.HasOne("API.Models.User", "User")
+                    b.HasOne("API.Models.Voucher", "voucher")
                         .WithMany()
-                        .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("VoucherID");
 
-                    b.Navigation("User");
+                    b.Navigation("voucher");
                 });
 
             modelBuilder.Entity("API.Models.InventoryHistory", b =>
@@ -915,6 +950,11 @@ namespace API.Migrations
             modelBuilder.Entity("API.Models.Chat.ChatSession", b =>
                 {
                     b.Navigation("Messages");
+                });
+
+            modelBuilder.Entity("API.Models.DatLich", b =>
+                {
+                    b.Navigation("ChiTietDichVus");
                 });
 
             modelBuilder.Entity("API.Models.HoaDon", b =>
