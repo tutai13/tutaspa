@@ -1,9 +1,9 @@
 ﻿namespace API.DTOs.Product
 {
-	public class InventoryActionDTO
+	public class ExportProductRequest
 	{
 		public int ProductId { get; set; }
-		public int QuantityChanged { get; set; } // luôn truyền số dương
+		public int Quantity { get; set; }
 		public string Note { get; set; }
 	}
 }

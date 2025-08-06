@@ -30,17 +30,17 @@
               <i class="fas fa-search"></i> Tìm theo tên sản phẩm
             </label>
             <div class="search-container">
-              <input 
-                v-model="searchName" 
+              <input
+                v-model="searchName"
                 @input="searchByName"
-                type="text" 
-                class="search-input" 
+                type="text"
+                class="search-input"
                 placeholder="Nhập tên sản phẩm..."
               />
               <i class="fas fa-search search-icon"></i>
-              <button 
-                v-if="searchName" 
-                class="clear-search show" 
+              <button
+                v-if="searchName"
+                class="clear-search show"
                 @click="clearSearch"
                 type="button"
               >
@@ -55,22 +55,25 @@
               <i class="fas fa-dollar-sign"></i> Lọc theo giá
             </label>
             <div class="price-filter-group">
-              <input 
-                v-model.number="priceMin" 
-                type="number" 
-                class="form-control price-input" 
-                placeholder="Giá thấp nhất" 
-                min="0" 
+              <input
+                v-model.number="priceMin"
+                type="number"
+                class="form-control price-input"
+                placeholder="Giá thấp nhất"
+                min="0"
               />
               <span class="price-separator">-</span>
-              <input 
-                v-model.number="priceMax" 
-                type="number" 
-                class="form-control price-input" 
-                placeholder="Giá cao nhất" 
-                min="0" 
+              <input
+                v-model.number="priceMax"
+                type="number"
+                class="form-control price-input"
+                placeholder="Giá cao nhất"
+                min="0"
               />
-              <button class="btn btn-primary price-filter-btn" @click="filterByPrice">
+              <button
+                class="btn btn-primary price-filter-btn"
+                @click="filterByPrice"
+              >
                 <i class="fas fa-filter"></i>
                 Lọc
               </button>
@@ -82,7 +85,11 @@
             <label class="form-label">
               <i class="fas fa-tags"></i> Lọc theo danh mục
             </label>
-            <select v-model="selectedCategory" @change="filterByCategory" class="form-control">
+            <select
+              v-model="selectedCategory"
+              @change="filterByCategory"
+              class="form-control"
+            >
               <option value="">Tất cả danh mục</option>
               <option v-for="cat in categories" :key="cat.id" :value="cat.id">
                 {{ cat.name }}
@@ -101,22 +108,23 @@
             <i class="fas fa-plus-circle"></i>
             {{ isEditing ? "Cập nhật sản phẩm" : "Thêm sản phẩm mới" }}
           </h2>
-          <button 
-            @click="toggleAddForm" 
+          <button
+            @click="toggleAddForm"
             class="btn btn-primary"
-            :class="{ 'active': showAddForm }"
+            :class="{ active: showAddForm }"
           >
             <i class="fas" :class="showAddForm ? 'fa-minus' : 'fa-plus'"></i>
-            {{ showAddForm ? 'Ẩn form' : 'Hiển thị form' }}
+            {{ showAddForm ? "Ẩn form" : "Hiển thị form" }}
           </button>
         </div>
-        
+
         <div v-if="showAddForm" class="card-body">
           <form @submit.prevent="saveProduct" class="product-form">
             <div class="form-grid">
               <div class="form-group">
                 <label class="form-label">
-                  <i class="fas fa-tag"></i> Tên sản phẩm <span class="required">*</span>
+                  <i class="fas fa-tag"></i> Tên sản phẩm
+                  <span class="required">*</span>
                 </label>
                 <input
                   v-model="product.productName"
@@ -129,7 +137,8 @@
 
               <div class="form-group">
                 <label class="form-label">
-                  <i class="fas fa-money-bill-wave"></i> Giá <span class="required">*</span>
+                  <i class="fas fa-money-bill-wave"></i> Giá
+                  <span class="required">*</span>
                 </label>
                 <input
                   v-model.number="product.price"
@@ -143,7 +152,8 @@
 
               <div class="form-group">
                 <label class="form-label">
-                  <i class="fas fa-warehouse"></i> Số lượng <span class="required">*</span>
+                  <i class="fas fa-warehouse"></i> Số lượng
+                  <span class="required">*</span>
                 </label>
                 <input
                   v-model.number="product.quantity"
@@ -157,7 +167,8 @@
 
               <div class="form-group">
                 <label class="form-label">
-                  <i class="fas fa-list"></i> Danh mục <span class="required">*</span>
+                  <i class="fas fa-list"></i> Danh mục
+                  <span class="required">*</span>
                 </label>
                 <select
                   v-model.number="product.categoryId"
@@ -188,10 +199,10 @@
                   <i class="fas fa-image"></i> Ảnh sản phẩm
                 </label>
                 <div class="image-upload-container">
-                  <input 
-                    type="file" 
-                    class="form-control file-input" 
-                    @change="handleImage" 
+                  <input
+                    type="file"
+                    class="form-control file-input"
+                    @change="handleImage"
                     accept="image/*"
                     id="imageUpload"
                   />
@@ -201,7 +212,11 @@
                   </label>
                   <div v-if="imagePreview" class="image-preview">
                     <img :src="imagePreview" alt="Preview" />
-                    <button type="button" @click="removeImage" class="remove-image-btn">
+                    <button
+                      type="button"
+                      @click="removeImage"
+                      class="remove-image-btn"
+                    >
                       <i class="fas fa-times"></i>
                     </button>
                   </div>
@@ -210,17 +225,20 @@
             </div>
 
             <div class="form-actions">
-              <button 
-                type="submit" 
-                class="btn btn-success"
-                :disabled="loading"
-              >
+              <button type="submit" class="btn btn-success" :disabled="loading">
                 <i class="fas fa-save"></i>
-                {{ loading ? 'Đang lưu...' : (isEditing ? 'Cập nhật' : 'Thêm sản phẩm') }}
+                {{
+                  loading
+                    ? "Đang lưu..."
+                    : isEditing
+                    ? "Cập nhật"
+                    : "Thêm sản phẩm"
+                }}
               </button>
-              <button style="margin-left: 5px;"
-                type="button" 
-                @click="resetForm" 
+              <button
+                style="margin-left: 5px"
+                type="button"
+                @click="resetForm"
                 class="btn btn-secondary"
               >
                 <i class="fas fa-undo"></i>
@@ -240,18 +258,22 @@
             <span class="badge">{{ products.length }}</span>
           </h2>
           <div class="view-controls">
-            <button 
-              @click="viewMode = 'table'" 
+            <button
+              @click="viewMode = 'table'"
               class="btn btn-sm"
-              :class="viewMode === 'table' ? 'btn-info' : 'btn-outline-secondary'"
+              :class="
+                viewMode === 'table' ? 'btn-info' : 'btn-outline-secondary'
+              "
             >
               <i class="fas fa-table"></i>
               Bảng
             </button>
-            <button 
-              @click="viewMode = 'grid'" 
+            <button
+              @click="viewMode = 'grid'"
               class="btn btn-sm"
-              :class="viewMode === 'grid' ? 'btn-info' : 'btn-outline-secondary'"
+              :class="
+                viewMode === 'grid' ? 'btn-info' : 'btn-outline-secondary'
+              "
             >
               <i class="fas fa-th"></i>
               Lưới
@@ -316,13 +338,17 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="sp in products" :key="sp.productId" class="product-row">
+                <tr
+                  v-for="sp in products"
+                  :key="sp.productId"
+                  class="product-row"
+                >
                   <td class="product-id">{{ sp.productId }}</td>
                   <td class="product-image">
                     <div class="image-container">
-                      <img 
-                        v-if="sp.images" 
-                        :src="sp.images" 
+                      <img
+                        v-if="sp.images"
+                        :src="sp.images"
                         :alt="sp.productName"
                         @error="handleImageError"
                       />
@@ -343,7 +369,10 @@
                     </span>
                   </td>
                   <td class="product-quantity">
-                    <span class="quantity-badge" :class="getQuantityClass(sp.quantity)">
+                    <span
+                      class="quantity-badge"
+                      :class="getQuantityClass(sp.quantity)"
+                    >
                       {{ sp.quantity }}
                     </span>
                   </td>
@@ -354,20 +383,20 @@
                   </td>
                   <td class="product-description">
                     <div class="description-text">
-                      {{ sp.description || '(Không có mô tả)' }}
+                      {{ sp.description || "(Không có mô tả)" }}
                     </div>
                   </td>
                   <td class="product-actions">
                     <div class="action-buttons">
-                      <button 
-                        @click="editProduct(sp)" 
+                      <button
+                        @click="editProduct(sp)"
                         class="btn btn-sm btn-warning"
                         title="Chỉnh sửa"
                       >
                         <i class="fas fa-edit"></i>
                       </button>
-                      <button 
-                        @click="deleteProduct(sp.productId)" 
+                      <button
+                        @click="deleteProduct(sp.productId)"
                         class="btn btn-sm btn-danger"
                         title="Xóa"
                       >
@@ -382,11 +411,15 @@
 
           <!-- Grid View -->
           <div v-else class="products-grid">
-            <div v-for="sp in products" :key="sp.productId" class="product-card">
+            <div
+              v-for="sp in products"
+              :key="sp.productId"
+              class="product-card"
+            >
               <div class="product-card-image">
-                <img 
-                  v-if="sp.images" 
-                  :src="sp.images" 
+                <img
+                  v-if="sp.images"
+                  :src="sp.images"
                   :alt="sp.productName"
                   @error="handleImageError"
                 />
@@ -394,10 +427,16 @@
                   <i class="fas fa-image"></i>
                 </div>
                 <div class="product-overlay">
-                  <button @click="editProduct(sp)" class="btn btn-sm btn-warning">
+                  <button
+                    @click="editProduct(sp)"
+                    class="btn btn-sm btn-warning"
+                  >
                     <i class="fas fa-edit"></i>
                   </button>
-                  <button @click="deleteProduct(sp.productId)" class="btn btn-sm btn-danger">
+                  <button
+                    @click="deleteProduct(sp.productId)"
+                    class="btn btn-sm btn-danger"
+                  >
                     <i class="fas fa-trash"></i>
                   </button>
                 </div>
@@ -416,7 +455,7 @@
                   </span>
                 </div>
                 <p class="product-card-description">
-                  {{ sp.description || 'Không có mô tả' }}
+                  {{ sp.description || "Không có mô tả" }}
                 </p>
               </div>
             </div>
@@ -427,14 +466,49 @@
 
     <!-- Toast Notifications -->
     <div class="toast-container">
-      <div 
-        v-for="toast in toasts" 
-        :key="toast.id" 
-        class="toast" 
+      <div
+        v-for="toast in toasts"
+        :key="toast.id"
+        class="toast"
         :class="toast.type"
       >
         <i class="fas" :class="getToastIcon(toast.type)"></i>
         {{ toast.message }}
+      </div>
+
+      <!-- Confirmation Dialog -->
+      <div v-if="showConfirmDelete" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Xác nhận xóa</h5>
+              <button
+                type="button"
+                class="btn-close"
+                @click="cancelDelete"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <p>Bạn có muốn xóa sản phẩm này không?</p>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                @click="cancelDelete"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                class="btn btn-danger"
+                @click="confirmDelete"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -447,13 +521,13 @@ import apiClient from "../utils/axiosClient";
 // Reactive data
 const products = ref([]);
 const categories = ref([
-  { id: 1, name: 'Danh mục 1' },
-  { id: 2, name: 'Danh mục 2' },
-  { id: 3, name: 'Danh mục 3' }
+  { id: 1, name: "Danh mục 1" },
+  { id: 2, name: "Danh mục 2" },
+  { id: 3, name: "Danh mục 3" },
 ]);
 const loading = ref(false);
 const showAddForm = ref(false);
-const viewMode = ref('table');
+const viewMode = ref("table");
 const toasts = ref([]);
 
 // Form data
@@ -478,34 +552,38 @@ const imagePreview = ref(null);
 const isEditing = ref(false);
 
 // Methods
-const showToast = (message, type = 'info') => {
+const showToast = (message, type = "info") => {
   const toast = {
     id: Date.now(),
     message,
-    type
-  }
-  toasts.value.push(toast)
+    type,
+  };
+  toasts.value.push(toast);
   setTimeout(() => {
-    const index = toasts.value.findIndex(t => t.id === toast.id)
-    if (index > -1) toasts.value.splice(index, 1)
-  }, 3000)
-}
+    const index = toasts.value.findIndex((t) => t.id === toast.id);
+    if (index > -1) toasts.value.splice(index, 1);
+  }, 3000);
+};
 
 const getToastIcon = (type) => {
   switch (type) {
-    case 'success': return 'fa-check-circle'
-    case 'error': return 'fa-exclamation-circle'
-    case 'warning': return 'fa-exclamation-triangle'
-    default: return 'fa-info-circle'
+    case "success":
+      return "fa-check-circle";
+    case "error":
+      return "fa-exclamation-circle";
+    case "warning":
+      return "fa-exclamation-triangle";
+    default:
+      return "fa-info-circle";
   }
-}
+};
 
 const toggleAddForm = () => {
-  showAddForm.value = !showAddForm.value
+  showAddForm.value = !showAddForm.value;
   if (showAddForm.value && isEditing.value) {
-    resetForm()
+    resetForm();
   }
-}
+};
 
 const handleImage = (e) => {
   const file = e.target.files[0];
@@ -522,29 +600,29 @@ const handleImage = (e) => {
 const removeImage = () => {
   imageFile.value = null;
   imagePreview.value = null;
-  document.getElementById('imageUpload').value = '';
+  document.getElementById("imageUpload").value = "";
 };
 
 const handleImageError = (e) => {
-  e.target.style.display = 'none';
-  e.target.nextElementSibling?.classList.add('show');
+  e.target.style.display = "none";
+  e.target.nextElementSibling?.classList.add("show");
 };
 
 const formatPrice = (price) => {
-  return price ? price.toLocaleString('vi-VN') + ' VND' : '0 VND';
+  return price ? price.toLocaleString("vi-VN") + " VND" : "0 VND";
 };
 
 const getQuantityClass = (quantity) => {
-  if (quantity === 0) return 'quantity-zero';
-  if (quantity < 10) return 'quantity-low';
-  return 'quantity-normal';
+  if (quantity === 0) return "quantity-zero";
+  if (quantity < 10) return "quantity-low";
+  return "quantity-normal";
 };
 
 const fetchProducts = async () => {
   try {
     loading.value = true;
     const res = await apiClient.get("Product");
-    products.value = res.data.map(p => ({
+    products.value = res.data.map((p) => ({
       productId: p.sanPhamId,
       productName: p.tenSP,
       price: p.gia,
@@ -555,7 +633,7 @@ const fetchProducts = async () => {
     }));
   } catch (err) {
     console.error("Lỗi tải sản phẩm:", err);
-    showToast('Lỗi khi tải danh sách sản phẩm', 'error');
+    showToast("Lỗi khi tải danh sách sản phẩm", "error");
   } finally {
     loading.value = false;
   }
@@ -566,7 +644,7 @@ const searchByName = async () => {
   try {
     loading.value = true;
     const res = await apiClient.get(`Product/name?ten=${searchName.value}`);
-    products.value = res.data.map(p => ({
+    products.value = res.data.map((p) => ({
       productId: p.sanPhamId,
       productName: p.tenSP,
       price: p.gia,
@@ -578,26 +656,28 @@ const searchByName = async () => {
   } catch (err) {
     console.error("Không tìm thấy sản phẩm:", err);
     products.value = [];
-    showToast('Không tìm thấy sản phẩm phù hợp', 'warning');
+    showToast("Không tìm thấy sản phẩm phù hợp", "warning");
   } finally {
     loading.value = false;
   }
 };
 
 const clearSearch = () => {
-  searchName.value = '';
+  searchName.value = "";
   fetchProducts();
 };
 
 const filterByPrice = async () => {
   if (priceMin.value > priceMax.value) {
-    showToast("Giá thấp nhất không được lớn hơn giá cao nhất", 'warning');
+    showToast("Giá thấp nhất không được lớn hơn giá cao nhất", "warning");
     return;
   }
   try {
     loading.value = true;
-    const res = await apiClient.get(`Product/filter-by-price?min=${priceMin.value}&max=${priceMax.value}`);
-    products.value = res.data.map(p => ({
+    const res = await apiClient.get(
+      `Product/filter-by-price?min=${priceMin.value}&max=${priceMax.value}`
+    );
+    products.value = res.data.map((p) => ({
       productId: p.sanPhamId,
       productName: p.tenSP,
       price: p.gia,
@@ -606,11 +686,14 @@ const filterByPrice = async () => {
       categoryId: p.loaiSanPhamId,
       images: p.hinhAnh,
     }));
-    showToast(`Tìm thấy ${products.value.length} sản phẩm trong khoảng giá`, 'success');
+    showToast(
+      `Tìm thấy ${products.value.length} sản phẩm trong khoảng giá`,
+      "success"
+    );
   } catch (err) {
     console.error("Lỗi lọc giá:", err);
     products.value = [];
-    showToast('Lỗi khi lọc theo giá', 'error');
+    showToast("Lỗi khi lọc theo giá", "error");
   } finally {
     loading.value = false;
   }
@@ -621,9 +704,11 @@ const filterByCategory = () => {
     fetchProducts();
     return;
   }
-  const filtered = products.value.filter(p => p.categoryId === selectedCategory.value);
+  const filtered = products.value.filter(
+    (p) => p.categoryId === selectedCategory.value
+  );
   products.value = filtered;
-  showToast(`Lọc theo danh mục: ${filtered.length} sản phẩm`, 'info');
+  showToast(`Lọc theo danh mục: ${filtered.length} sản phẩm`, "info");
 };
 
 const saveProduct = async () => {
@@ -631,8 +716,8 @@ const saveProduct = async () => {
     loading.value = true;
     const formData = new FormData();
     formData.append("productName", product.value.productName);
-    formData.append("price", product.value.price);
-    formData.append("quantity", product.value.quantity);
+    formData.append("sellingPrice", product.value.price);
+    // Không gửi quantity vì nó bị disabled
     formData.append("description", product.value.description);
     formData.append("categoryId", product.value.categoryId);
     if (imageFile.value) {
@@ -643,12 +728,12 @@ const saveProduct = async () => {
       await apiClient.put(`Product/${product.value.productId}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      showToast("Cập nhật sản phẩm thành công!", 'success');
+      showToast("Cập nhật sản phẩm thành công!", "success");
     } else {
       await apiClient.post("Product", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      showToast("Thêm sản phẩm thành công!", 'success');
+      showToast("Thêm sản phẩm thành công!", "success");
     }
 
     resetForm();
@@ -656,7 +741,7 @@ const saveProduct = async () => {
     showAddForm.value = false;
   } catch (err) {
     console.error("Lỗi lưu sản phẩm:", err);
-    showToast('Lỗi khi lưu sản phẩm', 'error');
+    showToast("Lỗi khi lưu sản phẩm", "error");
   } finally {
     loading.value = false;
   }
@@ -665,17 +750,18 @@ const saveProduct = async () => {
 const editProduct = (sp) => {
   product.value = {
     productId: sp.productId,
+    productId: sp.productId,
     productName: sp.productName,
     price: sp.price,
     quantity: sp.quantity,
     description: sp.description,
     categoryId: sp.categoryId,
   };
-  
+
   if (sp.images) {
     imagePreview.value = sp.images;
   }
-  
+
   imageFile.value = null;
   isEditing.value = true;
   showAddForm.value = true;
@@ -686,11 +772,11 @@ const deleteProduct = async (id) => {
   try {
     loading.value = true;
     await apiClient.delete(`Product/${id}`);
-    showToast('Xóa sản phẩm thành công!', 'success');
+    showToast("Xóa sản phẩm thành công!", "success");
     fetchProducts();
   } catch (err) {
     console.error("Lỗi xóa:", err);
-    showToast('Lỗi khi xóa sản phẩm', 'error');
+    showToast("Lỗi khi xóa sản phẩm", "error");
   } finally {
     loading.value = false;
   }
@@ -708,8 +794,8 @@ const resetForm = () => {
   };
   imageFile.value = null;
   imagePreview.value = null;
-  if (document.getElementById('imageUpload')) {
-    document.getElementById('imageUpload').value = '';
+  if (document.getElementById("imageUpload")) {
+    document.getElementById("imageUpload").value = "";
   }
 };
 
@@ -724,7 +810,7 @@ onMounted(() => {
   max-width: 1400px;
   margin: 0 auto;
   padding: 20px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .header {
@@ -926,7 +1012,7 @@ onMounted(() => {
   align-items: center;
   gap: 10px;
   animation: fadeInOut 3s ease forwards;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .toast.info {
@@ -943,10 +1029,22 @@ onMounted(() => {
 }
 
 @keyframes fadeInOut {
-  0% { opacity: 0; transform: translateY(20px); }
-  10% { opacity: 1; transform: translateY(0); }
-  90% { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(20px); }
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  90% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
 }
 
 /* Table styles */
@@ -958,7 +1056,8 @@ onMounted(() => {
   overflow: hidden;
 }
 
-.products-table th, .products-table td {
+.products-table th,
+.products-table td {
   padding: 14px 16px;
   text-align: left;
   border-bottom: 1px solid #e1e8ed;
@@ -1031,7 +1130,7 @@ onMounted(() => {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
   transition: transform 0.2s ease;
 }
 
@@ -1199,7 +1298,6 @@ onMounted(() => {
   background: #3498db;
   color: white;
 }
-
 
 .action-buttons .btn i {
   pointer-events: none;

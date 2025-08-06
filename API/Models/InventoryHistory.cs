@@ -6,24 +6,22 @@ namespace API.Models
 	public class InventoryHistory
 	{
 		[Key]
-		public int Id { get; set; }
+		public int HistoryId { get; set; }
 
-		[Required]
 		public int ProductId { get; set; }
-
-		[ForeignKey("ProductId")]
 		public Product Product { get; set; }
 
-		[Required]
-		public int QuantityChanged { get; set; } // + nhập, - xuất
-
-		[Required]
-		public DateTime Timestamp { get; set; } = DateTime.Now;
-
-		[Required]
-		[StringLength(100)]
-		public string ActionType { get; set; } // "Import" | "Export"
+		public string ActionType { get; set; } // Import | Export
+		public int QuantityChanged { get; set; }
 
 		public string Note { get; set; }
+		public DateTime Timestamp { get; set; }
+
+		public DateTime? ExpirationDate { get; set; }
+		public decimal? ImportPrice { get; set; }
+		public string SupplierName { get; set; }
+
+		public int? BatchId { get; set; } // ✅  theo dõi theo lô
+		public ProductBatch Batch { get; set; }
 	}
 }

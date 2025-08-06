@@ -20,63 +20,60 @@ namespace API.Controllers
 		}
 
 		// ✅ Nhập hàng
-		[HttpPost("import")]
-		public async Task<IActionResult> Import([FromBody] InventoryActionDTO dto)
+		[HttpPost("import-with-batch")]
+		public async Task<IActionResult> ImportWithBatch([FromForm] ImportProductRequest dto)
 		{
-			var result = await _inventoryService.ImportAsync(dto);
+			var result = await _inventoryService.ImportWithBatchAsync(dto);
 			if (!result)
-				return BadRequest("Nhập hàng thất bại. Kiểm tra lại thông tin.");
+				return BadRequest("Nhập hàng thất bại.");
 
-			return Ok("Nhập hàng thành công.");
+			return Ok("Nhập hàng theo lô thành công.");
 		}
 
 		// ✅ Xuất hàng
-		[HttpPost("export")]
-		public async Task<IActionResult> Export([FromBody] InventoryActionDTO dto)
+		[HttpPost("export-with-batch")]
+		public async Task<IActionResult> ExportWithBatch([FromBody] ExportProductRequest dto)
 		{
-			var result = await _inventoryService.ExportAsync(dto);
+			var result = await _inventoryService.ExportWithBatchAsync(dto);
 			if (!result)
-				return BadRequest("Xuất hàng thất bại. Kiểm tra số lượng tồn kho.");
+				return BadRequest("Xuất hàng thất bại hoặc không đủ hàng.");
 
 			return Ok("Xuất hàng thành công.");
 		}
 
 		// ✅ Lấy tất cả lịch sử
 		[HttpGet("history")]
-		public async Task<IActionResult> GetAllHistory()
+		public async Task<ActionResult<List<InventoryHistoryDTO>>> GetHistory()
 		{
-			var history = await _context.InventoryHistories
-				.Include(x => x.Product)
-				.OrderByDescending(x => x.Timestamp)
-				.ToListAsync();
-
+			var history = await _inventoryService.GetHistoryAsync();
 			return Ok(history);
 		}
 
 		// ✅ Lấy lịch sử nhập hàng
 		[HttpGet("history/imports")]
-		public async Task<IActionResult> GetImportHistory()
+		public async Task<ActionResult<List<InventoryHistoryDTO>>> GetImportHistory()
 		{
-			var importHistory = await _context.InventoryHistories
-				.Include(x => x.Product)
-				.Where(x => x.ActionType == "Import")
-				.OrderByDescending(x => x.Timestamp)
-				.ToListAsync();
-
+			var importHistory = await _inventoryService.GetImportHistoryAsync();
 			return Ok(importHistory);
 		}
 
-		// ✅ Lấy lịch sử xuất hàng
-		[HttpGet("history/exports")]
-		public async Task<IActionResult> GetExportHistory()
-		{
-			var exportHistory = await _context.InventoryHistories
-				.Include(x => x.Product)
-				.Where(x => x.ActionType == "Export")
-				.OrderByDescending(x => x.Timestamp)
-				.ToListAsync();
 
+		// ✅ Lịch sử xuất hàng
+		[HttpGet("history/exports")]
+		public async Task<ActionResult<List<InventoryHistoryDTO>>> GetExportHistory()
+		{
+			var exportHistory = await _inventoryService.GetExportHistoryAsync();
 			return Ok(exportHistory);
+		}
+		// ✅ Cập nhật giá bán sau khi nhập hàng
+		[HttpPut("update-selling-price")]
+		public async Task<IActionResult> UpdateSellingPrice([FromBody] UpdateSellingPriceRequest dto)
+		{
+			var success = await _inventoryService.UpdateSellingPriceAsync(dto);
+			if (!success)
+				return NotFound("Không tìm thấy sản phẩm.");
+
+			return Ok("Cập nhật giá bán thành công.");
 		}
 	}
 }

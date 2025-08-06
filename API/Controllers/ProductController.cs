@@ -47,19 +47,18 @@ namespace API.Controllers
             return CreatedAtAction(nameof(GetById), new { id = result.SanPhamId }, result);
         }
 
-        // PUT: api/Product/{id}
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromForm] ProductCreateDTO dto)
-        {
-            var success = await _productService.UpdateAsync(id, dto);
-            if (!success)
-                return NotFound();
+		// PUT: api/Product/{id}
+		[HttpPut("{id}")]
+		public async Task<IActionResult> Update(int id, [FromForm] ProductUpdateDTO dto)
+		{
+			var result = await _productService.UpdateAsync(id, dto);
+			if (!result)
+				return NotFound("Không tìm thấy sản phẩm để cập nhật");
+			return Ok("Cập nhật thành công");
+		}
 
-            return NoContent();
-        }
-
-        // DELETE: api/Product/{id}
-        [HttpDelete("{id}")]
+		// DELETE: api/Product/{id}
+		[HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             var success = await _productService.DeleteAsync(id);

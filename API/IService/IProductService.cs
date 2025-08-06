@@ -6,7 +6,7 @@ namespace API.IService
         Task<IEnumerable<ProductDTO>> GetAllAsync();
         Task<ProductDTO> GetByIdAsync(int id);
         Task<ProductDTO> CreateAsync(ProductCreateDTO dto);
-        Task<bool> UpdateAsync(int id, ProductCreateDTO dto);
+        Task<bool> UpdateAsync(int id, ProductUpdateDTO dto);
 
         Task<bool> DeleteAsync(int id);
         Task<IEnumerable<ProductDTO>> SearchByNameAsync(string name);
