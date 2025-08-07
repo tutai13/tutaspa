@@ -290,11 +290,17 @@ const validateDates = () => {
     const mDate = new Date(formManufactureDate.value);
     const eDate = new Date(formExpirationDate.value);
     const currentDate = new Date();
-    if (mDate > currentDate || eDate < mDate) {
-      return 'Ngày sản xuất phải trước ngày hiện tại và hạn sử dụng phải sau ngày sản xuất.';
+    if (mDate > currentDate || eDate < mDate || currentDate > eDate) {
+      return 'Ngày sản xuất phải trước ngày hiện tại , hạn sử dụng phải sau ngày sản xuất và hạn sử dụng phải sau ngày hiện tại.';
     }
   }
+    
   return null;
+};
+
+//  Hàm kiểm tra trùng tên sản phẩm
+const isDuplicateProductName = (name) => {
+  return productList.value.some(p => p.tenSP.toLowerCase().trim() === name.toLowerCase().trim());
 };
 
 // Xử lý submit
@@ -311,6 +317,11 @@ const handleSubmit = async () => {
       errorMessage.value = 'Vui lòng điền đầy đủ thông tin bắt buộc.';
       return;
     }
+    //  Kiểm tra sản phẩm trùng
+    if (isDuplicateProductName(newProductName.value)) {
+      errorMessage.value = 'Sản phẩm đã tồn tại, vui lòng nhập thêm số lượng ở phần "Sản phẩm đã có"';
+      return;
+    }
     if (formCurrentSellingPrice.value <= 0 || formQuantity.value <= 0) {
       errorMessage.value = 'Giá bán và số lượng phải lớn hơn 0.';
       return;
@@ -323,6 +334,32 @@ const handleSubmit = async () => {
     if (formQuantity.value <= 0) {
       errorMessage.value = 'Số lượng phải lớn hơn 0.';
       return;
+    }
+    // ✅ Lấy thông tin sản phẩm để tự điền giá nhập và nhà cung cấp nếu chưa có
+    const selectedProduct = productList.value.find(p => p.sanPhamId === formProductId.value);
+    if (!formImportPrice.value && selectedProduct?.giaNhap) {
+      formImportPrice.value = selectedProduct.giaNhap;
+    }
+    if (!formSupplierName.value && selectedProduct?.nhaCungCap) {
+      formSupplierName.value = selectedProduct.nhaCungCap;
+    }
+    try {
+      const res = await axios.get(`${baseUrl}/ProductBatch/product/${formProductId.value}`);
+      const batches = res.data;
+
+      if (batches.length > 0) {
+        const latestBatch = batches.sort((a, b) => new Date(b.manufactureDate) - new Date(a.manufactureDate))[0];
+
+        if (!formImportPrice.value) {
+          formImportPrice.value = latestBatch.importPrice;
+        }
+
+        if (!formSupplierName.value) {
+          formSupplierName.value = latestBatch.supplierName;
+        }
+      }
+    } catch (err) {
+      console.error('Không thể lấy thông tin lô hàng gần nhất', err);
     }
   } else if (formTab.value === 'export') {
     if (!formProductId.value || !formQuantity.value) {
@@ -338,6 +375,7 @@ const handleSubmit = async () => {
       errorMessage.value = 'Số lượng phải lớn hơn 0.';
       return;
     }
+    
   }
 
   isLoading.value = true;

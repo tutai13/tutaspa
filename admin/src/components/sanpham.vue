@@ -1,3 +1,4 @@
+```vue
 <template>
   <div class="product-management">
     <!-- Header -->
@@ -91,8 +92,8 @@
               class="form-control"
             >
               <option value="">Tất cả danh mục</option>
-              <option v-for="cat in categories" :key="cat.id" :value="cat.id">
-                {{ cat.name }}
+              <option v-for="cat in categories" :key="cat.loaiSanPhamId" :value="cat.loaiSanPhamId">
+                {{ cat.tenLoai }}
               </option>
             </select>
           </div>
@@ -101,25 +102,24 @@
     </div>
 
     <div class="main-content">
-      <!-- Add Product Section -->
-      <div class="card add-product-section">
+      <!-- Edit Product Section -->
+      <div class="card edit-product-section" v-if="showEditForm">
         <div class="card-header">
           <h2 class="section-title">
-            <i class="fas fa-plus-circle"></i>
-            {{ isEditing ? "Cập nhật sản phẩm" : "Thêm sản phẩm mới" }}
+            <i class="fas fa-edit"></i>
+            Cập nhật sản phẩm
           </h2>
           <button
-            @click="toggleAddForm"
+            @click="toggleEditForm"
             class="btn btn-primary"
-            :class="{ active: showAddForm }"
           >
-            <i class="fas" :class="showAddForm ? 'fa-minus' : 'fa-plus'"></i>
-            {{ showAddForm ? "Ẩn form" : "Hiển thị form" }}
+            <i class="fas fa-minus"></i>
+            Ẩn form
           </button>
         </div>
 
-        <div v-if="showAddForm" class="card-body">
-          <form @submit.prevent="saveProduct" class="product-form">
+        <div class="card-body">
+          <form @submit.prevent="saveProduct" class="product-form" enctype="multipart/form-data">
             <div class="form-grid">
               <div class="form-group">
                 <label class="form-label">
@@ -159,9 +159,8 @@
                   v-model.number="product.quantity"
                   type="number"
                   class="form-control"
-                  placeholder="Nhập số lượng"
-                  min="0"
-                  required
+                  placeholder="Số lượng"
+                  disabled
                 />
               </div>
 
@@ -176,9 +175,9 @@
                   required
                 >
                   <option value="">Chọn danh mục</option>
-                  <option value="1">Danh mục 1</option>
-                  <option value="2">Danh mục 2</option>
-                  <option value="3">Danh mục 3</option>
+                  <option v-for="cat in categories" :key="cat.loaiSanPhamId" :value="cat.loaiSanPhamId">
+                    {{ cat.tenLoai }}
+                  </option>
                 </select>
               </div>
 
@@ -227,13 +226,7 @@
             <div class="form-actions">
               <button type="submit" class="btn btn-success" :disabled="loading">
                 <i class="fas fa-save"></i>
-                {{
-                  loading
-                    ? "Đang lưu..."
-                    : isEditing
-                    ? "Cập nhật"
-                    : "Thêm sản phẩm"
-                }}
+                {{ loading ? "Đang lưu..." : "Cập nhật" }}
               </button>
               <button
                 style="margin-left: 5px"
@@ -255,7 +248,7 @@
           <h2 class="section-title">
             <i class="fas fa-list"></i>
             Danh sách sản phẩm
-            <span class="badge">{{ products.length }}</span>
+            <span class="badge">{{ filteredProducts.length }}</span>
           </h2>
           <div class="view-controls">
             <button
@@ -289,13 +282,9 @@
           </div>
 
           <!-- Empty State -->
-          <div v-else-if="!products.length" class="empty-state">
+          <div v-else-if="!filteredProducts.length" class="empty-state">
             <i class="fas fa-box-open"></i>
             <p>Không có sản phẩm nào</p>
-            <button class="btn btn-primary" @click="toggleAddForm">
-              <i class="fas fa-plus"></i>
-              Thêm sản phẩm đầu tiên
-            </button>
           </div>
 
           <!-- Table View -->
@@ -339,17 +328,17 @@
               </thead>
               <tbody>
                 <tr
-                  v-for="sp in products"
-                  :key="sp.productId"
+                  v-for="sp in filteredProducts"
+                  :key="sp.sanPhamId"
                   class="product-row"
                 >
-                  <td class="product-id">{{ sp.productId }}</td>
+                  <td class="product-id">{{ sp.sanPhamId }}</td>
                   <td class="product-image">
                     <div class="image-container">
                       <img
-                        v-if="sp.images"
-                        :src="sp.images"
-                        :alt="sp.productName"
+                        v-if="sp.hinhAnh"
+                        :src="sp.hinhAnh"
+                        :alt="sp.tenSP"
                         @error="handleImageError"
                       />
                       <div v-else class="no-image">
@@ -360,30 +349,30 @@
                   </td>
                   <td class="product-name">
                     <div class="name-container">
-                      <strong>{{ sp.productName }}</strong>
+                      <strong>{{ sp.tenSP }}</strong>
                     </div>
                   </td>
                   <td class="product-price">
                     <span class="price-value">
-                      {{ formatPrice(sp.price) }}
+                      {{ formatPrice(sp.gia) }}
                     </span>
                   </td>
                   <td class="product-quantity">
                     <span
                       class="quantity-badge"
-                      :class="getQuantityClass(sp.quantity)"
+                      :class="getQuantityClass(sp.soLuong)"
                     >
-                      {{ sp.quantity }}
+                      {{ sp.soLuong }}
                     </span>
                   </td>
                   <td class="product-category">
                     <span class="category-badge">
-                      Danh mục {{ sp.categoryId }}
+                      {{ getCategoryName(sp.loaiSanPhamId) }}
                     </span>
                   </td>
                   <td class="product-description">
                     <div class="description-text">
-                      {{ sp.description || "(Không có mô tả)" }}
+                      {{ sp.moTa || "(Không có mô tả)" }}
                     </div>
                   </td>
                   <td class="product-actions">
@@ -396,7 +385,7 @@
                         <i class="fas fa-edit"></i>
                       </button>
                       <button
-                        @click="deleteProduct(sp.productId)"
+                        @click="deleteProduct(sp.sanPhamId)"
                         class="btn btn-sm btn-danger"
                         title="Xóa"
                       >
@@ -412,15 +401,15 @@
           <!-- Grid View -->
           <div v-else class="products-grid">
             <div
-              v-for="sp in products"
-              :key="sp.productId"
+              v-for="sp in filteredProducts"
+              :key="sp.sanPhamId"
               class="product-card"
             >
               <div class="product-card-image">
                 <img
-                  v-if="sp.images"
-                  :src="sp.images"
-                  :alt="sp.productName"
+                  v-if="sp.hinhAnh"
+                  :src="sp.hinhAnh"
+                  :alt="sp.tenSP"
                   @error="handleImageError"
                 />
                 <div v-else class="no-image-placeholder">
@@ -434,7 +423,7 @@
                     <i class="fas fa-edit"></i>
                   </button>
                   <button
-                    @click="deleteProduct(sp.productId)"
+                    @click="deleteProduct(sp.sanPhamId)"
                     class="btn btn-sm btn-danger"
                   >
                     <i class="fas fa-trash"></i>
@@ -442,20 +431,20 @@
                 </div>
               </div>
               <div class="product-card-content">
-                <h5 class="product-card-title">{{ sp.productName }}</h5>
-                <p class="product-card-price">{{ formatPrice(sp.price) }}</p>
+                <h5 class="product-card-title">{{ sp.tenSP }}</h5>
+                <p class="product-card-price">{{ formatPrice(sp.gia) }}</p>
                 <div class="product-card-info">
                   <span class="quantity-info">
                     <i class="fas fa-warehouse"></i>
-                    {{ sp.quantity }}
+                    {{ sp.soLuong }}
                   </span>
                   <span class="category-info">
                     <i class="fas fa-tag"></i>
-                    Danh mục {{ sp.categoryId }}
+                    {{ getCategoryName(sp.loaiSanPhamId) }}
                   </span>
                 </div>
                 <p class="product-card-description">
-                  {{ sp.description || "Không có mô tả" }}
+                  {{ sp.moTa || "Không có mô tả" }}
                 </p>
               </div>
             </div>
@@ -515,20 +504,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import apiClient from "../utils/axiosClient";
 
 // Reactive data
 const products = ref([]);
-const categories = ref([
-  { id: 1, name: "Danh mục 1" },
-  { id: 2, name: "Danh mục 2" },
-  { id: 3, name: "Danh mục 3" },
-]);
+const categories = ref([]);
 const loading = ref(false);
-const showAddForm = ref(false);
+const showEditForm = ref(false);
 const viewMode = ref("table");
 const toasts = ref([]);
+const showConfirmDelete = ref(false);
+const productToDelete = ref(null);
 
 // Form data
 const product = ref({
@@ -549,7 +536,16 @@ const selectedCategory = ref("");
 // Image handling
 const imageFile = ref(null);
 const imagePreview = ref(null);
-const isEditing = ref(false);
+
+// Computed filtered products
+const filteredProducts = computed(() => {
+  return products.value.filter((sp) => {
+    const matchesName = !searchName.value || sp.tenSP.toLowerCase().includes(searchName.value.toLowerCase());
+    const matchesPrice = sp.gia >= priceMin.value && sp.gia <= priceMax.value;
+    const matchesCategory = !selectedCategory.value || sp.loaiSanPhamId === Number(selectedCategory.value);
+    return matchesName && matchesPrice && matchesCategory;
+  });
+});
 
 // Methods
 const showToast = (message, type = "info") => {
@@ -578,11 +574,9 @@ const getToastIcon = (type) => {
   }
 };
 
-const toggleAddForm = () => {
-  showAddForm.value = !showAddForm.value;
-  if (showAddForm.value && isEditing.value) {
-    resetForm();
-  }
+const toggleEditForm = () => {
+  showEditForm.value = !showEditForm.value;
+  if (!showEditForm.value) resetForm();
 };
 
 const handleImage = (e) => {
@@ -618,97 +612,55 @@ const getQuantityClass = (quantity) => {
   return "quantity-normal";
 };
 
+const getCategoryName = (categoryId) => {
+  const category = categories.value.find((cat) => cat.loaiSanPhamId === categoryId);
+  return category ? category.tenLoai : "Không xác định";
+};
+
 const fetchProducts = async () => {
   try {
     loading.value = true;
     const res = await apiClient.get("Product");
-    products.value = res.data.map((p) => ({
-      productId: p.sanPhamId,
-      productName: p.tenSP,
-      price: p.gia,
-      quantity: p.soLuong,
-      description: p.moTa,
-      categoryId: p.loaiSanPhamId,
-      images: p.hinhAnh,
-    }));
+    products.value = res;
   } catch (err) {
     console.error("Lỗi tải sản phẩm:", err);
-    showToast("Lỗi khi tải danh sách sản phẩm", "error");
+    showToast("Lỗi khi tải danh sách sản phẩm: " + (err.message || "Không xác định"), "error");
+    products.value = [];
   } finally {
     loading.value = false;
   }
 };
 
-const searchByName = async () => {
-  if (!searchName.value.trim()) return fetchProducts();
+const fetchCategories = async () => {
   try {
     loading.value = true;
-    const res = await apiClient.get(`Product/name?ten=${searchName.value}`);
-    products.value = res.data.map((p) => ({
-      productId: p.sanPhamId,
-      productName: p.tenSP,
-      price: p.gia,
-      quantity: p.soLuong,
-      description: p.moTa,
-      categoryId: p.loaiSanPhamId,
-      images: p.hinhAnh,
-    }));
+    const res = await apiClient.get("category");
+    categories.value = res;
   } catch (err) {
-    console.error("Không tìm thấy sản phẩm:", err);
-    products.value = [];
-    showToast("Không tìm thấy sản phẩm phù hợp", "warning");
+    console.error("Fetch categories error:", err);
+    showToast("Lỗi khi tải danh sách danh mục: " + (err.message || "Không xác định"), "error");
   } finally {
     loading.value = false;
   }
+};
+
+const searchByName = () => {
+  // Lọc cục bộ dựa trên tên sản phẩm
 };
 
 const clearSearch = () => {
   searchName.value = "";
-  fetchProducts();
 };
 
-const filterByPrice = async () => {
+const filterByPrice = () => {
   if (priceMin.value > priceMax.value) {
     showToast("Giá thấp nhất không được lớn hơn giá cao nhất", "warning");
     return;
   }
-  try {
-    loading.value = true;
-    const res = await apiClient.get(
-      `Product/filter-by-price?min=${priceMin.value}&max=${priceMax.value}`
-    );
-    products.value = res.data.map((p) => ({
-      productId: p.sanPhamId,
-      productName: p.tenSP,
-      price: p.gia,
-      quantity: p.soLuong,
-      description: p.moTa,
-      categoryId: p.loaiSanPhamId,
-      images: p.hinhAnh,
-    }));
-    showToast(
-      `Tìm thấy ${products.value.length} sản phẩm trong khoảng giá`,
-      "success"
-    );
-  } catch (err) {
-    console.error("Lỗi lọc giá:", err);
-    products.value = [];
-    showToast("Lỗi khi lọc theo giá", "error");
-  } finally {
-    loading.value = false;
-  }
 };
 
 const filterByCategory = () => {
-  if (!selectedCategory.value) {
-    fetchProducts();
-    return;
-  }
-  const filtered = products.value.filter(
-    (p) => p.categoryId === selectedCategory.value
-  );
-  products.value = filtered;
-  showToast(`Lọc theo danh mục: ${filtered.length} sản phẩm`, "info");
+  // Lọc cục bộ dựa trên danh mục
 };
 
 const saveProduct = async () => {
@@ -717,31 +669,24 @@ const saveProduct = async () => {
     const formData = new FormData();
     formData.append("productName", product.value.productName);
     formData.append("sellingPrice", product.value.price);
-    // Không gửi quantity vì nó bị disabled
     formData.append("description", product.value.description);
     formData.append("categoryId", product.value.categoryId);
     if (imageFile.value) {
       formData.append("image", imageFile.value);
     }
 
-    if (isEditing.value) {
-      await apiClient.put(`Product/${product.value.productId}`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      showToast("Cập nhật sản phẩm thành công!", "success");
-    } else {
-      await apiClient.post("Product", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      showToast("Thêm sản phẩm thành công!", "success");
-    }
+    const url = `Product/${product.value.productId || ""}`;
+    const method = product.value.productId ? "put" : "post";
+
+    await apiClient({ url, method, data: formData, headers: { "Content-Type": "multipart/form-data" } });
+    showToast("Cập nhật sản phẩm thành công!", "success");
 
     resetForm();
-    fetchProducts();
-    showAddForm.value = false;
+    await fetchProducts();
+    showEditForm.value = false;
   } catch (err) {
     console.error("Lỗi lưu sản phẩm:", err);
-    showToast("Lỗi khi lưu sản phẩm", "error");
+    showToast("Lỗi khi lưu sản phẩm: " + (err.message || "Không xác định"), "error");
   } finally {
     loading.value = false;
   }
@@ -749,41 +694,45 @@ const saveProduct = async () => {
 
 const editProduct = (sp) => {
   product.value = {
-    productId: sp.productId,
-    productId: sp.productId,
-    productName: sp.productName,
-    price: sp.price,
-    quantity: sp.quantity,
-    description: sp.description,
-    categoryId: sp.categoryId,
+    productId: sp.sanPhamId,
+    productName: sp.tenSP,
+    price: sp.gia,
+    quantity: sp.soLuong,
+    description: sp.moTa,
+    categoryId: sp.loaiSanPhamId,
   };
-
-  if (sp.images) {
-    imagePreview.value = sp.images;
-  }
-
+  imagePreview.value = sp.hinhAnh || null;
   imageFile.value = null;
-  isEditing.value = true;
-  showAddForm.value = true;
+  showEditForm.value = true;
 };
 
-const deleteProduct = async (id) => {
-  if (!confirm("Bạn có chắc muốn xóa sản phẩm này?")) return;
+const deleteProduct = (id) => {
+  showConfirmDelete.value = true;
+  productToDelete.value = id;
+};
+
+const confirmDelete = async () => {
   try {
     loading.value = true;
-    await apiClient.delete(`Product/${id}`);
+    await apiClient.delete(`Product/${productToDelete.value}`);
     showToast("Xóa sản phẩm thành công!", "success");
-    fetchProducts();
+    await fetchProducts();
   } catch (err) {
     console.error("Lỗi xóa:", err);
-    showToast("Lỗi khi xóa sản phẩm", "error");
+    showToast("Lỗi khi xóa sản phẩm: " + (err.message || "Không xác định"), "error");
   } finally {
     loading.value = false;
+    showConfirmDelete.value = false;
+    productToDelete.value = null;
   }
+};
+
+const cancelDelete = () => {
+  showConfirmDelete.value = false;
+  productToDelete.value = null;
 };
 
 const resetForm = () => {
-  isEditing.value = false;
   product.value = {
     productId: 0,
     productName: "",
@@ -797,15 +746,17 @@ const resetForm = () => {
   if (document.getElementById("imageUpload")) {
     document.getElementById("imageUpload").value = "";
   }
+  showEditForm.value = false;
 };
 
 // Lifecycle
-onMounted(() => {
-  fetchProducts();
+onMounted(async () => {
+  await Promise.all([fetchProducts(), fetchCategories()]);
 });
 </script>
 
 <style scoped>
+/* Giữ nguyên style từ phiên bản cũ */
 .product-management {
   max-width: 1400px;
   margin: 0 auto;
@@ -921,6 +872,11 @@ onMounted(() => {
   box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
+.form-control:disabled {
+  background: #e1e8ed;
+  cursor: not-allowed;
+}
+
 /* Search Container */
 .search-container {
   position: relative;
@@ -968,7 +924,6 @@ onMounted(() => {
   display: none;
 }
 
-/* Tiếp tục phần clear-search đã dở ở trên */
 .clear-search.show {
   display: inline-block;
 }
@@ -1259,10 +1214,6 @@ onMounted(() => {
   box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
 }
 
-.btn-primary.active {
-  background: linear-gradient(135deg, #e74c3c, #c0392b);
-}
-
 .btn-success {
   background: linear-gradient(135deg, #27ae60, #229954);
   color: white;
@@ -1301,5 +1252,64 @@ onMounted(() => {
 
 .action-buttons .btn i {
   pointer-events: none;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-dialog {
+  background: white;
+  border-radius: 8px;
+  width: 400px;
+  max-width: 90%;
+}
+
+.modal-content {
+  padding: 20px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e1e8ed;
+  padding-bottom: 10px;
+}
+
+.modal-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #7f8c8d;
+  cursor: pointer;
+}
+
+.modal-body {
+  padding: 20px 0;
+  color: #34495e;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid #e1e8ed;
+  padding-top: 10px;
 }
 </style>

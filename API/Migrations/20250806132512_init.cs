@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace API.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -55,7 +55,7 @@ namespace API.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Categorys",
+                name: "Categories",
                 columns: table => new
                 {
                     CategoryId = table.Column<int>(type: "int", nullable: false)
@@ -64,7 +64,7 @@ namespace API.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Categorys", x => x.CategoryId);
+                    table.PrimaryKey("PK_Categories", x => x.CategoryId);
                 });
 
             migrationBuilder.CreateTable(
@@ -93,7 +93,7 @@ namespace API.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "datLiches",
+                name: "DatLiches",
                 columns: table => new
                 {
                     DatLichID = table.Column<int>(type: "int", nullable: false)
@@ -107,29 +107,7 @@ namespace API.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_datLiches", x => x.DatLichID);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "hoaDons",
-                columns: table => new
-                {
-                    HoaDonID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    NgayTao = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    TongTien = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    MaGiamGia = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    TongTienSauGiamGia = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    HinhThucThanhToan = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TrangThai = table.Column<byte>(type: "tinyint", nullable: false),
-                    TienKhachDua = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    TienThoiLai = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    NhanVienID = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserID = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_hoaDons", x => x.HoaDonID);
+                    table.PrimaryKey("PK_DatLiches", x => x.DatLichID);
                 });
 
             migrationBuilder.CreateTable(
@@ -146,7 +124,7 @@ namespace API.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Voucher",
+                name: "Vouchers",
                 columns: table => new
                 {
                     VoucherID = table.Column<int>(type: "int", nullable: false)
@@ -160,7 +138,7 @@ namespace API.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Voucher", x => x.VoucherID);
+                    table.PrimaryKey("PK_Vouchers", x => x.VoucherID);
                 });
 
             migrationBuilder.CreateTable(
@@ -292,25 +270,24 @@ namespace API.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Product",
+                name: "Products",
                 columns: table => new
                 {
                     ProductId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ProductName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    CategoryId = table.Column<int>(type: "int", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Images = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
-                    CategoryId = table.Column<int>(type: "int", nullable: false)
+                    CurrentSellingPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Images = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Product", x => x.ProductId);
+                    table.PrimaryKey("PK_Products", x => x.ProductId);
                     table.ForeignKey(
-                        name: "FK_Product_Categorys_CategoryId",
+                        name: "FK_Products_Categories_CategoryId",
                         column: x => x.CategoryId,
-                        principalTable: "Categorys",
+                        principalTable: "Categories",
                         principalColumn: "CategoryId",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -369,30 +346,60 @@ namespace API.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "InventoryHistories",
+                name: "HoaDons",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    HoaDonID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    ProductId = table.Column<int>(type: "int", nullable: false),
-                    QuantityChanged = table.Column<int>(type: "int", nullable: false),
-                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ActionType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Note = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    NgayTao = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TongTien = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    GiaTriGiam = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    HinhThucThanhToan = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TrangThai = table.Column<byte>(type: "tinyint", nullable: false),
+                    TienKhachDua = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    TienThoiLai = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    NhanVienID = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserID = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    VoucherID = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_InventoryHistories", x => x.Id);
+                    table.PrimaryKey("PK_HoaDons", x => x.HoaDonID);
                     table.ForeignKey(
-                        name: "FK_InventoryHistories_Product_ProductId",
+                        name: "FK_HoaDons_Vouchers_VoucherID",
+                        column: x => x.VoucherID,
+                        principalTable: "Vouchers",
+                        principalColumn: "VoucherID");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProductBatches",
+                columns: table => new
+                {
+                    BatchId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ProductId = table.Column<int>(type: "int", nullable: false),
+                    ProductCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    ImportPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    SupplierName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    ManufactureDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductBatches", x => x.BatchId);
+                    table.ForeignKey(
+                        name: "FK_ProductBatches_Products_ProductId",
                         column: x => x.ProductId,
-                        principalTable: "Product",
+                        principalTable: "Products",
                         principalColumn: "ProductId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "chiTietDatLiches",
+                name: "ChiTietDatLiches",
                 columns: table => new
                 {
                     ChiTietDatLichID = table.Column<int>(type: "int", nullable: false)
@@ -402,56 +409,23 @@ namespace API.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_chiTietDatLiches", x => x.ChiTietDatLichID);
+                    table.PrimaryKey("PK_ChiTietDatLiches", x => x.ChiTietDatLichID);
                     table.ForeignKey(
-                        name: "FK_chiTietDatLiches_DichVus_DichVuID",
+                        name: "FK_ChiTietDatLiches_DatLiches_DatLichID",
+                        column: x => x.DatLichID,
+                        principalTable: "DatLiches",
+                        principalColumn: "DatLichID",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ChiTietDatLiches_DichVus_DichVuID",
                         column: x => x.DichVuID,
                         principalTable: "DichVus",
                         principalColumn: "DichVuID",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_chiTietDatLiches_datLiches_DatLichID",
-                        column: x => x.DatLichID,
-                        principalTable: "datLiches",
-                        principalColumn: "DatLichID",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "chiTietHoaDons",
-                columns: table => new
-                {
-                    ChiTietHoaDonID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    HoaDonID = table.Column<int>(type: "int", nullable: false),
-                    SanPhamID = table.Column<int>(type: "int", nullable: true),
-                    DichVuID = table.Column<int>(type: "int", nullable: true),
-                    SoLuongSP = table.Column<int>(type: "int", nullable: false),
-                    ThanhTien = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_chiTietHoaDons", x => x.ChiTietHoaDonID);
-                    table.ForeignKey(
-                        name: "FK_chiTietHoaDons_DichVus_DichVuID",
-                        column: x => x.DichVuID,
-                        principalTable: "DichVus",
-                        principalColumn: "DichVuID");
-                    table.ForeignKey(
-                        name: "FK_chiTietHoaDons_Product_SanPhamID",
-                        column: x => x.SanPhamID,
-                        principalTable: "Product",
-                        principalColumn: "ProductId");
-                    table.ForeignKey(
-                        name: "FK_chiTietHoaDons_hoaDons_HoaDonID",
-                        column: x => x.HoaDonID,
-                        principalTable: "hoaDons",
-                        principalColumn: "HoaDonID",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "DanhGiass",
+                name: "DanhGias",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -467,18 +441,84 @@ namespace API.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DanhGiass", x => x.Id);
+                    table.PrimaryKey("PK_DanhGias", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_DanhGiass_AspNetUsers_UserId",
+                        name: "FK_DanhGias_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_DanhGiass_DichVus_MaDichVu",
+                        name: "FK_DanhGias_DichVus_MaDichVu",
                         column: x => x.MaDichVu,
                         principalTable: "DichVus",
                         principalColumn: "DichVuID",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ChiTietHoaDons",
+                columns: table => new
+                {
+                    ChiTietHoaDonID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    HoaDonID = table.Column<int>(type: "int", nullable: false),
+                    SanPhamID = table.Column<int>(type: "int", nullable: true),
+                    DichVuID = table.Column<int>(type: "int", nullable: true),
+                    SoLuongSP = table.Column<int>(type: "int", nullable: false),
+                    ThanhTien = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ChiTietHoaDons", x => x.ChiTietHoaDonID);
+                    table.ForeignKey(
+                        name: "FK_ChiTietHoaDons_DichVus_DichVuID",
+                        column: x => x.DichVuID,
+                        principalTable: "DichVus",
+                        principalColumn: "DichVuID");
+                    table.ForeignKey(
+                        name: "FK_ChiTietHoaDons_HoaDons_HoaDonID",
+                        column: x => x.HoaDonID,
+                        principalTable: "HoaDons",
+                        principalColumn: "HoaDonID",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ChiTietHoaDons_Products_SanPhamID",
+                        column: x => x.SanPhamID,
+                        principalTable: "Products",
+                        principalColumn: "ProductId");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "InventoryHistories",
+                columns: table => new
+                {
+                    HistoryId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ProductId = table.Column<int>(type: "int", nullable: false),
+                    ActionType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    QuantityChanged = table.Column<int>(type: "int", nullable: false),
+                    Note = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ExpirationDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ImportPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    SupplierName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BatchId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InventoryHistories", x => x.HistoryId);
+                    table.ForeignKey(
+                        name: "FK_InventoryHistories_ProductBatches_BatchId",
+                        column: x => x.BatchId,
+                        principalTable: "ProductBatches",
+                        principalColumn: "BatchId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_InventoryHistories_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
+                        principalColumn: "ProductId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -592,38 +632,38 @@ namespace API.Migrations
                 column: "Status");
 
             migrationBuilder.CreateIndex(
-                name: "IX_chiTietDatLiches_DatLichID",
-                table: "chiTietDatLiches",
+                name: "IX_ChiTietDatLiches_DatLichID",
+                table: "ChiTietDatLiches",
                 column: "DatLichID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_chiTietDatLiches_DichVuID",
-                table: "chiTietDatLiches",
+                name: "IX_ChiTietDatLiches_DichVuID",
+                table: "ChiTietDatLiches",
                 column: "DichVuID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_chiTietHoaDons_DichVuID",
-                table: "chiTietHoaDons",
+                name: "IX_ChiTietHoaDons_DichVuID",
+                table: "ChiTietHoaDons",
                 column: "DichVuID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_chiTietHoaDons_HoaDonID",
-                table: "chiTietHoaDons",
+                name: "IX_ChiTietHoaDons_HoaDonID",
+                table: "ChiTietHoaDons",
                 column: "HoaDonID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_chiTietHoaDons_SanPhamID",
-                table: "chiTietHoaDons",
+                name: "IX_ChiTietHoaDons_SanPhamID",
+                table: "ChiTietHoaDons",
                 column: "SanPhamID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DanhGiass_MaDichVu",
-                table: "DanhGiass",
+                name: "IX_DanhGias_MaDichVu",
+                table: "DanhGias",
                 column: "MaDichVu");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DanhGiass_UserId",
-                table: "DanhGiass",
+                name: "IX_DanhGias_UserId",
+                table: "DanhGias",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
@@ -632,13 +672,28 @@ namespace API.Migrations
                 column: "LoaiDichVuID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_HoaDons_VoucherID",
+                table: "HoaDons",
+                column: "VoucherID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InventoryHistories_BatchId",
+                table: "InventoryHistories",
+                column: "BatchId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_InventoryHistories_ProductId",
                 table: "InventoryHistories",
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Product_CategoryId",
-                table: "Product",
+                name: "IX_ProductBatches_ProductId",
+                table: "ProductBatches",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_CategoryId",
+                table: "Products",
                 column: "CategoryId");
 
             migrationBuilder.CreateIndex(
@@ -669,13 +724,13 @@ namespace API.Migrations
                 name: "ChatMessages");
 
             migrationBuilder.DropTable(
-                name: "chiTietDatLiches");
+                name: "ChiTietDatLiches");
 
             migrationBuilder.DropTable(
-                name: "chiTietHoaDons");
+                name: "ChiTietHoaDons");
 
             migrationBuilder.DropTable(
-                name: "DanhGiass");
+                name: "DanhGias");
 
             migrationBuilder.DropTable(
                 name: "InventoryHistories");
@@ -684,34 +739,37 @@ namespace API.Migrations
                 name: "RefreshTokens");
 
             migrationBuilder.DropTable(
-                name: "Voucher");
-
-            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "ChatSessions");
 
             migrationBuilder.DropTable(
-                name: "datLiches");
+                name: "DatLiches");
 
             migrationBuilder.DropTable(
-                name: "hoaDons");
+                name: "HoaDons");
 
             migrationBuilder.DropTable(
                 name: "DichVus");
 
             migrationBuilder.DropTable(
-                name: "Product");
+                name: "ProductBatches");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
 
             migrationBuilder.DropTable(
+                name: "Vouchers");
+
+            migrationBuilder.DropTable(
                 name: "LoaiDichVus");
 
             migrationBuilder.DropTable(
-                name: "Categorys");
+                name: "Products");
+
+            migrationBuilder.DropTable(
+                name: "Categories");
         }
     }
 }

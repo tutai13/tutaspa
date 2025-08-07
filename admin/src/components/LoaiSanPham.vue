@@ -1,3 +1,4 @@
+```vue
 <template>
   <div class="category-management">
     <!-- Header -->
@@ -104,7 +105,7 @@
         </div>
 
         <!-- Empty State -->
-        <div v-else-if="!categories.length" class="empty-state">
+        <div v-else-if="!filteredCategories.length" class="empty-state">
           <i class="fas fa-tags"></i>
           <p>Không có loại sản phẩm nào</p>
         </div>
@@ -120,7 +121,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="c in categories" :key="c.loaiSanPhamId" class="category-row">
+              <tr v-for="c in filteredCategories" :key="c.loaiSanPhamId" class="category-row">
                 <td class="category-id">
                   <span class="id-badge">{{ c.loaiSanPhamId }}</span>
                 </td>
@@ -171,7 +172,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import apiClient from '../utils/axiosClient';
 
 const categories = ref([]);
@@ -184,6 +185,14 @@ const loading = ref(false);
 const showAddForm = ref(false);
 const searchKeyword = ref("");
 const toasts = ref([]);
+
+// Computed filtered categories
+const filteredCategories = computed(() => {
+  if (!searchKeyword.value.trim()) return categories.value;
+  return categories.value.filter((c) =>
+    c.tenLoai.toLowerCase().includes(searchKeyword.value.toLowerCase())
+  );
+});
 
 // Toast notification methods
 const showToast = (message, type = 'info') => {
@@ -219,7 +228,7 @@ const fetchCategories = async () => {
   try {
     loading.value = true;
     const res = await apiClient.get("/Category");
-    categories.value = res;
+    categories.value = res; // Sử dụng trực tiếp res vì phản hồi là mảng
     searchKeyword.value = "";
   } catch (err) {
     console.error("Lỗi tải loại sản phẩm:", err);
@@ -279,24 +288,12 @@ const resetForm = () => {
   };
 };
 
-const searchCategories = async () => {
-  if (!searchKeyword.value.trim()) return fetchCategories();
-  try {
-    loading.value = true;
-    const res = await apiClient.get(`Category/search?ten=${searchKeyword.value}`);
-    categories.value = res.data;
-  } catch (err) {
-    console.error("Lỗi tìm kiếm:", err);
-    categories.value = [];
-    showToast('Lỗi khi tìm kiếm loại sản phẩm', 'error');
-  } finally {
-    loading.value = false;
-  }
+const searchCategories = () => {
+  // Lọc cục bộ, không gọi API
 };
 
 const clearSearch = () => {
   searchKeyword.value = "";
-  fetchCategories();
 };
 
 onMounted(fetchCategories);
