@@ -29,7 +29,7 @@
               <label class="form-label">📉Kiểu giảm giá</label>
               <select v-model="voucher.kieuGiamGia" class="form-select">
                 <option :value="0">%</option>
-                <option :value="1">$</option>
+                <option :value="1">VNĐ</option>
               </select>
             </div>
 
@@ -116,50 +116,63 @@
         </button>
       </div>
     </div>
-
     <!-- Danh sách voucher -->
     <div class="table-responsive">
-      <table class="table table-bordered table-hover text-center align-middle">
-        <thead class="table-primary">
-          <tr>
-            <th>Mã code</th>
-            <th>Giá trị</th>
-            <th>Kiểu</th>
-            <th>Bắt đầu</th>
-            <th>Kết thúc</th>
-            <th>Số lượng</th>
-            <th>Hành động</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="v in sortedVouchers"
-            :key="v.voucherID"
-            :class="{ expired: isExpired(v.ngayKetThuc) }">
-            <td>{{ v.maCode }}</td>
-            <td>{{ v.giaTriGiam }}</td>
-            <td>{{ v.kieuGiamGia === 0 ? "%" : "$" }}</td>
-            <td>{{ formatDate(v.ngayBatDau) }}</td>
-            <td>{{ formatDate(v.ngayKetThuc) }}</td>
-            <td>
-              <span v-if="Number(v.soLuong) === -1">
-                <i class="bi bi-star-fill text-warning">⭐</i>
-              </span>
-              <span v-else>
-                {{ v.soLuong }}
-              </span>
-            </td>
-            <td>
-              <button class="btn btn-warning btn-sm me-1" @click="editVoucher(v)">Sửa</button>
-              <button class="btn btn-danger btn-sm" @click="deleteVoucher(v.voucherID)">Xóa</button>
-            </td>
-          </tr>
-          <tr v-if="vouchers.length === 0">
-            <td colspan="8">Không có dữ liệu voucher.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+  <table class="table table-bordered table-hover text-center align-middle">
+    <thead class="table-primary">
+      <tr>
+        <th>Mã code</th>
+        <th>Giá trị</th>
+        <th>Kiểu</th>
+        <th>Bắt đầu</th>
+        <th>Kết thúc</th>
+        <th>Số lượng</th>
+        <th>Trạng thái</th> <!-- ✅ Di chuyển trạng thái xuống đây -->
+        <th>Hành động</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr
+        v-for="v in sortedVouchers"
+        :key="v.voucherID"
+        :class="{ expired: isExpired(v.ngayKetThuc) }">
+        <td>{{ v.maCode }}</td>
+        <td>{{ v.giaTriGiam }}</td>
+        <td>{{ v.kieuGiamGia === 0 ? "%" : "$" }}</td>
+        <td>{{ formatDate(v.ngayBatDau) }}</td>
+        <td>{{ formatDate(v.ngayKetThuc) }}</td>
+        <td>
+          <span v-if="Number(v.soLuong) === -1">
+            <i class="bi bi-star-fill text-warning">⭐</i>
+          </span>
+          <span v-else>
+            {{ v.soLuong }}
+          </span>
+        </td>
+        <!-- ✅ Trạng thái ở đây -->
+<td>
+  <span
+    :class="{
+      'text-muted fw-bold': getVoucherStatus(v.ngayBatDau, v.ngayKetThuc) === 'Chưa bắt đầu',
+      'text-success fw-bold': getVoucherStatus(v.ngayBatDau, v.ngayKetThuc) === 'Còn hạn',
+      'text-danger fw-bold': getVoucherStatus(v.ngayBatDau, v.ngayKetThuc) === 'Hết hạn'
+    }"
+  >
+    {{ getVoucherStatus(v.ngayBatDau, v.ngayKetThuc) }}
+  </span>
+</td>
+        <td>
+          <button class="btn btn-warning btn-sm me-1" @click="editVoucher(v)">Sửa</button>
+          <button class="btn btn-danger btn-sm" @click="deleteVoucher(v.voucherID)">Xóa</button>
+        </td>
+      </tr>
+      <tr v-if="vouchers.length === 0">
+        <td colspan="8">Không có dữ liệu voucher.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
   </div>
 </template>
 
@@ -249,10 +262,12 @@ const saveVoucher = async () => {
       soLuong: voucher.value.voHan ? -1 : voucher.value.soLuong,
     };
 
-    if (isEditing.value) {
+   if (isEditing.value) {
       await apiClient.put(`Vouchers/${voucher.value.voucherID}`, payload);
+      alert("✔️ Cập nhật voucher thành công!");
     } else {
       await apiClient.post("Vouchers", payload);
+      alert("✔️ Thêm voucher thành công!");
     }
 
     resetForm();
@@ -264,13 +279,19 @@ const saveVoucher = async () => {
 };
 
 const deleteVoucher = async (id) => {
+  const confirmed = confirm("🗑️ Bạn có chắc chắn muốn xóa voucher này?");
+  if (!confirmed) return;
+
   try {
     await apiClient.delete(`Vouchers/${id}`);
+    alert("✔️ Xóa voucher thành công!");
     await fetchVouchers();
   } catch (err) {
-    console.error("Lỗi xóa voucher:", err);
+    console.error("❌ Lỗi xóa voucher:", err.response?.data || err.message);
+    alert("❌ Xóa voucher thất bại.");
   }
 };
+
 function removeVietnamese(event) {
   const raw = event.target.value
   const noAccent = raw
@@ -303,6 +324,19 @@ const resetForm = () => {
     soLuong: 1,
     voHan: false,
   };
+};
+const getVoucherStatus = (startDate, endDate) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  start.setHours(0, 0, 0, 0);
+  end.setHours(0, 0, 0, 0);
+
+  if (start > today) return "Chưa bắt đầu";
+  if (end < today) return "Hết hạn";
+  return "Còn hạn";
 };
 
 const applyAllFilters = async () => {
