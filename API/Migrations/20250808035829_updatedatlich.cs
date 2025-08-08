@@ -5,26 +5,25 @@
 namespace API.Migrations
 {
     /// <inheritdoc />
-    public partial class ForceUpdateProductBatch : Migration
+    public partial class updatedatlich : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "ProductCode",
-                table: "ProductBatches",
-                type: "nvarchar(50)",
-                maxLength: 50,
+            migrationBuilder.AddColumn<bool>(
+                name: "DatTruoc",
+                table: "DatLiches",
+                type: "bit",
                 nullable: false,
-                defaultValue: "");
+                defaultValue: false);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "ProductCode",
-                table: "ProductBatches");
+                name: "DatTruoc",
+                table: "DatLiches");
         }
     }
 }

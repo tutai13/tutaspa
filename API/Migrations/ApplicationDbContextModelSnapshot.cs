@@ -4,7 +4,6 @@ using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -12,11 +11,9 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250722193646_RemoveProductCode_Final")]
-    partial class RemoveProductCode_Final
+    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -40,7 +37,160 @@ namespace API.Migrations
 
                     b.HasKey("CategoryId");
 
-                    b.ToTable("Categorys");
+                    b.ToTable("Categories");
+                });
+
+            modelBuilder.Entity("API.Models.Chat.ChatMessage", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("FromUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("FromUserName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsFromAdmin")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("MessageId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("SessionId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ToUserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FromUserId");
+
+                    b.HasIndex("IsFromAdmin");
+
+                    b.HasIndex("MessageId")
+                        .IsUnique();
+
+                    b.HasIndex("SessionId");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("Timestamp");
+
+                    b.ToTable("ChatMessages", (string)null);
+                });
+
+            modelBuilder.Entity("API.Models.Chat.ChatSession", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("AdminId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("AdminName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CustomerIP")
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)");
+
+                    b.Property<string>("CustomerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("EndTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("MetadataJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SessionId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdminId");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("SessionId")
+                        .IsUnique();
+
+                    b.HasIndex("StartTime");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("ChatSessions", (string)null);
+                });
+
+            modelBuilder.Entity("API.Models.ChiTietDatLich", b =>
+                {
+                    b.Property<int>("ChiTietDatLichID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ChiTietDatLichID"));
+
+                    b.Property<int>("DatLichID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DichVuID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("soLuongDV")
+                        .HasColumnType("int");
+
+                    b.HasKey("ChiTietDatLichID");
+
+                    b.HasIndex("DatLichID");
+
+                    b.HasIndex("DichVuID");
+
+                    b.ToTable("ChiTietDatLiches");
                 });
 
             modelBuilder.Entity("API.Models.ChiTietHoaDon", b =>
@@ -74,7 +224,43 @@ namespace API.Migrations
 
                     b.HasIndex("SanPhamID");
 
-                    b.ToTable("chiTietHoaDons");
+                    b.ToTable("ChiTietHoaDons");
+                });
+
+            modelBuilder.Entity("API.Models.DatLich", b =>
+                {
+                    b.Property<int>("DatLichID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DatLichID"));
+
+                    b.Property<bool>("DaThanhToan")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("DatTruoc")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("GhiChu")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SoDienThoai")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ThoiGian")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ThoiLuong")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TrangThai")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("DatLichID");
+
+                    b.ToTable("DatLiches");
                 });
 
             modelBuilder.Entity("API.Models.DichVu", b =>
@@ -130,18 +316,19 @@ namespace API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HoaDonID"));
 
+                    b.Property<decimal?>("GiaTriGiam")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("HinhThucThanhToan")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MaGiamGia")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("NgayTao")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("NhanVienID")
-                        .HasColumnType("int");
+                    b.Property<string>("NhanVienID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal?>("TienKhachDua")
                         .HasColumnType("decimal(18,2)");
@@ -152,21 +339,21 @@ namespace API.Migrations
                     b.Property<decimal>("TongTien")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal?>("TongTienSauGiamGia")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<byte>("TrangThai")
                         .HasColumnType("tinyint");
 
                     b.Property<string>("UserID")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("VoucherID")
+                        .HasColumnType("int");
 
                     b.HasKey("HoaDonID");
 
-                    b.HasIndex("UserID");
+                    b.HasIndex("VoucherID");
 
-                    b.ToTable("hoaDons");
+                    b.ToTable("HoaDons");
                 });
 
             modelBuilder.Entity("API.Models.InventoryHistory", b =>
@@ -266,7 +453,7 @@ namespace API.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Product");
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("API.Models.ProductBatch", b =>
@@ -276,6 +463,9 @@ namespace API.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BatchId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("ExpiryDate")
                         .HasColumnType("datetime2");
@@ -454,7 +644,49 @@ namespace API.Migrations
 
                     b.HasKey("VoucherID");
 
-                    b.ToTable("Voucher");
+                    b.ToTable("Vouchers");
+                });
+
+            modelBuilder.Entity("DanhGia", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("AnDanh")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("DaDuyet")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MaDichVu")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("NgayTao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("NoiDung")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SoSao")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MaDichVu");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("DanhGias");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -590,6 +822,37 @@ namespace API.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("API.Models.Chat.ChatMessage", b =>
+                {
+                    b.HasOne("API.Models.Chat.ChatSession", "ChatSession")
+                        .WithMany("Messages")
+                        .HasForeignKey("SessionId")
+                        .HasPrincipalKey("SessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ChatSession");
+                });
+
+            modelBuilder.Entity("API.Models.ChiTietDatLich", b =>
+                {
+                    b.HasOne("API.Models.DatLich", "DatLich")
+                        .WithMany("ChiTietDichVus")
+                        .HasForeignKey("DatLichID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("API.Models.DichVu", "DichVu")
+                        .WithMany()
+                        .HasForeignKey("DichVuID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DatLich");
+
+                    b.Navigation("DichVu");
+                });
+
             modelBuilder.Entity("API.Models.ChiTietHoaDon", b =>
                 {
                     b.HasOne("API.Models.DichVu", "DichVu")
@@ -626,13 +889,11 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Models.HoaDon", b =>
                 {
-                    b.HasOne("API.Models.User", "User")
+                    b.HasOne("API.Models.Voucher", "voucher")
                         .WithMany()
-                        .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("VoucherID");
 
-                    b.Navigation("User");
+                    b.Navigation("voucher");
                 });
 
             modelBuilder.Entity("API.Models.InventoryHistory", b =>
@@ -682,6 +943,25 @@ namespace API.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("DanhGia", b =>
+                {
+                    b.HasOne("API.Models.DichVu", "DichVu")
+                        .WithMany()
+                        .HasForeignKey("MaDichVu")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("API.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DichVu");
 
                     b.Navigation("User");
                 });
@@ -740,6 +1020,16 @@ namespace API.Migrations
             modelBuilder.Entity("API.Models.Category", b =>
                 {
                     b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("API.Models.Chat.ChatSession", b =>
+                {
+                    b.Navigation("Messages");
+                });
+
+            modelBuilder.Entity("API.Models.DatLich", b =>
+                {
+                    b.Navigation("ChiTietDichVus");
                 });
 
             modelBuilder.Entity("API.Models.HoaDon", b =>

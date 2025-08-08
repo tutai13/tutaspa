@@ -4,6 +4,7 @@ using API.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace API.Controllers
 {
@@ -32,16 +33,18 @@ namespace API.Controllers
         [HttpPost]
         public IActionResult DatLich([FromBody] DatLichDTO request)
         {
-            int thoiLuong = 30; // Mặc định nếu không có dịch vụ
+            int thoiLuong = 30;
             List<DichVu> danhSachDichVu = new();
 
-            if (request.DichVuIDs != null && request.DichVuIDs.Any())
+            if (request.DichVus != null && request.DichVus.Any())
             {
+                var dichVuIds = request.DichVus.Select(d => d.DichVuID).ToList();
+
                 danhSachDichVu = _context.DichVus
-                    .Where(d => request.DichVuIDs.Contains(d.DichVuID))
+                    .Where(d => dichVuIds.Contains(d.DichVuID))
                     .ToList();
 
-                if (danhSachDichVu.Count != request.DichVuIDs.Count)
+                if (danhSachDichVu.Count != dichVuIds.Count)
                     return BadRequest("Một hoặc nhiều dịch vụ không tồn tại");
 
                 thoiLuong = danhSachDichVu.Sum(d => d.ThoiGian);
@@ -50,7 +53,6 @@ namespace API.Controllers
             int soKhung = (int)Math.Ceiling(thoiLuong / 30.0);
             DateTime startTime = request.ThoiGian;
 
-            // Kiểm tra từng khung giờ
             for (int i = 0; i < soKhung; i++)
             {
                 var khung = startTime.AddMinutes(i * 30);
@@ -73,21 +75,23 @@ namespace API.Controllers
                 ThoiLuong = thoiLuong,
                 TrangThai = "Chưa đến",
                 DaThanhToan = false,
-                GhiChu = request.GhiChu
+                GhiChu = request.GhiChu,
+                DatTruoc = request.DatTruoc,
             };
 
             _context.DatLiches.Add(datLich);
             _context.SaveChanges();
 
-            // Nếu có dịch vụ, lưu ChiTietDatLich
-            if (danhSachDichVu.Any())
+            // Lưu ChiTietDatLich với số lượng
+            if (request.DichVus != null && request.DichVus.Any())
             {
-                foreach (var dv in danhSachDichVu)
+                foreach (var dvReq in request.DichVus)
                 {
                     _context.ChiTietDatLiches.Add(new ChiTietDatLich
                     {
                         DatLichID = datLich.DatLichID,
-                        DichVuID = dv.DichVuID
+                        DichVuID = dvReq.DichVuID,
+                        soLuongDV = dvReq.SoLuong
                     });
                 }
 
@@ -96,6 +100,7 @@ namespace API.Controllers
 
             return Ok("🎉 Đặt lịch thành công!");
         }
+
         [HttpPut("{id}")]
         public IActionResult CapNhatDatLich(int id, [FromBody] DatLichDTO request)
         {
@@ -106,13 +111,15 @@ namespace API.Controllers
             int thoiLuong = 30; // mặc định nếu không có dịch vụ
             List<DichVu> danhSachDichVu = new();
 
-            if (request.DichVuIDs != null && request.DichVuIDs.Any())
+            if (request.DichVus != null && request.DichVus.Any())
             {
+                var dichVuIds = request.DichVus.Select(d => d.DichVuID).ToList();
+
                 danhSachDichVu = _context.DichVus
-                    .Where(d => request.DichVuIDs.Contains(d.DichVuID))
+                    .Where(d => dichVuIds.Contains(d.DichVuID))
                     .ToList();
 
-                if (danhSachDichVu.Count != request.DichVuIDs.Count)
+                if (danhSachDichVu.Count != dichVuIds.Count)
                     return BadRequest("Một hoặc nhiều dịch vụ không tồn tại");
 
                 thoiLuong = danhSachDichVu.Sum(d => d.ThoiGian);
@@ -137,11 +144,12 @@ namespace API.Controllers
                     return BadRequest($"Khung giờ {khung:HH:mm} đã đầy. Vui lòng chọn khung giờ khác.");
             }
 
-            // Cập nhật thông tin
+            // Cập nhật thông tin chung
             datLich.SoDienThoai = request.SoDienThoai;
             datLich.ThoiGian = request.ThoiGian;
             datLich.ThoiLuong = thoiLuong;
             datLich.GhiChu = request.GhiChu;
+            datLich.DatTruoc = request.DatTruoc;
 
             // Xóa các chi tiết dịch vụ cũ
             var chiTietCu = _context.ChiTietDatLiches
@@ -150,15 +158,16 @@ namespace API.Controllers
 
             _context.ChiTietDatLiches.RemoveRange(chiTietCu);
 
-            // Thêm mới chi tiết dịch vụ
-            if (danhSachDichVu.Any())
+            // Thêm mới chi tiết dịch vụ kèm số lượng
+            if (request.DichVus != null && request.DichVus.Any())
             {
-                foreach (var dv in danhSachDichVu)
+                foreach (var dvReq in request.DichVus)
                 {
                     _context.ChiTietDatLiches.Add(new ChiTietDatLich
                     {
                         DatLichID = datLich.DatLichID,
-                        DichVuID = dv.DichVuID
+                        DichVuID = dvReq.DichVuID,
+                        soLuongDV = dvReq.SoLuong
                     });
                 }
             }
@@ -167,6 +176,7 @@ namespace API.Controllers
 
             return Ok("✅ Cập nhật đặt lịch thành công!");
         }
+
         [HttpPut("doitrangthai/{id}")]
         public IActionResult DoiTrangThai(int id)
         {

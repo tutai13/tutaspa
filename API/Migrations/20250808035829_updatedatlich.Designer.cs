@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250715210238_Fix_Inventory_Update")]
-    partial class Fix_Inventory_Update
+    [Migration("20250808035829_updatedatlich")]
+    partial class updatedatlich
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -40,7 +40,7 @@ namespace API.Migrations
 
                     b.HasKey("CategoryId");
 
-                    b.ToTable("Categorys");
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("API.Models.Chat.ChatMessage", b =>
@@ -190,7 +190,7 @@ namespace API.Migrations
 
                     b.HasIndex("DichVuID");
 
-                    b.ToTable("chiTietDatLiches");
+                    b.ToTable("ChiTietDatLiches");
                 });
 
             modelBuilder.Entity("API.Models.ChiTietHoaDon", b =>
@@ -224,7 +224,43 @@ namespace API.Migrations
 
                     b.HasIndex("SanPhamID");
 
-                    b.ToTable("chiTietHoaDons");
+                    b.ToTable("ChiTietHoaDons");
+                });
+
+            modelBuilder.Entity("API.Models.DatLich", b =>
+                {
+                    b.Property<int>("DatLichID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DatLichID"));
+
+                    b.Property<bool>("DaThanhToan")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("DatTruoc")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("GhiChu")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SoDienThoai")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ThoiGian")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ThoiLuong")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TrangThai")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("DatLichID");
+
+                    b.ToTable("DatLiches");
                 });
 
             modelBuilder.Entity("API.Models.DichVu", b =>
@@ -290,8 +326,9 @@ namespace API.Migrations
                     b.Property<DateTime>("NgayTao")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("NhanVienID")
-                        .HasColumnType("int");
+                    b.Property<string>("NhanVienID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal?>("TienKhachDua")
                         .HasColumnType("decimal(18,2)");
@@ -307,7 +344,7 @@ namespace API.Migrations
 
                     b.Property<string>("UserID")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("VoucherID")
                         .HasColumnType("int");
@@ -316,9 +353,7 @@ namespace API.Migrations
 
                     b.HasIndex("VoucherID");
 
-                    b.HasIndex("UserID");
-
-                    b.ToTable("hoaDons");
+                    b.ToTable("HoaDons");
                 });
 
             modelBuilder.Entity("API.Models.InventoryHistory", b =>
@@ -409,22 +444,16 @@ namespace API.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
 
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("ProductName")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
                     b.HasKey("ProductId");
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Product");
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("API.Models.ProductBatch", b =>
@@ -438,7 +467,7 @@ namespace API.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("ExpirationDate")
+                    b.Property<DateTime>("ExpiryDate")
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("ImportPrice")
@@ -447,18 +476,21 @@ namespace API.Migrations
                     b.Property<DateTime>("ManufactureDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("ProductCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<int>("RemainingQuantity")
-                        .HasColumnType("int");
-
                     b.Property<string>("SupplierName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.HasKey("BatchId");
 
@@ -612,7 +644,49 @@ namespace API.Migrations
 
                     b.HasKey("VoucherID");
 
-                    b.ToTable("Voucher");
+                    b.ToTable("Vouchers");
+                });
+
+            modelBuilder.Entity("DanhGia", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("AnDanh")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("DaDuyet")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MaDichVu")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("NgayTao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("NoiDung")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SoSao")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MaDichVu");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("DanhGias");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -822,17 +896,6 @@ namespace API.Migrations
                     b.Navigation("voucher");
                 });
 
-            modelBuilder.Entity("API.Models.HoaDon", b =>
-                {
-                    b.HasOne("API.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("API.Models.InventoryHistory", b =>
                 {
                     b.HasOne("API.Models.ProductBatch", "Batch")
@@ -880,6 +943,25 @@ namespace API.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("DanhGia", b =>
+                {
+                    b.HasOne("API.Models.DichVu", "DichVu")
+                        .WithMany()
+                        .HasForeignKey("MaDichVu")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("API.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DichVu");
 
                     b.Navigation("User");
                 });

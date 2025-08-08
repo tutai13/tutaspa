@@ -5,26 +5,25 @@
 namespace API.Migrations
 {
     /// <inheritdoc />
-    public partial class Add_ProductCode_To_Product : Migration
+    public partial class fixdatlich : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "ProductCode",
-                table: "Product",
-                type: "nvarchar(100)",
-                maxLength: 100,
+            migrationBuilder.AddColumn<int>(
+                name: "soLuongDV",
+                table: "ChiTietDatLiches",
+                type: "int",
                 nullable: false,
-                defaultValue: "");
+                defaultValue: 0);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "ProductCode",
-                table: "Product");
+                name: "soLuongDV",
+                table: "ChiTietDatLiches");
         }
     }
 }

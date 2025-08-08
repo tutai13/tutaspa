@@ -17,6 +17,8 @@ namespace API.Models
         [ForeignKey("DichVu")]
         public int DichVuID { get; set; }
 
+        public int soLuongDV { get; set; }
+
         // Điều hướng quan hệ
         [JsonIgnore]
         public DatLich? DatLich { get; set; }

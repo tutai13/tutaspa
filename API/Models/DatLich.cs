@@ -20,6 +20,7 @@ namespace API.Models
 
         public string TrangThai { get; set; } = "Chưa đến";
         public bool DaThanhToan { get; set; } = false;
+        public bool DatTruoc {  get; set; } 
         
         public ICollection<ChiTietDatLich>? ChiTietDichVus { get; set; }
 
