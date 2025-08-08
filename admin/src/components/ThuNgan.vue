@@ -372,7 +372,8 @@
                     v-for="dv in lich.chiTietDichVus"
                     :key="dv.chiTietDatLichID"
                   >
-                    {{ dv.dichVu.tenDichVu }} - {{ dv.dichVu.thoiGian }}p -
+                    {{ dv.soLuongDV }} x {{ dv.dichVu.tenDichVu }} -
+                    {{ dv.dichVu.thoiGian }}p -
                     {{ dv.dichVu.gia.toLocaleString() }}₫
                   </li>
                 </ul>
@@ -408,10 +409,10 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import axios from "axios";
 import { useRoute } from "vue-router";
 import dayjs from "dayjs";
 import apiClient from "../utils/axiosClient";
+
 const route = useRoute();
 
 const tab = ref("dichVu");
@@ -419,7 +420,7 @@ const dichVus = ref([]);
 const sanPhams = ref([]);
 const danhSachChon = ref([]);
 const hinhThuc = ref("Tiền mặt");
-const tienKhachDua = ref(0); // số thực dùng tính toán
+const tienKhachDua = ref(0);
 const tienKhachDuaHienThi = ref("");
 const danhSachDatLich = ref([]);
 const soDienThoai = ref("");
@@ -432,13 +433,12 @@ const giamGia = ref(0);
 const trangThaiGiamGia = ref("");
 
 const filterNumeric = (event) => {
-  // Lọc chỉ giữ lại số
   soDienThoai.value = event.target.value.replace(/[^0-9]/g, "");
-  validatePhone(); // Kiểm tra ngay khi nhập
+  validatePhone();
 };
 
 const validatePhone = () => {
-  if (soDienThoai.value.length < 10 || soDienThoai.value.length >= 11) {
+  if (soDienThoai.value.length < 10 || soDienThoai.value.length > 11) {
     errorMessage.value = "Số điện thoại phải có ít nhất 10 chữ số!";
   } else {
     errorMessage.value = "";
@@ -534,9 +534,7 @@ const taoThanhToan = async () => {
   };
 
   try {
-    // await apiClient.post(`/ThanhToan/tao-hoadon`, data);
     const response = await apiClient.post("/ThanhToan/tao-hoadon", data);
-
     if (isSuaLich.value && lichDangSua.value?.datLichID) {
       await apiClient.put(
         `/DatLich/capnhat-thanhtoan/${lichDangSua.value.datLichID}`
@@ -551,6 +549,7 @@ const taoThanhToan = async () => {
     layDanhSach();
   } catch (err) {
     console.error("Lỗi tạo hóa đơn:", err);
+    alert("❌ Tạo hóa đơn thất bại. Vui lòng thử lại.");
   }
 };
 
@@ -578,31 +577,32 @@ const taoMaChuyenKhoan = async () => {
 
   try {
     const response = await apiClient.post("/ThanhToan/create-link", payload);
-
     if (response && response.checkoutUrl) {
       window.location.href = response.checkoutUrl;
     } else {
       console.error("Không có checkoutUrl trong phản hồi:", response);
+      alert("❌ Không thể tạo mã chuyển khoản.");
     }
   } catch (error) {
     console.error("Lỗi tạo mã thanh toán:", error);
-    toast.error("Có lỗi xảy ra khi tạo mã chuyển khoản.");
+    alert("❌ Có lỗi xảy ra khi tạo mã chuyển khoản.");
   }
 };
+
 const layDanhSach = async () => {
   try {
     const resDL = await apiClient.get("/DatLich");
     danhSachDatLich.value = resDL;
-
     const resDV = await apiClient.get("/DichVu");
     dichVus.value = resDV;
-
     const resSP = await apiClient.get("/Product");
     sanPhams.value = resSP;
   } catch (err) {
     console.error("Lỗi lấy danh sách:", err);
+    alert("❌ Lỗi tải dữ liệu. Vui lòng thử lại.");
   }
 };
+
 const formatDateTime = (dateStr) => {
   const date = new Date(dateStr);
   return `${date.toLocaleTimeString([], {
@@ -612,12 +612,19 @@ const formatDateTime = (dateStr) => {
 };
 
 const datLich = async () => {
-  if (errorMessage.value) return;
-  const dichVuIDs = danhSachChon.value
-    .filter((item) => item.dichVuID)
-    .map((item) => item.dichVuID);
+  if (errorMessage.value) {
+    alert("⚠ Vui lòng kiểm tra số điện thoại.");
+    return;
+  }
 
-  if (dichVuIDs.length === 0) {
+  const dichVusSelected = danhSachChon.value
+    .filter((item) => item.dichVuID)
+    .map((item) => ({
+      DichVuID: item.dichVuID,
+      SoLuong: item.soLuong,
+    }));
+
+  if (dichVusSelected.length === 0) {
     alert("⚠ Vui lòng chọn ít nhất một dịch vụ để đặt lịch.");
     return;
   }
@@ -628,72 +635,60 @@ const datLich = async () => {
   }
 
   const payload = {
-    soDienThoai: soDienThoai.value,
-    thoiGian: dayjs().format("YYYY-MM-DDTHH:mm:ss"),
-    dichVuIDs: dichVuIDs,
-    ghiChu: ghiChu.value,
+    SoDienThoai: soDienThoai.value,
+    ThoiGian: dayjs().format("YYYY-MM-DDTHH:mm:ss"),
+    GhiChu: ghiChu.value,
+    DatTruoc: false,
+    DichVus: dichVusSelected,
   };
 
   try {
-    const res = await apiClient.post("/DatLich", payload);
-    alert("📅 Đặt lịch thành công!");
-
-    // Reset
+    const response = await apiClient.post("/DatLich", payload);
+    alert(response || "📅 Đặt lịch thành công!");
     soDienThoai.value = "";
     ghiChu.value = "";
     danhSachChon.value = [];
-    layDanhSach(); // cập nhật lại danh sách
-  } catch (err) {
-    console.error("Lỗi đặt lịch:", err);
-    alert("❌ Đặt lịch thất bại. Vui lòng thử lại.");
-  }
-};
-const doiTrangThai = async (id) => {
-  try {
-    const res = await apiClient.put(`/DatLich/doitrangthai/${id}`);
     layDanhSach();
   } catch (err) {
-    alert("Lỗi khi đổi trạng thái!");
-    console.error(err);
+    console.error("Lỗi đặt lịch:", err);
+    const errorMsg =
+      err.response?.data || "Đặt lịch thất bại. Vui lòng thử lại.";
+    alert(`❌ ${errorMsg}`);
   }
-};
-const batDauSuaLich = (lich) => {
-  isSuaLich.value = true;
-  lichDangSua.value = lich;
-
-  soDienThoai.value = lich.soDienThoai;
-  ghiChu.value = lich.ghiChu;
-
-  // Chuyển các dịch vụ đã chọn vào danh sách chọn
-  danhSachChon.value = lich.chiTietDichVus.map((ct) => ({
-    ten: ct.dichVu.tenDichVu,
-    dichVuID: ct.dichVuID,
-    soLuong: 1,
-    donGia: ct.dichVu.gia,
-    thanhTien: ct.dichVu.gia,
-  }));
 };
 
 const capNhatLich = async () => {
-  const dichVuIDs = danhSachChon.value
-    .filter((item) => item.dichVuID)
-    .map((item) => item.dichVuID);
+  if (errorMessage.value) {
+    alert("⚠ Vui lòng kiểm tra số điện thoại.");
+    return;
+  }
 
-  if (dichVuIDs.length === 0) {
+  const dichVusSelected = danhSachChon.value
+    .filter((item) => item.dichVuID)
+    .map((item) => ({
+      DichVuID: item.dichVuID,
+      SoLuong: item.soLuong,
+    }));
+
+  if (dichVusSelected.length === 0) {
     alert("⚠ Vui lòng chọn ít nhất một dịch vụ để cập nhật.");
     return;
   }
 
   const payload = {
-    soDienThoai: soDienThoai.value,
-    thoiGian: lichDangSua.value.thoiGian,
-    dichVuIDs,
-    ghiChu: ghiChu.value,
+    SoDienThoai: soDienThoai.value,
+    ThoiGian: lichDangSua.value.thoiGian,
+    GhiChu: ghiChu.value,
+    DatTruoc: lichDangSua.value.datTruoc || false,
+    DichVus: dichVusSelected,
   };
 
   try {
-    await apiClient.put(`/DatLich/${lichDangSua.value.datLichID}`, payload);
-    alert("✅ Cập nhật lịch thành công!");
+    const response = await apiClient.put(
+      `/DatLich/${lichDangSua.value.datLichID}`,
+      payload
+    );
+    alert(response || "✅ Cập nhật lịch thành công!");
     isSuaLich.value = false;
     lichDangSua.value = null;
     danhSachChon.value = [];
@@ -701,10 +696,27 @@ const capNhatLich = async () => {
     ghiChu.value = "";
     layDanhSach();
   } catch (err) {
-    console.error("❌ Lỗi cập nhật lịch:", err);
-    alert("❌ Cập nhật lịch thất bại.");
+    console.error("Lỗi cập nhật lịch:", err);
+    const errorMsg = err.response?.data || "Cập nhật lịch thất bại.";
+    alert(`❌ ${errorMsg}`);
   }
 };
+
+const batDauSuaLich = (lich) => {
+  isSuaLich.value = true;
+  lichDangSua.value = lich;
+  soDienThoai.value = lich.soDienThoai;
+  ghiChu.value = lich.ghiChu;
+
+  danhSachChon.value = lich.chiTietDichVus.map((ct) => ({
+    ten: ct.dichVu.tenDichVu,
+    dichVuID: ct.dichVuID,
+    soLuong: ct.soLuongDV || 1, // Use soLuongDV from API
+    donGia: ct.dichVu.gia,
+    thanhTien: ct.dichVu.gia * (ct.soLuongDV || 1),
+  }));
+};
+
 const huySua = () => {
   isSuaLich.value = false;
   lichDangSua.value = null;
@@ -723,7 +735,6 @@ const apDungMaGiamGia = async () => {
   try {
     const res = await apiClient.get("/Vouchers/status");
     const vouchers = res;
-
     const voucher = vouchers.find((v) => v.maCode.toUpperCase() === code);
 
     if (!voucher) {
@@ -736,7 +747,6 @@ const apDungMaGiamGia = async () => {
       return;
     }
 
-    // Áp dụng giảm giá
     if (voucher.tienGiam < 1) {
       giamGia.value = Math.round(tongTien.value * voucher.tienGiam);
     } else {
@@ -749,25 +759,24 @@ const apDungMaGiamGia = async () => {
     trangThaiGiamGia.value = "❌ Lỗi hệ thống";
   }
 };
+
 onMounted(async () => {
   try {
     const status = route.query.status;
-
     const storedData = localStorage.getItem("checkoutData");
     if (storedData) {
       const parsed = JSON.parse(storedData);
       danhSachChon.value = parsed.danhSachChon;
       hinhThuc.value = parsed.hinhThuc;
-
       if (status === "PAID") {
         await taoThanhToan();
-        //localStorage.removeItem("checkoutData");
       }
     }
     localStorage.removeItem("checkoutData");
     layDanhSach();
   } catch (err) {
     console.error("Lỗi tải dữ liệu:", err);
+    alert("❌ Lỗi tải dữ liệu. Vui lòng thử lại.");
   }
 });
 </script>

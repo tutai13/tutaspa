@@ -4,6 +4,7 @@ using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250808080702_fixdatlich")]
+    partial class fixdatlich
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -181,10 +184,8 @@ namespace API.Migrations
                     b.Property<int>("DichVuID")
                         .HasColumnType("int");
 
-
                     b.Property<int>("soLuongDV")
                         .HasColumnType("int");
-
 
                     b.HasKey("ChiTietDatLichID");
 
@@ -240,10 +241,8 @@ namespace API.Migrations
                     b.Property<bool>("DaThanhToan")
                         .HasColumnType("bit");
 
-
                     b.Property<bool>("DatTruoc")
                         .HasColumnType("bit");
-
 
                     b.Property<string>("GhiChu")
                         .HasColumnType("nvarchar(max)");

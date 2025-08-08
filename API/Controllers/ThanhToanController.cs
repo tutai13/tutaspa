@@ -259,7 +259,7 @@ namespace API.Controllers
                 <p class='right'>
                     <strong>Tổng: </strong> {hoaDon.TongTien:N0}đ<br>");
 
-                        if (hoaDon.GiaTriGiam != null)
+                        if (hoaDon.GiaTriGiam != 0)
                         {
                             html.Append($@"<strong>Giảm giá: </strong> {hoaDon.GiaTriGiam:N0}đ<br>");
                         }

@@ -36,7 +36,7 @@
             <td>
               <ul class="mb-0 ps-3">
                 <li v-for="ct in hd.chiTietHoaDons" :key="ct.chiTietHoaDonID">
-                  {{ ct.dichVu?.tenDichVu ?? "—" }} -
+                  {{ ct.soLuongSP }} x {{ ct.dichVu?.tenDichVu ?? "—" }} -
                   {{ ct.dichVu?.thoiGian ?? 0 }}p -
                   {{ ct.thanhTien?.toLocaleString() }}₫
                 </li>
