@@ -259,23 +259,6 @@ const serviceData = ref([]);
 let chartInstance = null;
 let pieChartInstance = null;
 
-// Mock data for testing
-const mockChartData = [
-  { period: "T1", value: 15000000 },
-  { period: "T2", value: 18000000 },
-  { period: "T3", value: 22000000 },
-  { period: "T4", value: 19000000 },
-  { period: "T5", value: 25000000 },
-  { period: "T6", value: 21000000 },
-];
-
-const mockServiceData = [
-  { serviceName: "Triệt lông full chân", soLuong: 11006, phanTram: 91.51 },
-  { serviceName: "Triệt lông full tay", soLuong: 1006, phanTram: 8.36 },
-  { serviceName: "Triệt lông vùng nách", soLuong: 7, phanTram: 0.06 },
-  { serviceName: "Phun mày collagen", soLuong: 4, phanTram: 0.03 },
-];
-
 // Missing functions that seem to be used in template
 const lichHenHienThi = ref([]);
 const getColor = (lich) => "#4285f4";

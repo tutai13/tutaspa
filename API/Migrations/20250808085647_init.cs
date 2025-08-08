@@ -103,7 +103,8 @@ namespace API.Migrations
                     ThoiLuong = table.Column<int>(type: "int", nullable: false),
                     GhiChu = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     TrangThai = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    DaThanhToan = table.Column<bool>(type: "bit", nullable: false)
+                    DaThanhToan = table.Column<bool>(type: "bit", nullable: false),
+                    DatTruoc = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -405,7 +406,8 @@ namespace API.Migrations
                     ChiTietDatLichID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     DatLichID = table.Column<int>(type: "int", nullable: false),
-                    DichVuID = table.Column<int>(type: "int", nullable: false)
+                    DichVuID = table.Column<int>(type: "int", nullable: false),
+                    soLuongDV = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {

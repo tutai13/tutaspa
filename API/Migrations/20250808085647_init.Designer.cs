@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250806132512_init")]
+    [Migration("20250808085647_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -184,6 +184,9 @@ namespace API.Migrations
                     b.Property<int>("DichVuID")
                         .HasColumnType("int");
 
+                    b.Property<int>("soLuongDV")
+                        .HasColumnType("int");
+
                     b.HasKey("ChiTietDatLichID");
 
                     b.HasIndex("DatLichID");
@@ -236,6 +239,9 @@ namespace API.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DatLichID"));
 
                     b.Property<bool>("DaThanhToan")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("DatTruoc")
                         .HasColumnType("bit");
 
                     b.Property<string>("GhiChu")

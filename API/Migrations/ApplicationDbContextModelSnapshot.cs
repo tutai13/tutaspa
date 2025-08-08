@@ -181,10 +181,8 @@ namespace API.Migrations
                     b.Property<int>("DichVuID")
                         .HasColumnType("int");
 
-
                     b.Property<int>("soLuongDV")
                         .HasColumnType("int");
-
 
                     b.HasKey("ChiTietDatLichID");
 
@@ -240,10 +238,8 @@ namespace API.Migrations
                     b.Property<bool>("DaThanhToan")
                         .HasColumnType("bit");
 
-
                     b.Property<bool>("DatTruoc")
                         .HasColumnType("bit");
-
 
                     b.Property<string>("GhiChu")
                         .HasColumnType("nvarchar(max)");
