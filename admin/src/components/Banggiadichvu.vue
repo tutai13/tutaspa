@@ -145,8 +145,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
-
+import axiosClient from "../utils/axiosClient"
 const bangGias = ref([])
 const dichVus = ref([])
 const isEditing = ref(false)
@@ -161,7 +160,7 @@ const bangGia = ref({
 
 const fetchBangGias = async () => {
   try {
-    const res = await axios.get('http://localhost:5055/api/BangGiaDichVu')
+    const res = await axiosClient.get('BangGiaDichVu')
     bangGias.value = res
   } catch (err) {
     console.error('Lỗi khi lấy danh sách bảng giá:', err)
@@ -170,7 +169,7 @@ const fetchBangGias = async () => {
 
 const fetchDichVus = async () => {
   try {
-    const res = await axios.get('http://localhost:5055/api/DichVu/all')
+    const res = await axiosClient.get('DichVu/all')
     dichVus.value = res
   } catch (err) {
     console.error('Lỗi khi lấy danh sách dịch vụ:', err)
@@ -180,9 +179,9 @@ const fetchDichVus = async () => {
 const saveBangGia = async () => {
   try {
     if (isEditing.value) {
-      await axios.put(`http://localhost:5055/api/BangGiaDichVu/UpdateGiaDichVu/${bangGia.value.id}`, bangGia.value)
+      await axiosClient.put(`BangGiaDichVu/UpdateGiaDichVu/${bangGia.value.id}`, bangGia.value)
     } else {
-      await axios.post('http://localhost:5055/api/BangGiaDichVu/AddGiaDichVu', bangGia.value)
+      await axiosClient.post('BangGiaDichVu/AddGiaDichVu', bangGia.value)
     }
     resetForm()
     fetchBangGias()
@@ -193,7 +192,7 @@ const saveBangGia = async () => {
 
 const toggleHienGia = async (id) => {
   try {
-    await axios.put(`http://localhost:5055/api/BangGiaDichVu/ToggleGiaDichVu/${id}`)
+    await axiosClient.put(`BangGiaDichVu/ToggleGiaDichVu/${id}`)
     fetchBangGias()
   } catch (err) {
     console.error('Lỗi khi bật/tắt hiển thị:', err)
@@ -208,7 +207,7 @@ const editBangGia = (item) => {
 const deleteBangGia = async (id) => {
   if (!confirm('Bạn có chắc muốn xoá?')) return
   try {
-    await axios.delete(`http://localhost:5055/api/BangGiaDichVu/DeleteGiaDichVu/${id}`)
+    await axiosClient.delete(`BangGiaDichVu/DeleteGiaDichVu/${id}`)
     fetchBangGias()
   } catch (err) {
     console.error('Lỗi khi xoá bảng giá:', err)

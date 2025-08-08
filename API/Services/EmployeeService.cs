@@ -373,34 +373,51 @@ namespace API.Services
             return roles;
         }
 
-        private async Task InvalidateEmployeeCaches()
+        private async Task  InvalidateEmployeeCaches()
+{
+    var patterns = new[]
+    {
+        EMPLOYEES_CACHE_KEY,                // main employee cache
+        "employees_with_roles",              // role + employee list
+        "employees_list_",                   // paginated lists
+        $"{EMPLOYEE_ROLES_CACHE_KEY}_",      // per-employee role cache
+        $"{EMPLOYEE_DETAIL_CACHE_KEY}_"      // per-employee detail cache
+    };
+
+    // Access MemoryCache's internal dictionary
+    var cacheField = typeof(MemoryCache).GetField("_entries",
+        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+    if (cacheField?.GetValue(_cache) is IDictionary entries)
+    {
+        var keysToRemove = new List<object>();
+
+        foreach (DictionaryEntry entry in entries)
         {
-            // Remove all employee-related cache entries
-            _cache.Remove(EMPLOYEES_CACHE_KEY);
-            _cache.Remove("employees_with_roles");
-
-            var cacheField = typeof(MemoryCache).GetField("_cache",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-            if (cacheField?.GetValue(_cache) is IDictionary cache)
+            string key = entry.Key.ToString();
+            if (patterns.Any(p => key.StartsWith(p, StringComparison.OrdinalIgnoreCase)))
             {
-                var keysToRemove = new List<object>();
-                foreach (DictionaryEntry entry in cache)
-                {
-                    if (entry.Key.ToString().StartsWith("employees_list_"))
-                    {
-                        keysToRemove.Add(entry.Key);
-                    }
-                }
-
-                foreach (var key in keysToRemove)
-                {
-                    _cache.Remove(key);
-                }
+                keysToRemove.Add(entry.Key);
             }
-
-            _logger.LogDebug("Employee caches invalidated");
         }
+
+        foreach (var key in keysToRemove)
+        {
+            _cache.Remove(key);
+        }
+    }
+    else
+    {
+        // Fallback: remove the main keys if internal structure not found
+        foreach (var pattern in patterns)
+        {
+            _cache.Remove(pattern);
+        }
+    }
+
+    _logger.LogDebug("All employee-related caches invalidated");
+}
+
 
         private string RandomPass()
         {

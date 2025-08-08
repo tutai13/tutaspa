@@ -67,8 +67,10 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import axios from 'axios';
+import axiosClient from '../../utils/axiosClient';
 
+var base_url = import.meta.env.VITE_BASE_URL;
+base_url = base_url.replace("/api", "");
 const route = useRoute();
 const id = route.params.id;
 
@@ -80,22 +82,22 @@ const trungBinh = ref(null);
 onMounted(async () => {
   try {
     const [res1, res2, res3, res4] = await Promise.all([
-      axios.get(`http://localhost:5055/api/DichVu/${id}`),
-      axios.get(`http://localhost:5055/api/BangGiaDichVu/GetGiaTheoThoiGian/${id}`),
-      axios.get(`http://localhost:5055/api/DanhGia/dichvu/${id}`),
-      axios.get(`http://localhost:5055/api/DanhGia/trungbinh/${id}`)
+      axiosClient.get(`DichVu/${id}`),
+      axiosClient.get(`BangGiaDichVu/GetGiaTheoThoiGian/${id}`),
+      axiosClient.get(`DanhGia/dichvu/${id}`),
+      axiosClient.get(`DanhGia/trungbinh/${id}`)
     ]);
 
-    service.value = res1.data;
-    giaDichVu.value = res2.data;
-    danhGias.value = res3.data;
-    trungBinh.value = res4.data;
+    service.value = res1;
+    giaDichVu.value = res2;
+    danhGias.value = res3;
+    trungBinh.value = res4;
   } catch (err) {
     console.error('Lỗi khi tải dữ liệu dịch vụ:', err);
   }
 });
 
-const getImageUrl = (path) => `http://localhost:5055/images/${path}`;
+const getImageUrl = (path) => `${base_url}/images/${path}`;
 const formatCurrency = (num) =>
   new Intl.NumberFormat('vi-VN', {
     style: 'currency',

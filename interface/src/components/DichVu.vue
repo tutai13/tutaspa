@@ -42,7 +42,7 @@
             <div class="col-md-6 col-lg-4" v-for="service in filteredServices" :key="service.id">
               <div class="card service-card shadow-sm rounded-4 overflow-hidden bg-white">
                 <div class="position-relative">
-                  <img :src="'http://localhost:5055/images/' + service.image" class="w-100 service-img rounded-top" style="height: 240px; object-fit: cover;" />
+                  <img :src="'images/' + service.image" class="w-100 service-img rounded-top" style="height: 240px; object-fit: cover;" />
                   <h5 class="pre-hover-title text-dark fw-bold position-absolute bottom-0 start-0 p-3 m-0 w-100 text-center bg-light bg-opacity-75">
                     {{ service.name }}
                   </h5>
@@ -73,6 +73,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
+import axiosClient from '../../utils/axiosClient';
 
 const services = ref([]);
 const serviceTypes = ref([]);
@@ -84,17 +85,17 @@ const servicePrices = ref({});
 onMounted(async () => {
   try {
     const [dvRes, ldvRes] = await Promise.all([
-      axios.get('http://localhost:5055/api/DichVu'),
-      axios.get('http://localhost:5055/api/LoaiDichVu')
+      axiosClient.get('DichVu'),
+      axiosClient.get('LoaiDichVu')
     ]);
-    services.value = dvRes.data.map(s => ({
+    services.value = dvRes.map(s => ({
       id: s.dichVuID,
       name: s.tenDichVu,
       description: s.moTa,
       image: s.hinhAnh || "default-service.jpg",
       loaiDichVuID: s.loaiDichVuID
     }));
-    serviceTypes.value = ldvRes.data;
+    serviceTypes.value = ldvRes;
   } catch (err) {
     console.error('Lỗi tải dữ liệu:', err);
   }
@@ -113,8 +114,8 @@ const filteredServices = computed(() => {
 async function loadPricesForService(serviceId) {
   if (!servicePrices.value[serviceId]) {
     try {
-      const res = await axios.get(`http://localhost:5055/api/BangGiaDichVu/GetGiaTheoThoiGian/${serviceId}`);
-      servicePrices.value[serviceId] = res.data;
+      const res = await axiosClient.get(`BangGiaDichVu/GetGiaTheoThoiGian/${serviceId}`);
+      servicePrices.value[serviceId] = res;
     } catch (err) {
       console.error('Lỗi tải giá:', err);
       servicePrices.value[serviceId] = [];

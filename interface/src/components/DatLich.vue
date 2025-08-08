@@ -232,13 +232,13 @@ export default {
   methods: {
     async layDichVu() {
       const res = await apiClient.get("dichvu");
-      this.danhSachDichVu = res.data;
+      this.danhSachDichVu = res;
     },
     async layKhungGio() {
       const res = await apiClient.get("datlich/slots", {
         params: { ngay: this.ngay },
       });
-      this.danhSachKhungGio = res.data;
+      this.danhSachKhungGio = res;
     },
     toggleDichVu(id) {
       const index = this.dichVuIDs.indexOf(id);
@@ -277,7 +277,7 @@ export default {
         await this.layKhungGio();
       } catch (err) {
         if (err.response?.status === 400) {
-          this.thongBao = "❌ " + err.response.data;
+          this.thongBao = "❌ " + err.response.message;
         } else {
           this.thongBao = "❌ Đã có lỗi xảy ra. Vui lòng thử lại sau.";
         }
