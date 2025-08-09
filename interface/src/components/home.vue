@@ -480,17 +480,17 @@ const filteredServices = computed(() => {
 onMounted(async () => {
   try {
     const [dvRes, ldvRes] = await Promise.all([
-      apiClient.get('api/DichVu'),
-      apiClient.get('api/LoaiDichVu')
+      apiClient.get('DichVu'),
+      apiClient.get('LoaiDichVu')
     ]);
-    services.value = dvRes.data.map(s => ({
+    services.value = dvRes.map(s => ({
       id: s.dichVuID,
       name: s.tenDichVu,
       description: s.moTa,
       image: s.hinhAnh || "default-service.jpg",
       loaiDichVuID: s.loaiDichVuID
     }));
-    serviceTypes.value = ldvRes.data;
+    serviceTypes.value = ldvRes;
   } catch (err) {
     console.error('Lỗi tải dữ liệu:', err);
   }
@@ -513,8 +513,8 @@ onMounted(async () => {
 async function loadPricesForService(serviceId) {
   if (!servicePrices.value[serviceId]) {
     try {
-      const res = await apiClient.get(`api/BangGiaDichVu/GetGiaTheoThoiGian/${serviceId}`);
-      servicePrices.value[serviceId] = res.data;
+      const res = await apiClient.get(`BangGiaDichVu/GetGiaTheoThoiGian/${serviceId}`);
+      servicePrices.value[serviceId] = res;
     } catch (err) {
       console.error('Lỗi tải giá:', err);
       servicePrices.value[serviceId] = [];

@@ -148,9 +148,9 @@
 
 <script setup>
 import { ref, onMounted, computed } from "vue";
-import axios from "axios";
-import BarChart from "@/components/BarChart.vue";
 
+import BarChart from "@/components/BarChart.vue";
+import axiosClient from "../utils/"
 const showTabs = ref(false);
 
 const danhSach = ref([]);
@@ -178,8 +178,8 @@ const toggleTabs = () => {
 
 const loadDanhSach = async () => {
   try {
-    const res = await axios.get("http://localhost:5055/api/DanhGia/admin");
-    danhSach.value = res.data;
+    const res = await axiosClient.get("DanhGia/admin");
+    danhSach.value = res;
     updateCharts();
   } catch (err) {
     console.error("Lỗi khi tải đánh giá:", err);
@@ -189,7 +189,7 @@ const loadDanhSach = async () => {
 const duyetDanhGia = async (id) => {
   if (confirm("Bạn có chắc muốn duyệt đánh giá này?")) {
     try {
-      await axios.put(`http://localhost:5055/api/DanhGia/duyet/${id}`);
+      await axiosClient.put(`DanhGia/duyet/${id}`);
       await loadDanhSach();
     } catch (err) {
       console.error("Lỗi khi duyệt:", err);
@@ -200,7 +200,7 @@ const duyetDanhGia = async (id) => {
 const toggleTrangThai = async (id) => {
   if (confirm("Bạn có chắc muốn thay đổi trạng thái đánh giá này?")) {
     try {
-      await axios.put(`http://localhost:5055/api/DanhGia/toggle/${id}`);
+      await axiosClient.put(`DanhGia/toggle/${id}`);
       await loadDanhSach();
     } catch (err) {
       console.error("Lỗi khi thay đổi trạng thái:", err);

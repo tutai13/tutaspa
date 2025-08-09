@@ -82,7 +82,7 @@
 import notification from '../notification'
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { authAPI } from '../services/authservice' // Import API service
+import { authAPI } from '../services/authservice' 
 
 // Router instance
 const router = useRouter()

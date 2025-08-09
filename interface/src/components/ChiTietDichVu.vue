@@ -53,13 +53,15 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import axios from 'axios';
 
+import axiosClient from '../../utils/axiosClient';
+
+const api_url = import.meta.env.VITE_BASE_URL;
 const route = useRoute();
 const router = useRouter();
 const service = ref(null);
 
-const getImageUrl = (path) => `http://localhost:5055${path}`;
+const getImageUrl = (path) => `${api_url}${path}`;
 
 const datNgay = () => {
   if (service.value) {
@@ -69,8 +71,8 @@ const datNgay = () => {
 
 onMounted(async () => {
   try {
-    const res = await axios.get(`http://localhost:5055/api/DichVu/${route.params.id}`);
-    service.value = res.data;
+    const res = await axiosClient.get(`${route.params.id}`);
+    service.value = res;
   } catch (err) {
     console.error("Không tải được dịch vụ:", err);
   }

@@ -174,7 +174,7 @@
 <script setup>
 import { ref, onMounted, watch, nextTick } from "vue";
 import { useRoute } from "vue-router";
-import axios from "axios";
+import axiosClient from "../../utils/axiosClient";
 
 const route = useRoute();
 
@@ -245,8 +245,8 @@ const formatDate = (dateString) => {
 onMounted(async () => {
   try {
     isLoading.value = true;
-    const res = await axios.get("http://localhost:5055/api/DichVu");
-    dichVus.value = res.data;
+    const res = await axiosClient.get("DichVu");
+    dichVus.value = res;
 
     const idFromRoute = route.params.id;
     if (idFromRoute) {
@@ -272,10 +272,10 @@ watch(
 async function loadDanhGia(maDichVu) {
   try {
     isLoading.value = true;
-    const res = await axios.get(
-      `http://localhost:5055/api/DanhGia/dichvu/${maDichVu}`
+    const res = await axiosClient.get(
+      `DanhGia/dichvu/${maDichVu}`
     );
-    danhSach.value = res.data;
+    danhSach.value = res;
   } catch (err) {
     console.error("❌ Lỗi khi tải đánh giá:", err);
   } finally {
@@ -289,7 +289,7 @@ async function submitDanhGia() {
     
     console.log("🚀 Submit payload:", { ...danhGia.value, userId });
 
-    await axios.post("http://localhost:5055/api/DanhGia", {
+    await axiosClient.post("DanhGia", {
       ...danhGia.value,
       userId,
     });

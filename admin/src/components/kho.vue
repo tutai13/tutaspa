@@ -143,7 +143,7 @@
 
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue';
-import axios from 'axios';
+import axiosClient from '../utils/axiosClient';
 
 const formTab = ref('import');
 const activeTab = ref('import');
@@ -168,51 +168,51 @@ const isLoading = ref(false);
 const errorMessage = ref('');
 const fileInput = ref(null);
 const uploadedFile = ref(null);
-const baseUrl = import.meta.env.VITE_BASE_URL || 'https://localhost:7183/api';
+const baseUrl = import.meta.env.VITE_BASE_URL 
 const notifications = ref([]);
 
 // Fetch dữ liệu
 const fetchProducts = async () => {
   try {
-    const res = await axios.get(`${baseUrl}/product`);
-    productList.value = res.data || [];
-    checkNotifications(res.data);
+    const res = await axiosClient.get(`product`);
+    productList.value = res || [];
+    checkNotifications(res);
   } catch (err) {
     errorMessage.value = 'Lỗi khi tải danh sách sản phẩm: ' + (err.message || 'Không xác định');
-    console.error('Fetch products error:', err.response?.data || err);
+    console.error('Fetch products error:', err.response || err);
   }
 };
 
 const fetchCategories = async () => {
   try {
-    const res = await axios.get(`${baseUrl}/category`);
-    categoryList.value = res.data || [];
+    const res = await axiosClient.get(`category`);
+    categoryList.value = res || [];
     if (!categoryList.value.length) {
       errorMessage.value = 'Không có danh mục sản phẩm nào được tải. Vui lòng thêm danh mục trong hệ thống.';
     }
   } catch (err) {
     errorMessage.value = 'Lỗi khi tải danh sách loại sản phẩm: ' + (err.message || 'Không xác định');
-    console.error('Fetch categories error:', err.response?.data || err);
+    console.error('Fetch categories error:', err.response || err);
   }
 };
 
 const fetchImportHistory = async () => {
   try {
-    const res = await axios.get(`${baseUrl}/inventory/history/imports`);
-    importHistory.value = res.data || [];
+    const res = await axiosClient.get(`inventory/history/imports`);
+    importHistory.value = res || [];
   } catch (err) {
     errorMessage.value = 'Lỗi khi tải lịch sử nhập: ' + (err.message || 'Không xác định');
-    console.error('Fetch import history error:', err.response?.data || err);
+    console.error('Fetch import history error:', err.response || err);
   }
 };
 
 const fetchExportHistory = async () => {
   try {
-    const res = await axios.get(`${baseUrl}/inventory/history/exports`);
-    exportHistory.value = res.data || [];
+    const res = await axiosClient.get(`inventory/history/exports`);
+    exportHistory.value = res || [];
   } catch (err) {
     errorMessage.value = 'Lỗi khi tải lịch sử xuất: ' + (err.message || 'Không xác định');
-    console.error('Fetch export history error:', err.response?.data || err);
+    console.error('Fetch export history error:', err.response || err);
   }
 };
 
@@ -223,7 +223,7 @@ const fetchData = async () => {
     await Promise.all([fetchProducts(), fetchCategories(), fetchImportHistory(), fetchExportHistory()]);
   } catch (err) {
     errorMessage.value = 'Lỗi khi tải dữ liệu: ' + (err.message || 'Không xác định');
-    console.error('Fetch data error:', err.response?.data || err);
+    console.error('Fetch data error:', err.response.message || err);
   } finally {
     isLoading.value = false;
   };
@@ -344,8 +344,8 @@ const handleSubmit = async () => {
       formSupplierName.value = selectedProduct.nhaCungCap;
     }
     try {
-      const res = await axios.get(`${baseUrl}/ProductBatch/product/${formProductId.value}`);
-      const batches = res.data;
+      const res = await axiosClient.get(`ProductBatch/product/${formProductId.value}`);
+      const batches = res;
 
       if (batches.length > 0) {
         const latestBatch = batches.sort((a, b) => new Date(b.manufactureDate) - new Date(a.manufactureDate))[0];
@@ -381,8 +381,8 @@ const handleSubmit = async () => {
   isLoading.value = true;
   errorMessage.value = '';
   const apiUrl = formTab.value === 'import'
-    ? `${baseUrl}/inventory/import-with-batch`
-    : `${baseUrl}/inventory/export-with-batch`; 
+    ? `inventory/import-with-batch`
+    : `inventory/export-with-batch`; 
 
   try {
     if (formTab.value === 'import' && isNewProduct.value) {
@@ -399,7 +399,7 @@ const handleSubmit = async () => {
       formData.append('Image', uploadedFile.value);
       formData.append('Note', formNote.value.trim() || '');
 
-      await axios.post(apiUrl, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      await axiosClient.post(apiUrl, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
       alert('Nhập hàng thành công.');
     } else if (formTab.value === 'import' && !isNewProduct.value) {
       const payload = {
@@ -411,7 +411,7 @@ const handleSubmit = async () => {
         ExpiryDate: formExpirationDate.value,
         Note: formNote.value.trim() || ''
       };
-      await axios.post(`${baseUrl}/productbatch`, payload, { headers: { 'Content-Type': 'application/json' } });
+      await axiosClient.post(`productbatch`, payload, { headers: { 'Content-Type': 'application/json' } });
       alert('Nhập lô hàng thành công.');
     } else {
       const payload = {
@@ -420,14 +420,14 @@ const handleSubmit = async () => {
         Note: formNote.value.trim() || ''
       };
       console.log('Export payload:', payload); // Log để kiểm tra dữ liệu gửi đi
-      await axios.post(apiUrl, payload, { headers: { 'Content-Type': 'application/json' } });
+      await axiosClient.post(apiUrl, payload, { headers: { 'Content-Type': 'application/json' } });
       alert('Xuất hàng thành công.');
     }
     await fetchData();
     resetForm();
   } catch (err) {
-    errorMessage.value = `Lỗi: ${err.response?.data?.message || err.message || 'Không xác định'}`;
-    console.error('Submit error:', err.response?.data || err);
+    errorMessage.value = `Lỗi: ${err.response?.message || err.message || 'Không xác định'}`;
+    console.error('Submit error:', err.response?.message || err);
   } finally {
     isLoading.value = false;
     if (fileInput.value) fileInput.value.value = '';
