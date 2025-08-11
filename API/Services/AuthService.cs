@@ -114,21 +114,6 @@ namespace API.Services
                     return Failure("Sai mật khẩu");
                 }
 
-
-                ////Nếu đăng nhập lần đầu , trả về token để đổi pass
-                //if (user.FisrtLogin)
-                //{
-                //    var changePassToken = _tokenService.GenerateChangePasswordToken(user);
-                //    return new AuthResponse
-                //    {
-                //        IsSuccess = true,
-                //        FirstLogin = user.FisrtLogin,
-                //        Message = "Đăng nhập lần đầu, vui lòng đổi mật khẩu để tiếp tục",
-                //        Token = changePassToken
-
-                //    };
-                //}
-
                 _logger.LogInformation($"Login successfully user :  {user.Id}");
 
            

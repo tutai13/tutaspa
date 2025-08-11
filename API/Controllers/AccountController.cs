@@ -1,5 +1,5 @@
 
-﻿using API.DTOs.Auth;
+using API.DTOs.Auth;
 using API.IService;
 using Microsoft.AspNetCore.Http;
 
@@ -53,21 +53,22 @@ namespace API.Controllers
                 return BadRequest(new { result.Message });
             }
 
-                var refreshToken = result.Token.RefreshToken;
-                Console.WriteLine(nameof(refreshToken) +":" + refreshToken );
-                var cookieOptions = new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.Strict,
-                    Expires = DateTime.UtcNow.AddDays(7),
-                    Path = "/api/account"
-                };
+            var refreshToken = result.Token.RefreshToken;
+
+            Console.WriteLine(refreshToken);
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.UtcNow.AddDays(7),
+                Path = "/"
+            };
 
             Response.Cookies.Append("User_refreshToken", refreshToken, cookieOptions);
 
 
-            return Ok(new {UserInfo = result.User , AccessToken = result.Token.Accesstoken });
+            return Ok(new { UserInfo = result.User, AccessToken = result.Token.Accesstoken });
         }
 
 
@@ -90,13 +91,13 @@ namespace API.Controllers
                     return Unauthorized(new { result.Message });
                 }
 
-                Response.Cookies.Append("refreshToken", result.Token.RefreshToken, new CookieOptions
+                Response.Cookies.Append("User_refreshToken", result.Token.RefreshToken, new CookieOptions
                 {
                     HttpOnly = true,
                     Secure = true,
-                    SameSite = SameSiteMode.Strict,
+                    SameSite = SameSiteMode.None,
                     Expires = DateTime.UtcNow.AddDays(7),
-                    Path = "/api/account"
+                    Path = "/"
                 });
 
                 return Ok(new { AccessToken = result.Token.Accesstoken });

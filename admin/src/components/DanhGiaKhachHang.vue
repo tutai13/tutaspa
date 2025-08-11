@@ -150,7 +150,7 @@
 import { ref, onMounted, computed } from "vue";
 
 import BarChart from "@/components/BarChart.vue";
-import axiosClient from "../utils/"
+import axiosClient from "../utils/axiosClient";
 const showTabs = ref(false);
 
 const danhSach = ref([]);

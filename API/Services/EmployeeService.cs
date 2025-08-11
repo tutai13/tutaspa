@@ -6,8 +6,7 @@ using API.IService;
 using API.Models;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Caching.Memory;
-using System.Collections;
+using Microsoft.EntityFrameworkCore;
 using System.Text;
 
 namespace API.Services
@@ -20,18 +19,7 @@ namespace API.Services
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IValidator<CreateEmployeeDTO> _validator;
         private readonly IGmailService _mail;
-        private readonly IMemoryCache _cache;
         private readonly ILogger<EmployeeService> _logger;
-
-        // Cache configuration
-        private static readonly TimeSpan _employeesCacheExpiration = TimeSpan.FromMinutes(15);
-        private static readonly TimeSpan _employeeDetailCacheExpiration = TimeSpan.FromMinutes(5);
-        private static readonly TimeSpan _employeeRolesCacheExpiration = TimeSpan.FromMinutes(10);
-
-        // Cache keys
-        private const string EMPLOYEES_CACHE_KEY = "employees";
-        private const string EMPLOYEE_ROLES_CACHE_KEY = "employee_roles";
-        private const string EMPLOYEE_DETAIL_CACHE_KEY = "employee_detail";
 
         public EmployeeService(
             ApplicationDbContext context,
@@ -39,7 +27,6 @@ namespace API.Services
             RoleManager<IdentityRole> roleManager,
             IValidator<CreateEmployeeDTO> validator,
             IGmailService mail,
-            IMemoryCache cache,
             ILogger<EmployeeService> logger)
         {
             _context = context;
@@ -47,7 +34,6 @@ namespace API.Services
             _roleManager = roleManager;
             _validator = validator;
             _mail = mail;
-            _cache = cache;
             _logger = logger;
         }
 
@@ -80,13 +66,8 @@ namespace API.Services
 
                 await _userManager.AddToRoleAsync(user, dto.Role.ToString());
 
-                // Invalidate all employee-related caches
-                await InvalidateEmployeeCaches();
-
                 await _mail.SendEmailAsync(dto.Email, "Chào mừng đến với Tuta Spa",
                     $"<h1>Welcome {dto.Name}</h1><p>Tài khoản của bạn đã được tạo.</p><p>Mật khẩu của bạn là: <strong>{radPass}</strong></p>");
-
-
 
                 _logger.LogInformation("Employee created successfully with ID: {UserId}", user.Id);
                 return Success("Thêm nhân viên thành công", new { userId = user.Id });
@@ -115,10 +96,6 @@ namespace API.Services
 
                 if (result.Succeeded)
                 {
-                    // Invalidate specific employee cache and general cache
-                    await InvalidateEmployeeCaches();
-                    _cache.Remove($"{EMPLOYEE_DETAIL_CACHE_KEY}_{dto.EmpId}");
-
                     _logger.LogInformation("Employee updated successfully with ID: {EmployeeId}", dto.EmpId);
                     return Success("Cập nhật thông tin nhân viên thành công");
                 }
@@ -146,9 +123,6 @@ namespace API.Services
 
                 if (result.Succeeded)
                 {
-                    await InvalidateEmployeeCaches();
-                    _cache.Remove($"{EMPLOYEE_DETAIL_CACHE_KEY}_{empId}");
-
                     _logger.LogInformation("Employee deleted successfully with ID: {EmployeeId}", empId);
                     return Success("Xóa nhân viên thành công");
                 }
@@ -180,11 +154,6 @@ namespace API.Services
                     await _userManager.AddToRoleAsync(user, role.ToString());
                 }
 
-                // Invalidate caches
-                await InvalidateEmployeeCaches();
-                _cache.Remove($"{EMPLOYEE_DETAIL_CACHE_KEY}_{empID}");
-                _cache.Remove($"{EMPLOYEE_ROLES_CACHE_KEY}_{empID}");
-
                 _logger.LogInformation("Employee role updated successfully for ID: {EmployeeId}", empID);
                 return Success("Cập nhật vai trò nhân viên thành công");
             }
@@ -207,9 +176,6 @@ namespace API.Services
 
                 if (result.Succeeded)
                 {
-                    await InvalidateEmployeeCaches();
-                    _cache.Remove($"{EMPLOYEE_DETAIL_CACHE_KEY}_{empId}");
-
                     _logger.LogInformation("Employee status updated successfully for ID: {EmployeeId}", empId);
                     return Success("Cập nhật trạng thái nhân viên thành công");
                 }
@@ -229,20 +195,16 @@ namespace API.Services
         {
             try
             {
-                //var cacheKey = $"employees_list_page_{page}_keyword_{keyword ?? "empty"}";
+                // Get employees with roles using UserManager to maintain your original logic
+                var cashiers = await _userManager.GetUsersInRoleAsync(ERole.Cashier.ToString());
+                var inventoryManagers = await _userManager.GetUsersInRoleAsync(ERole.InventoryManager.ToString());
 
-                //// Try to get from cache first
-                //var cachedResult = _cache.Get<PagedResult<EmployeeDTO>>(cacheKey);
-                //if (cachedResult != null)
-                //{
-                //    _logger.LogDebug("Returning cached employee list for page {Page}, keyword: {Keyword}", page, keyword);
-                //    return cachedResult;
-                //}
+                // Combine all employees with their roles
+                var employeesWithRoles = new List<(User Employee, string Role)>();
+                employeesWithRoles.AddRange(cashiers.Select(u => (u, ERole.Cashier.ToString())));
+                employeesWithRoles.AddRange(inventoryManagers.Select(u => (u, ERole.InventoryManager.ToString())));
 
-                // Get employees with roles in one go to avoid N+1 problem
-                var employeesWithRoles = await GetEmployeesWithRolesAsync();
-
-                // Apply keyword filter if provided
+                // Apply keyword filter if provided (keeping your original case-insensitive logic)
                 if (!string.IsNullOrEmpty(keyword))
                 {
                     employeesWithRoles = employeesWithRoles
@@ -257,7 +219,7 @@ namespace API.Services
                     .Take(_pageSize)
                     .ToList();
 
-                // Map to DTOs
+                // Map to DTOs (keeping your original mapping and ordering logic)
                 var employeeDTOs = pagedEmployees.Select(e => new EmployeeDTO
                 {
                     Id = e.Employee.Id,
@@ -267,7 +229,7 @@ namespace API.Services
                     Status = !e.Employee.IsDeleted,
                     Address = e.Employee.Address,
                     Role = e.Role
-                }).OrderByDescending(x => x.Status ).ToList();
+                }).OrderByDescending(x => x.Status).ToList();
 
                 var result = new PagedResult<EmployeeDTO>
                 {
@@ -276,10 +238,7 @@ namespace API.Services
                     CurrentPage = page
                 };
 
-                // Cache the result for 5 minutes
-                //_cache.Set(cacheKey, result, TimeSpan.FromMinutes(5));
-
-                _logger.LogDebug("Employee list cached for page {Page}, keyword: {Keyword}", page, keyword);
+                _logger.LogDebug("Retrieved employee list for page {Page}, keyword: {Keyword}", page, keyword);
                 return result;
             }
             catch (Exception ex)
@@ -293,23 +252,13 @@ namespace API.Services
         {
             try
             {
-                var cacheKey = $"{EMPLOYEE_DETAIL_CACHE_KEY}_{empId}";
-
-                // Try cache first
-                var cachedEmployee = _cache.Get<EmployeeDTO>(cacheKey);
-                if (cachedEmployee != null)
-                {
-                    _logger.LogDebug("Returning cached employee detail for ID: {EmployeeId}", empId);
-                    return Success("Lấy thông tin nhân viên thành công", cachedEmployee);
-                }
-
                 var user = await _userManager.FindByIdAsync(empId);
                 if (user == null || user.IsDeleted)
                 {
                     return Fail("Không tìm thấy nhân viên");
                 }
 
-                var roles = await GetEmployeeRolesAsync(empId);
+                var roles = await _userManager.GetRolesAsync(user);
                 var employeeDto = new EmployeeDTO
                 {
                     Id = user.Id,
@@ -317,13 +266,11 @@ namespace API.Services
                     Name = user.Name,
                     Phone = user.PhoneNumber,
                     Status = !user.IsDeleted,
+                    Address = user.Address,
                     Role = roles.FirstOrDefault()
                 };
 
-                // Cache for 5 minutes
-                _cache.Set(cacheKey, employeeDto, _employeeDetailCacheExpiration);
-
-                _logger.LogDebug("Employee detail cached for ID: {EmployeeId}", empId);
+                _logger.LogDebug("Retrieved employee detail for ID: {EmployeeId}", empId);
                 return Success("Lấy thông tin nhân viên thành công", employeeDto);
             }
             catch (Exception ex)
@@ -332,92 +279,6 @@ namespace API.Services
                 return Fail("Lỗi khi lấy thông tin nhân viên: " + ex.Message);
             }
         }
-
-        private async Task<List<(User Employee, string Role)>> GetEmployeesWithRolesAsync()
-        {
-            var cacheKey = "employees_with_roles";
-            var cached = _cache.Get<List<(User, string)>>(cacheKey);
-
-            if (cached != null)
-            {
-                return cached;
-            }
-
-            var cashiers = await _userManager.GetUsersInRoleAsync(ERole.Cashier.ToString());
-            var inventoryManagers = await _userManager.GetUsersInRoleAsync(ERole.InventoryManager.ToString());
-
-            var result = new List<(User, string)>();
-            result.AddRange(cashiers.Select(u => (u, ERole.Cashier.ToString())));
-            result.AddRange(inventoryManagers.Select(u => (u, ERole.InventoryManager.ToString())));
-
-            _cache.Set(cacheKey, result, _employeesCacheExpiration);
-            return result;
-        }
-
-        private async Task<List<string>> GetEmployeeRolesAsync(string userId)
-        {
-            var cacheKey = $"{EMPLOYEE_ROLES_CACHE_KEY}_{userId}";
-            var cached = _cache.Get<List<string>>(cacheKey);
-
-            if (cached != null)
-            {
-                return cached;
-            }
-
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null) return new List<string>();
-
-            var roles = (await _userManager.GetRolesAsync(user)).ToList();
-            _cache.Set(cacheKey, roles, _employeeRolesCacheExpiration);
-
-            return roles;
-        }
-
-        private async Task  InvalidateEmployeeCaches()
-{
-    var patterns = new[]
-    {
-        EMPLOYEES_CACHE_KEY,                // main employee cache
-        "employees_with_roles",              // role + employee list
-        "employees_list_",                   // paginated lists
-        $"{EMPLOYEE_ROLES_CACHE_KEY}_",      // per-employee role cache
-        $"{EMPLOYEE_DETAIL_CACHE_KEY}_"      // per-employee detail cache
-    };
-
-    // Access MemoryCache's internal dictionary
-    var cacheField = typeof(MemoryCache).GetField("_entries",
-        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-    if (cacheField?.GetValue(_cache) is IDictionary entries)
-    {
-        var keysToRemove = new List<object>();
-
-        foreach (DictionaryEntry entry in entries)
-        {
-            string key = entry.Key.ToString();
-            if (patterns.Any(p => key.StartsWith(p, StringComparison.OrdinalIgnoreCase)))
-            {
-                keysToRemove.Add(entry.Key);
-            }
-        }
-
-        foreach (var key in keysToRemove)
-        {
-            _cache.Remove(key);
-        }
-    }
-    else
-    {
-        // Fallback: remove the main keys if internal structure not found
-        foreach (var pattern in patterns)
-        {
-            _cache.Remove(pattern);
-        }
-    }
-
-    _logger.LogDebug("All employee-related caches invalidated");
-}
-
 
         private string RandomPass()
         {

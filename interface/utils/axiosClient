@@ -91,11 +91,11 @@ apiClient.interceptors.response.use(
 
           try {
             // ✅ Gọi refresh token API
-            const response = await authAPI.refreshToken();
+            const response = await authAPI.refrehToken();
             
             if (response.accessToken) {
               localStorage.setItem('accessToken', response.accessToken);
-// ✅ Cập nhật header cho request gốc
+            // ✅ Cập nhật header cho request gốc
               originalRequest.headers.Authorization = `Bearer ${response.accessToken}`;
               
               // ✅ Xử lý các request đang chờ

@@ -10,7 +10,7 @@ const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 // Tạo axios instance
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  credentials: true, // Cho phép gửi cookie với request
+  withCredentials: true, // Cho phép gửi cookie với request
   timeout: 10000, // 10 seconds timeout
   headers: {
     "Content-Type": "application/json",
