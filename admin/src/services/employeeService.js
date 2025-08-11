@@ -169,8 +169,8 @@ class EmployeeService {
   static async getEmployees(page = 1) {
     try {
       const response = await apiClient.get(`/employees?page=${page}`);
-      console.log("Response data:", response);
-      return response;
+      
+      return response.data;
     } catch (error) {
       throw this.handleError(error, "Lỗi khi lấy danh sách nhân viên");
     }
