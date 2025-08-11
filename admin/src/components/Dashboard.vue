@@ -230,6 +230,37 @@
           </div>
         </div>
       </div>
+      <div class="col-6">
+        <div
+          class="card border-0 shadow-lg"
+          style="border-radius: 20px; overflow: hidden"
+        >
+          <div class="card-header bg-white border-0 p-4">
+            <h4 class="mb-0 fw-bold text-primary">📊 Phân bố Sản phẩm</h4>
+          </div>
+          <div class="card-body p-4">
+            <div v-if="isLoadingProduct" class="text-center p-5">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="mt-2 text-muted">Đang tải dữ liệu...</p>
+            </div>
+            <div
+              v-else-if="productData.length > 0"
+              style="height: 400px; position: relative"
+            >
+              <canvas
+                ref="productPieChart"
+                style="max-height: 400px; width: 100%"
+              ></canvas>
+            </div>
+            <div v-else class="text-center p-5 text-muted">
+              <i class="fas fa-chart-pie fa-3x mb-3"></i>
+              <p>Không có dữ liệu sản phẩm để hiển thị</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -623,6 +654,148 @@ const createPieChart = () => {
   console.log("Pie chart created successfully");
 };
 
+// Thêm biến cho phần sản phẩm
+const productPieChart = ref(null);
+const productData = ref([]);
+let productPieChartInstance = null;
+const isLoadingProduct = ref(false);
+
+// Load product data for pie chart
+const loadProductData = async () => {
+  console.log("Loading product data...");
+
+  try {
+    isLoadingProduct.value = true;
+
+    const response = await apiClient.get("/ThongKe/SoLuongSanPham");
+    console.log("Product API Response:", response);
+
+    // API returns array directly based on your example
+    if (Array.isArray(response) && response.length > 0) {
+      // Tính tổng số lượng
+      const total = response.reduce((sum, item) => sum + item.soLuong, 0);
+      
+      // Thêm phần trăm
+      productData.value = response.map(item => ({
+        productName: item.productName,
+        soLuong: item.soLuong,
+        phanTram: total > 0 ? parseFloat(((item.soLuong / total) * 100).toFixed(2)) : 0
+      }));
+    } else {
+      console.warn("No product data received, using mock data");
+      productData.value = mockProductData; // Bạn có thể thêm mock data nếu cần
+    }
+
+    if (productData.value.length > 0) {
+      await nextTick();
+      setTimeout(() => {
+        createProductPieChart();
+      }, 100);
+    }
+  } catch (error) {
+    console.error("Error loading product data:", error);
+    // Use mock data as fallback
+    productData.value = mockProductData || [];
+    await nextTick();
+    setTimeout(() => {
+      createProductPieChart();
+    }, 100);
+  } finally {
+    isLoadingProduct.value = false;
+  }
+};
+
+// Create product pie chart
+const createProductPieChart = () => {
+  console.log("Creating product pie chart with data:", productData.value);
+
+  if (!productPieChart.value) {
+    console.error("Product pie chart canvas not found");
+    return;
+  }
+
+  if (!productData.value || productData.value.length === 0) {
+    console.warn("No product data for pie chart");
+    return;
+  }
+
+  // Destroy existing chart
+  if (productPieChartInstance) {
+    productPieChartInstance.destroy();
+  }
+
+  const ctx = productPieChart.value.getContext("2d");
+
+  productPieChartInstance = new Chart(ctx, {
+    type: "pie",
+    data: {
+      labels: productData.value.map((item) => item.productName),
+      datasets: [
+        {
+          data: productData.value.map((item) => item.phanTram),
+          backgroundColor: [
+            "#FF6B6B",
+            "#4ECDC4",
+            "#45B7D1",
+            "#96CEB4",
+            "#FFEEAD",
+            "#D4A5A5",
+            "#95E1D3",
+            "#F38BA8",
+          ],
+          borderWidth: 2,
+          borderColor: "#fff",
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: "right",
+          labels: {
+            font: {
+              size: 12,
+              family: "Arial",
+              weight: "500",
+            },
+            color: "#333",
+            padding: 15,
+            usePointStyle: true,
+          },
+        },
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              const label = context.label || "";
+              const value = context.parsed || 0;
+              const dataItem = productData.value[context.dataIndex];
+              return [
+                `${label}`,
+                `Số lượng: ${dataItem.soLuong.toLocaleString()}`,
+                `Tỷ lệ: ${value.toFixed(2)}%`,
+              ];
+            },
+          },
+          backgroundColor: "rgba(255, 255, 255, 0.95)",
+          titleColor: "#333",
+          bodyColor: "#666",
+          borderColor: "#ddd",
+          borderWidth: 1,
+        },
+      },
+      animation: {
+        animateScale: true,
+        animateRotate: true,
+        duration: 1000,
+      },
+    },
+  });
+
+  console.log("Product pie chart created successfully");
+};
+
 // Watch for data changes
 watch(chartData, (newData) => {
   if (newData && newData.length > 0 && chartContainer.value) {
@@ -636,6 +809,15 @@ watch(serviceData, (newData) => {
   if (newData && newData.length > 0 && pieChart.value) {
     nextTick(() => {
       createPieChart();
+    });
+  }
+});
+
+// Watch for product data changes
+watch(productData, (newData) => {
+  if (newData && newData.length > 0 && productPieChart.value) {
+    nextTick(() => {
+      createProductPieChart();
     });
   }
 });
@@ -665,6 +847,7 @@ onMounted(async () => {
     // Load charts
     await Promise.all([
       loadServiceData(),
+      loadProductData(),
       loadChartData(selectedTimeRange.value),
     ]);
   } catch (error) {
