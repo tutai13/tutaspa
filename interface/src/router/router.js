@@ -23,20 +23,19 @@ const routes = [
 
   { path: "/DatLich", name: "DatLich", component: DatLich },
   { path: "/ChiTietDichVu", name: "ChiTietDichVu", component: ChiTietDichVu },
-  {path: "/DanhGia/:id?", name: "DanhGia", component: DanhGia},
-  {path: "/LichSuDatLich", name: "LichSuDatLich", component: LichSuDatLich},
+  { path: "/DanhGia/:id?", name: "DanhGia", component: DanhGia },
+  { path: "/LichSuDatLich", name: "LichSuDatLich", component: LichSuDatLich },
   {
-  path: '/DichVuChiTiet/:id',
-  name: 'DichVuChiTiet',
-  component: DichVuChiTiet
-},
+    path: "/DichVuChiTiet/:id",
+    name: "DichVuChiTiet",
+    component: DichVuChiTiet,
+  },
 
-// {
-//   path: '/DanhGia/:id?',
-//   name: 'DanhGia',
-//   component: () => import('../views/DanhGia.vue')  // hoặc đường dẫn tương ứng với bạn
-// },
-
+  // {
+  //   path: '/DanhGia/:id?',
+  //   name: 'DanhGia',
+  //   component: () => import('../views/DanhGia.vue')  // hoặc đường dẫn tương ứng với bạn
+  // },
 
   {
     path: "/login",
@@ -58,9 +57,22 @@ const routes = [
   },
 ];
 
+// const router = createRouter({
+//   history: createWebHistory(),
+//   routes,
+// });
 const router = createRouter({
   history: createWebHistory(),
   routes,
+  scrollBehavior(to, from, savedPosition) {
+    if (to.hash) {
+      return {
+        el: to.hash,
+        behavior: "smooth",
+      };
+    }
+    return { top: 0 };
+  },
 });
 
 export default router;

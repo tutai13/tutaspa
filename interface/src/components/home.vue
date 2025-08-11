@@ -1,2528 +1,1373 @@
 <template>
-  <!-- Hero Carousel with Enhanced Parallax Effect -->
-  <div class="hero-section">
-    <div id="bannerCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="6000">
-      <div class="carousel-inner">
-        <div class="carousel-item active">
-          <div class="hero-slide" style="background-image: url('/src/assets/img/BNR1.jpg')">
-            <div class="hero-overlay"></div>
-            <div class="hero-particles"></div>
-            <div class="hero-content">
-              <div class="hero-badge animate-badge">🌟 SPA 5 SAO</div>
-              <h1 class="hero-title animate-title">Chào Mừng Đến TUTA Spa</h1>
-              <p class="hero-subtitle animate-subtitle">Nơi thư giãn và tái tạo năng lượng cho tâm hồn bạn</p>
-              <button class="btn-cta primary animate-button" @click="goToBooking">
-                <span>Đặt Lịch Ngay</span>
-                <i class="fa-solid fa-calendar-plus"></i>
-              </button>
+  <div>
+    <section id="home" class="min-vh-100 position-relative">
+      <div
+        id="spaCarousel"
+        class="carousel slide"
+        data-bs-ride="carousel"
+        data-bs-interval="5000"
+      >
+        <!-- Carousel Indicators -->
+        <div class="carousel-indicators">
+          <button
+            v-for="(slide, index) in slides"
+            :key="index"
+            type="button"
+            :data-bs-target="'#spaCarousel'"
+            :data-bs-slide-to="index"
+            :class="{ active: index === currentSlide }"
+            :aria-current="index === currentSlide ? 'true' : 'false'"
+            :aria-label="'Slide ' + (index + 1)"
+          ></button>
+        </div>
+
+        <!-- Carousel Items -->
+        <div class="carousel-inner">
+          <div
+            v-for="(slide, index) in slides"
+            :key="slide.title"
+            class="carousel-item"
+            :class="{ active: index === currentSlide }"
+            :style="{
+              backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(120, 186, 126, 0.3)), url(${slide.image})`,
+            }"
+          >
+            <div
+              class="carousel-caption d-flex flex-column justify-content-center h-100"
+            >
+              <h1
+                class="display-2 fw-bold mb-4 font-lora animate__animated animate__fadeInDown"
+              >
+                Chào mừng đến TutaSpa
+              </h1>
+              <h2
+                class="fs-3 fw-semibold text-white mb-4 animate__animated animate__fadeInUp animate__delay-1s"
+              >
+                {{ slides[currentSlide].subtitle }}
+              </h2>
+              <p
+                class="lead text-white mb-5 mx-auto animate__animated animate__fadeInUp animate__delay-2s"
+                style="max-width: 700px"
+              >
+                Hành trình thư giãn và tái tạo năng lượng với những liệu pháp tự
+                nhiên, mang đến sự cân bằng hoàn hảo cho cơ thể và tâm hồn bạn
+              </p>
+              <div
+                class="d-flex flex-wrap justify-content-center gap-4 mb-5 animate__animated animate__fadeInUp animate__delay-3s"
+              >
+                <div
+                  v-for="(stat, index) in stats"
+                  :key="index"
+                  class="text-center px-3"
+                >
+                  <div class="fs-1 mb-2">{{ stat.icon }}</div>
+                  <div class="fs-3 fw-bold text-warning">{{ stat.number }}</div>
+                  <div class="text-white">{{ stat.label }}</div>
+                </div>
+              </div>
+              <div
+                class="d-flex flex-column flex-sm-row justify-content-center gap-3 animate__animated animate__fadeInUp animate__delay-4s"
+              >
+                <router-link
+                  to="/#services"
+                  class="btn btn-primary btn-lg rounded-pill px-5 py-3 fw-bold"
+                >
+                  Khám phá dịch vụ
+                </router-link>
+                <router-link
+                  to="/#booking"
+                  class="btn btn-outline-light btn-lg rounded-pill px-5 py-3"
+                >
+                  Đặt lịch ngay
+                </router-link>
+              </div>
             </div>
           </div>
         </div>
-        
-        <div class="carousel-item">
-          <div class="hero-slide" style="background-image: url('/src/assets/img/BNR2.jpg')">
-            <div class="hero-overlay"></div>
-            <div class="hero-particles"></div>
-            <div class="hero-content">
-              <div class="hero-badge animate-badge">🔬 CÔNG NGHỆ</div>
-              <h1 class="hero-title animate-title">Công Nghệ Hiện Đại</h1>
-              <p class="hero-subtitle animate-subtitle">Thiết bị tối tân kết hợp kỹ thuật chuyên nghiệp hàng đầu</p>
-              <button class="btn-cta secondary animate-button" @click="scrollToServices">
-                <span>Khám Phá Dịch Vụ</span>
-                <i class="fa-solid fa-magic"></i>
-              </button>
-            </div>
+
+        <!-- Carousel Controls -->
+        <button
+          class="carousel-control-prev"
+          type="button"
+          data-bs-target="#spaCarousel"
+          data-bs-slide="prev"
+        >
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button
+          class="carousel-control-next"
+          type="button"
+          data-bs-target="#spaCarousel"
+          data-bs-slide="next"
+        >
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+      <div class="container">
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">🌱</div>
+            <h3>100% Tự nhiên</h3>
+            <p>
+              Sử dụng các sản phẩm từ thiên nhiên, không chất hóa học có hại, an
+              toàn cho mọi loại da
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">👥</div>
+            <h3>Chuyên gia giàu kinh nghiệm</h3>
+            <p>
+              Đội ngũ chuyên viên được đào tạo bài bản, có chứng chỉ quốc tế và
+              kinh nghiệm hơn 5 năm
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🏛️</div>
+            <h3>Không gian sang trọng</h3>
+            <p>
+              Thiết kế hiện đại, thoáng mát với âm nhạc thư giãn và hương thơm
+              dễ chịu
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🛡️</div>
+            <h3>Đảm bảo vệ sinh</h3>
+            <p>
+              Tuân thủ nghiêm ngặt các tiêu chuẩn vệ sinh, khử trùng dụng cụ sau
+              mỗi lần sử dụng
+            </p>
           </div>
         </div>
-        
-        <div class="carousel-item">
-          <div class="hero-slide" style="background-image: url('/src/assets/img/spa2.jpg')">
-            <div class="hero-overlay"></div>
-            <div class="hero-particles"></div>
-            <div class="hero-content">
-              <div class="hero-badge animate-badge">💆‍♀️ THƯ GIÃN</div>
-              <h1 class="hero-title animate-title">Thư Giãn Tuyệt Đối</h1>
-              <p class="hero-subtitle animate-subtitle">Trải nghiệm không gian yên tĩnh và sang trọng nhất</p>
-              <button class="btn-cta tertiary animate-button" @click="scrollToAbout">
-                <span>Tìm Hiểu Thêm</span>
-                <i class="fa-solid fa-leaf"></i>
-              </button>
-            </div>
+      </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="services">
+      <div class="container">
+        <h2 class="section-title">Dịch vụ của chúng tôi</h2>
+        <p class="section-subtitle">
+          Trải nghiệm những dịch vụ chăm sóc sức khỏe và làm đẹp hàng đầu với
+          công nghệ hiện đại và nguyên liệu tự nhiên
+        </p>
+
+        <div class="service-categories">
+          <button
+            class="category-btn"
+            :class="{ active: currentCategory === 'all' }"
+            @click="filterServices('all')"
+          >
+            Tất cả
+          </button>
+          <button
+            v-for="category in categories"
+            :key="category.loaiDichVuID"
+            class="category-btn"
+            :class="{ active: currentCategory === category.tenLoai }"
+            @click="filterServices(category.tenLoai)"
+          >
+            {{ category.tenLoai }}
+          </button>
+        </div>
+
+        <div v-if="loading" class="loading">
+          <div class="loading-spinner"></div>
+          <p>Đang tải dịch vụ...</p>
+        </div>
+        <div v-else-if="error" class="error">
+          <p>{{ error }}</p>
+        </div>
+        <div v-else class="services-grid">
+          <div
+            v-for="service in filteredServices"
+            :key="service.id"
+            class="service-card"
+          >
+            <img
+              :src="service.image"
+              :alt="service.name"
+              class="service-image"
+            />
+            <h3>{{ service.name }}</h3>
+            <div class="service-duration">{{ service.duration }} phút</div>
+            <p>{{ service.description }}</p>
+            <div class="service-price">{{ service.price }} VNĐ</div>
+            <button
+              class="service-book-btn"
+              @click="addServiceFromCard(service)"
+            >
+              Đặt lịch ngay
+            </button>
           </div>
         </div>
-        
-        <div class="carousel-item">
-          <div class="hero-slide" style="background-image: url('/src/assets/img/hinh2.jpg')">
-            <div class="hero-overlay"></div>
-            <div class="hero-particles"></div>
-            <div class="hero-content">
-              <div class="hero-badge animate-badge">⭐ UY TÍN</div>
-              <h1 class="hero-title animate-title">Đẳng Cấp 5 Sao</h1>
-              <p class="hero-subtitle animate-subtitle">Chất lượng dịch vụ được hàng nghìn khách hàng tin tưởng</p>
-              <button class="btn-cta quaternary animate-button" @click="goToReview">
-                <span>Xem Đánh Giá</span>
-                <i class="fa-solid fa-star"></i>
-              </button>
-            </div>
+      </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials">
+      <div class="container">
+        <h2 class="section-title">Khách hàng nói gì về chúng tôi</h2>
+        <div class="testimonials-grid">
+          <div class="testimonial-card">
+            <div class="testimonial-rating">⭐⭐⭐⭐⭐</div>
+            <p class="testimonial-text">
+              Dịch vụ massage tại Serenity Spa thật sự tuyệt vời! Tôi cảm thấy
+              thư giãn và thoải mái như chưa bao giờ. Nhân viên rất chuyên
+              nghiệp và chu đáo.
+            </p>
+            <div class="testimonial-author">- Chị Lan Anh, 32 tuổi</div>
+          </div>
+          <div class="testimonial-card">
+            <div class="testimonial-rating">⭐⭐⭐⭐⭐</div>
+            <p class="testimonial-text">
+              Sau liệu trình chăm sóc da tại đây, làn da tôi trở nên mịn màng và
+              sáng khỏe hơn rất nhiều. Tôi sẽ quay lại và giới thiệu cho bạn bè.
+            </p>
+            <div class="testimonial-author">- Chị Minh Hương, 28 tuổi</div>
+          </div>
+          <div class="testimonial-card">
+            <div class="testimonial-rating">⭐⭐⭐⭐⭐</div>
+            <p class="testimonial-text">
+              Không gian spa rất đẹp và thư giãn. Dịch vụ detox toàn thân giúp
+              tôi cảm thấy nhẹ nhõm và tràn đầy năng lượng. Đáng tiền!
+            </p>
+            <div class="testimonial-author">- Anh Đức Minh, 35 tuổi</div>
           </div>
         </div>
       </div>
+    </section>
 
-      <!-- Enhanced Navigation -->
-      <button class="carousel-control-prev custom-nav" type="button" data-bs-target="#bannerCarousel" data-bs-slide="prev">
-        <div class="nav-icon">
-          <i class="fa-solid fa-chevron-left"></i>
+    <!-- Booking Section -->
+    <section id="booking" class="booking">
+      <div class="container">
+        <div class="booking-content">
+          <div class="booking-info">
+            <h2>Đặt lịch hẹn</h2>
+            <p>
+              Hãy để chúng tôi chăm sóc bạn với những dịch vụ tốt nhất. Đặt lịch
+              ngay hôm nay để nhận được ưu đãi đặc biệt và trải nghiệm không
+              gian thư giãn tuyệt vời.
+            </p>
+            <ul class="booking-benefits">
+              <li>Tư vấn miễn phí từ chuyên gia</li>
+              <li>Đặt lịch linh hoạt theo thời gian bạn</li>
+              <li>Giảm giá 10% cho khách hàng lần đầu</li>
+              <li>Cam kết dịch vụ chất lượng cao</li>
+              <li>Hỗ trợ 24/7 qua hotline</li>
+            </ul>
+          </div>
+
+          <form class="booking-form" @submit.prevent="submitBooking">
+            <div class="form-group">
+              <label for="phone">Số điện thoại *</label>
+              <input
+                type="tel"
+                id="phone"
+                v-model="bookingForm.phone"
+                required
+                placeholder="0123 456 789"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="service">Chọn dịch vụ *</label>
+              <select id="service" v-model="selectedService">
+                <option value="">-- Chọn dịch vụ --</option>
+                <option
+                  v-for="service in services"
+                  :key="service.id"
+                  :value="service"
+                >
+                  {{ service.name }} - {{ service.price }} VNĐ
+                </option>
+              </select>
+              <div class="form-row d-flex align-items-center gap-5">
+                <button
+                  type="button"
+                  class="add-service-btn"
+                  :disabled="!selectedService"
+                  @click="addService"
+                >
+                  Thêm dịch vụ
+                </button>
+                <!-- Checkbox tư vấn tại quán -->
+                <label class="consult-checkbox">
+                  <input
+                    type="checkbox"
+                    v-model="bookingForm.consultAtStore"
+                    style="width: 15px; height: 15px"
+                  />
+                  Tới quán nhân viên tư vấn
+                </label>
+              </div>
+            </div>
+
+            <!-- Selected Services List -->
+            <div class="selected-services" v-if="bookingForm.services.length">
+              <h4>Dịch vụ đã chọn:</h4>
+              <ul>
+                <li
+                  v-for="(service, index) in bookingForm.services"
+                  :key="index"
+                  class="selected-service-item"
+                >
+                  <span>{{ service.name }} - {{ service.price }} VNĐ</span>
+                  <div class="quantity-control">
+                    <label for="quantity-${index}">Số lượng:</label>
+                    <input
+                      type="number"
+                      :id="'quantity-' + index"
+                      v-model.number="service.soLuong"
+                      min="1"
+                      max="10"
+                      required
+                      class="quantity-input"
+                    />
+                    <button
+                      type="button"
+                      class="remove-service-btn"
+                      @click="removeService(index)"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="date">Ngày hẹn *</label>
+                <input
+                  type="date"
+                  id="date"
+                  v-model="bookingForm.date"
+                  :min="minDate"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="time">Giờ hẹn *</label>
+                <select id="time" v-model="bookingForm.time" required>
+                  <option value="">-- Chọn giờ --</option>
+                  <option
+                    v-for="slot in availableSlots"
+                    :key="slot.khungGio"
+                    :value="slot.khungGio"
+                  >
+                    {{ slot.khungGio }}
+                    <span v-if="slot.conLai <= 2"
+                      >(Còn {{ slot.conLai }} chỗ)</span
+                    >
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="notes">Ghi chú</label>
+              <textarea
+                id="notes"
+                v-model="bookingForm.notes"
+                rows="4"
+                placeholder="Những yêu cầu đặc biệt hoặc ghi chú khác..."
+              ></textarea>
+            </div>
+
+            <button
+              type="submit"
+              class="submit-btn"
+              :disabled="!bookingForm.services.length"
+            >
+              Đặt lịch hẹn
+            </button>
+          </form>
         </div>
-      </button>
-      <button class="carousel-control-next custom-nav" type="button" data-bs-target="#bannerCarousel" data-bs-slide="next">
-        <div class="nav-icon">
-          <i class="fa-solid fa-chevron-right"></i>
-        </div>
-      </button>
-
-      <!-- Modern Indicators -->
-      <div class="custom-indicators">
-        <button type="button" data-bs-target="#bannerCarousel" data-bs-slide-to="0" class="active"></button>
-        <button type="button" data-bs-target="#bannerCarousel" data-bs-slide-to="1"></button>
-        <button type="button" data-bs-target="#bannerCarousel" data-bs-slide-to="2"></button>
-        <button type="button" data-bs-target="#bannerCarousel" data-bs-slide-to="3"></button>
       </div>
-    </div>
+    </section>
 
-    <!-- Enhanced Floating Elements -->
-    <div class="floating-elements">
-      <div class="floating-element element-1">🌸</div>
-      <div class="floating-element element-2">🍃</div>
-      <div class="floating-element element-3">✨</div>
-      <div class="floating-element element-4">🌿</div>
-      <div class="floating-element element-5">💎</div>
-      <div class="floating-element element-6">🌙</div>
-    </div>
-
-    <!-- Scroll Indicator -->
-    <!-- <div class="scroll-indicator">
-      <div class="scroll-text">Scroll để khám phá</div>
-      <div class="scroll-arrow">
-        <i class="fa-solid fa-chevron-down"></i>
-      </div>
-    </div> -->
-  </div>
-
-  <!-- About Section with Glass Morphism -->
-  <section id="about" class="about-section" ref="aboutSection">
-    <div class="container">
-      <div class="section-header" data-aos="fade-up">
-        <span class="section-badge glass-badge">Về Chúng Tôi</span>
-        <h2 class="section-title gradient-text">Câu Chuyện TUTA Spa</h2>
-        <div class="section-divider">
-          <div class="divider-dot"></div>
-          <div class="divider-line"></div>
-          <i class="fa-solid fa-spa divider-icon pulse"></i>
-          <div class="divider-line"></div>
-          <div class="divider-dot"></div>
-        </div>
-      </div>
-      
-      <div class="about-container" data-aos="fade-up" data-aos-delay="200">
+    <!-- About Section -->
+    <section id="about" class="about">
+      <div class="container">
         <div class="about-content">
           <div class="about-text">
-            <h3 class="about-heading">Nơi Khởi Nguồn Vẻ Đẹp</h3>
-            <p class="about-description">
-              Với đội ngũ kỹ thuật viên <span class="text-highlight">giàu kinh nghiệm</span> và tâm huyết, 
-              luôn tiên phong ứng dụng <span class="text-highlight">công nghệ hiện đại</span> nhất trong ngành làm đẹp, 
-              <span class="brand-highlight">TUTA Spa</span> cam kết đem lại trải nghiệm dịch vụ hoàn hảo nhất.
+            <h2>Về TutaSpa</h2>
+            <p>
+              Với hơn 10 năm kinh nghiệm trong lĩnh vực chăm sóc sức khỏe và làm
+              đẹp, Serenity Spa tự hào là điểm đến lý tưởng cho những ai tìm
+              kiếm sự thư giãn, làm đẹp và chăm sóc toàn diện.
             </p>
-            <p class="about-mission">
-              Sự hài lòng và niềm tin của khách hàng chính là <span class="text-highlight">động lực thành công</span> 
-              lớn nhất của chúng tôi trong suốt hành trình phát triển.
+            <p>
+              Chúng tôi kết hợp tinh hoa của các liệu pháp truyền thống phương
+              Đông với công nghệ hiện đại phương Tây, tạo nên những dịch vụ độc
+              đáo và hiệu quả. Mỗi liệu trình đều được thiết kế riêng biệt, phù
+              hợp với nhu cầu và tình trạng cụ thể của từng khách hàng.
             </p>
-            <div class="about-stats">
-              <div class="stat-mini" data-aos="zoom-in" data-aos-delay="300">
-                <span class="stat-number count-up">1000+</span>
-                <span class="stat-label">Khách hàng</span>
+            <p>
+              Không gian spa được thiết kế theo phong cách tối giản nhưng sang
+              trọng, với ánh sáng dịu nhẹ, âm nhạc thư giãn và hương thơm tự
+              nhiên từ các loại tinh dầu cao cấp. Đây chính là nơi bạn có thể
+              tạm quên đi những lo toan trong cuộc sống và tận hưởng những phút
+              giây thư giãn tuyệt đối.
+            </p>
+            <div class="about-features">
+              <div class="about-feature">
+                <span>✓</span> Chứng nhận ISO 9001:2015
               </div>
-              <div class="stat-mini" data-aos="zoom-in" data-aos-delay="400">
-                <span class="stat-number count-up">5+</span>
-                <span class="stat-label">Năm kinh nghiệm</span>
+              <div class="about-feature">
+                <span>✓</span> Đội ngũ chuyên gia quốc tế
               </div>
-              <div class="stat-mini" data-aos="zoom-in" data-aos-delay="500">
-                <span class="stat-number count-up">4.9★</span>
-                <span class="stat-label">Đánh giá</span>
+              <div class="about-feature">
+                <span>✓</span> Sản phẩm organic cao cấp
               </div>
-            </div>
-          </div>
-          <div class="about-visual">
-            <div class="visual-card glass-card">
-              <div class="visual-image">
-                <img src="/src/assets/img/spa2.jpg" alt="TUTA Spa Interior" />
-                <div class="image-badge glass-badge">
-                  <i class="fa-solid fa-award"></i>
-                  <span>Spa Uy Tín</span>
-                </div>
+              <div class="about-feature">
+                <span>✓</span> Cam kết hài lòng 100%
               </div>
             </div>
           </div>
+          <div class="about-image"></div>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- Enhanced Benefits Section -->
-  <section class="benefits-section">
-    <div class="container">
-      <div class="section-header" data-aos="fade-up">
-        <span class="section-badge glass-badge">Ưu Điểm</span>
-        <h2 class="section-title gradient-text">Tại Sao Chọn TUTA Spa?</h2>
-        <p class="section-subtitle">Những lý do khiến hàng nghìn khách hàng tin tưởng và lựa chọn</p>
-      </div>
-
-      <div class="benefits-grid">
-        <div 
-          v-for="(benefit, i) in benefits" 
-          :key="i" 
-          class="benefit-item"
-          :data-aos="i % 2 === 0 ? 'fade-right' : 'fade-left'"
-          :data-aos-delay="i * 150"
-        >
-          <div class="benefit-card glass-card hover-glow">
-            <div class="benefit-icon">
-              <i :class="benefit.icon"></i>
-            </div>
-            <div class="benefit-content">
-              <h4 class="benefit-title">{{ benefit.title }}</h4>
-              <p class="benefit-description">{{ benefit.desc }}</p>
-            </div>
-            <div class="benefit-image">
-              <img :src="benefit.image" :alt="benefit.title" />
-            </div>
-            <div class="benefit-number">{{ String(i + 1).padStart(2, '0') }}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Enhanced Services Section -->
-  <section id="services" class="services-section" ref="servicesSection">
-    <div class="container">
-      <div class="section-header" data-aos="fade-up">
-        <span class="section-badge glass-badge">Dịch Vụ</span>
-        <h2 class="section-title gradient-text">Khám Phá Dịch Vụ Nổi Bật</h2>
-        <p class="section-subtitle">Trải nghiệm làm đẹp toàn diện với nhiều lựa chọn phù hợp mọi nhu cầu</p>
-      </div>
-
-      <!-- Enhanced Service Filter -->
-      <div class="filter-section" data-aos="fade-up" data-aos-delay="200">
-        <div class="filter-wrapper glass-panel">
-          <button 
-            @click="selectedTypeID = null" 
-            :class="['filter-button', { 'active': selectedTypeID === null }]"
-          >
-            <span>Tất Cả Dịch Vụ</span>
-          </button>
-          <button 
-            v-for="type in serviceTypes" 
-            :key="type.loaiDichVuID" 
-            @click="selectedTypeID = type.loaiDichVuID"
-            :class="['filter-button', { 'active': selectedTypeID === type.loaiDichVuID }]"
-          >
-            <span>{{ type.tenLoai }}</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Enhanced Services Grid -->
-      <div class="services-container" data-aos="fade-up" data-aos-delay="400">
-        <div class="services-grid">
-          <div 
-            v-for="(service, index) in filteredServices" 
-            :key="service.id" 
-            class="service-item"
-            :data-aos="'zoom-in'"
-            :data-aos-delay="index * 100"
-          >
-            <div class="service-card glass-card hover-lift">
-              <div class="service-image">
-                <img :src="'images/' + service.image" :alt="service.name" />
-                <div class="service-badge pulse">
-                  <i class="fa-solid fa-percentage"></i>
-                  <span>-25%</span>
-                </div>
-                <div class="service-overlay" @mouseenter="loadPricesForService(service.id)">
-                  <div class="overlay-content">
-                    <h5 class="service-name">{{ service.name }}</h5>
-                    <div v-if="servicePrices[service.id]" class="service-prices">
-                      <div class="prices-header">
-                        <i class="fa-solid fa-tags"></i>
-                        <span>Bảng Giá Dịch Vụ</span>
-                      </div>
-                      <div class="price-list glass-panel">
-                        <div v-for="gia in servicePrices[service.id]" :key="gia.thoiLuong" class="price-row">
-                          <span class="duration">{{ gia.thoiLuong }} phút</span>
-                          <span class="price">{{ gia.gia.toLocaleString('vi-VN') }}₫</span>
-                        </div>
-                      </div>
-                    </div>
-                    <router-link :to="`/ChiTietDichVu/${service.id}`" class="service-button glass-button">
-                      <span>Xem Chi Tiết</span>
-                      <i class="fa-solid fa-arrow-right"></i>
-                    </router-link>
-                  </div>
-                </div>
-              </div>
-              <div class="service-info">
-                <h4 class="service-title">{{ service.name }}</h4>
-                <div class="service-meta">
-                  <div class="rating">
-                    <i class="fa-solid fa-star"></i>
-                    <span>4.9</span>
-                  </div>
-                  <div class="popularity">
-                    <i class="fa-solid fa-heart"></i>
-                    <span>Yêu thích</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Enhanced CTA Section with Interactive Elements -->
-  <section class="cta-section">
-    <div class="container">
-      <div class="cta-wrapper">
-        <div class="cta-main glass-panel" data-aos="fade-right">
-          <div class="cta-content">
-            <div class="cta-header">
-              <div class="cta-icon pulse">
-                <i class="fa-solid fa-calendar-check"></i>
-              </div>
-              <div class="cta-text">
-                <h3 class="cta-title">Đặt Lịch Nhanh Chóng</h3>
-                <p class="cta-subtitle">Chỉ 30 giây - Trải nghiệm xong trả tiền - Hủy lịch miễn phí</p>
-              </div>
-            </div>
-            
-            <form class="booking-form" @submit.prevent="handleBookingSubmit">
-              <div class="form-container">
-                <div class="input-group">
-                  <i class="fa-solid fa-phone input-icon"></i>
-                  <input 
-                    type="tel" 
-                    v-model="phoneNumber"
-                    class="form-input glass-input" 
-                    placeholder="Nhập số điện thoại của bạn"
-                    required
-                  />
-                </div>
-                <button type="submit" class="submit-button glass-button hover-glow">
-                  <span>Đặt Lịch Tư Vấn</span>
-                  <i class="fa-solid fa-paper-plane"></i>
-                </button>
-              </div>
-            </form>
-
-            <div class="trust-indicators">
-              <div class="trust-item">
-                <i class="fa-solid fa-shield-alt"></i>
-                <span>Bảo mật thông tin</span>
-              </div>
-              <div class="trust-item">
-                <i class="fa-solid fa-clock"></i>
-                <span>Phản hồi nhanh 24/7</span>
-              </div>
-              <div class="trust-item">
-                <i class="fa-solid fa-undo"></i>
-                <span>Hủy lịch miễn phí</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="cta-side glass-panel" data-aos="fade-left">
-          <div class="review-section">
-            <div class="review-header">
-              <div class="review-icon pulse">
-                <i class="fa-solid fa-quote-left"></i>
-              </div>
-              <h4 class="review-title">Chia Sẻ Trải Nghiệm</h4>
-              <p class="review-subtitle">Đánh giá của bạn giúp chúng tôi hoàn thiện dịch vụ</p>
-            </div>
-            
-            <div class="review-interaction">
-              <router-link to="/DanhGia" class="rating-stars interactive-stars">
-                <span v-for="n in 5" :key="n" class="star" @mouseover="highlightStars(n)" @mouseleave="resetStars">★</span>
-              </router-link>
-              <p class="rating-text">Nhấn để đánh giá dịch vụ</p>
-            </div>
-
-            <div class="review-stats">
-              <div class="review-stat">
-                <span class="stat-value count-up">4.9/5</span>
-                <span class="stat-desc">Điểm trung bình</span>
-              </div>
-              <div class="review-stat">
-                <span class="stat-value count-up">500+</span>
-                <span class="stat-desc">Đánh giá</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Enhanced Stats Section with Counter Animation -->
-  <section class="stats-section">
-    <div class="container">
-      <div class="stats-header" data-aos="fade-up">
-        <h2 class="stats-title gradient-text">TUTA Spa Trong Số Liệu</h2>
-        <p class="stats-subtitle">Những con số ấn tượng khẳng định vị thế</p>
-      </div>
-      
-      <div class="stats-grid">
-        <div class="stat-card glass-card hover-glow" data-aos="zoom-in" data-aos-delay="0">
-          <div class="stat-icon pulse">
-            <i class="fa-solid fa-users"></i>
-          </div>
-          <div class="stat-info">
-            <div class="stat-number count-up" ref="customersCount">1000+</div>
-            <div class="stat-label">Khách Hàng Tin Tưởng</div>
-            <div class="stat-description">Khách hàng thường xuyên và hài lòng</div>
-          </div>
-        </div>
-        
-        <div class="stat-card glass-card hover-glow" data-aos="zoom-in" data-aos-delay="100">
-          <div class="stat-icon pulse">
-            <i class="fa-solid fa-calendar-alt"></i>
-          </div>
-          <div class="stat-info">
-            <div class="stat-number count-up" ref="experienceCount">5+</div>
-            <div class="stat-label">Năm Kinh Nghiệm</div>
-            <div class="stat-description">Phục vụ chuyên nghiệp không ngừng</div>
-          </div>
-        </div>
-        
-        <div class="stat-card glass-card hover-glow" data-aos="zoom-in" data-aos-delay="200">
-          <div class="stat-icon pulse">
-            <i class="fa-solid fa-spa"></i>
-          </div>
-          <div class="stat-info">
-            <div class="stat-number count-up" ref="servicesCount">50+</div>
-            <div class="stat-label">Dịch Vụ Đa Dạng</div>
-            <div class="stat-description">Đáp ứng mọi nhu cầu làm đẹp</div>
-          </div>
-        </div>
-        
-        <div class="stat-card glass-card hover-glow" data-aos="zoom-in" data-aos-delay="300">
-          <div class="stat-icon pulse">
-            <i class="fa-solid fa-award"></i>
-          </div>
-          <div class="stat-info">
-            <div class="stat-number count-up" ref="ratingCount">4.9</div>
-            <div class="stat-label">Đánh Giá Trung Bình</div>
-            <div class="stat-description">Chất lượng được khẳng định</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+    </section>
+  </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, nextTick } from 'vue';
-import { useRouter } from 'vue-router';
-import apiClient from "../../utils/axiosClient";
+import { ref, onMounted, watch } from "vue";
+import apiClient from "../utils/axiosClient";
 
-const router = useRouter();
+// Reactive state
 const services = ref([]);
-const serviceTypes = ref([]);
-const selectedTypeID = ref(null);
-const servicePrices = ref({});
-const phoneNumber = ref("");
-const aboutSection = ref(null);
-const servicesSection = ref(null);
+const categories = ref([]);
+const currentCategory = ref("all");
+const filteredServices = ref([]);
+const loading = ref(true);
+const error = ref(null);
+const minDate = ref("");
+const selectedService = ref(null);
+const bookingForm = ref({
+  phone: "",
+  services: [],
+  date: new Date().toISOString().split("T")[0],
+  time: "",
+  notes: "",
+  consultAtStore: false,
+});
+const modalForm = ref({
+  name: "",
+  phone: "",
+  email: "",
+  date: "",
+  time: "",
+  notes: "",
+});
+const availableSlots = ref([]);
+// Base URL for images
+const IMAGE_BASE_URL = "https://localhost:7183/images/";
 
-const benefits = [
-  { 
-    title: 'Đội Ngũ Chuyên Gia', 
-    desc: 'Kỹ thuật viên giàu kinh nghiệm, được đào tạo bài bản và cập nhật công nghệ mới nhất', 
-    image: '/src/assets/img/nhanvien.jpg',
-    icon: 'fa-solid fa-user-md'
+const currentSlide = ref(0);
+
+const slides = [
+  {
+    image:
+      "https://images.unsplash.com/photo-1540555700478-4be289fbecef?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+    title: "Thư Giãn & Tái Tạo",
+    subtitle: "Trải nghiệm không gian yên bình",
   },
-  { 
-    title: 'Thương Hiệu Ưu Việt', 
-    desc: 'Được hàng nghìn khách hàng tin tưởng và đánh giá cao về chất lượng dịch vụ', 
-    image: '/src/assets/img/logo.png',
-    icon: 'fa-solid fa-medal'
+  {
+    image:
+      "https://images.unsplash.com/photo-1596178065887-1198b6148b2b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+    title: "Chăm Sóc Chuyên Nghiệp",
+    subtitle: "Với đội ngũ chuyên gia giàu kinh nghiệm",
   },
-  { 
-    title: 'Thiết Bị Hiện Đại', 
-    desc: 'Đầu tư máy móc, thiết bị tối tân nhập khẩu từ các nước phát triển', 
-    image: '/src/assets/img/maymoc.jpg',
-    icon: 'fa-solid fa-cogs'
+  {
+    image:
+      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+    title: "Làm Đẹp Tự Nhiên",
+    subtitle: "Sử dụng 100% sản phẩm thiên nhiên",
   },
-  { 
-    title: 'Dịch Vụ Hoàn Hảo', 
-    desc: 'Phục vụ tận tâm, chu đáo với tiêu chuẩn 5 sao, mang đến sự hài lòng tuyệt đối', 
-    image: '/src/assets/img/phucvu.png',
-    icon: 'fa-solid fa-handshake'
-  }
 ];
 
-const filteredServices = computed(() => {
-  return services.value.filter(s => !selectedTypeID.value || s.loaiDichVuID === selectedTypeID.value);
-});
+const stats = [
+  { number: "10+", label: "Năm kinh nghiệm", icon: "🏆" },
+  { number: "5000+", label: "Khách hàng hài lòng", icon: "👥" },
+  { number: "24", label: "Dịch vụ chuyên nghiệp", icon: "🌿" },
+];
 
-onMounted(async () => {
-  try {
-    const [dvRes, ldvRes] = await Promise.all([
-      apiClient.get('DichVu'),
-      apiClient.get('LoaiDichVu')
-    ]);
-    services.value = dvRes.map(s => ({
-      id: s.dichVuID,
-      name: s.tenDichVu,
-      description: s.moTa,
-      image: s.hinhAnh || "default-service.jpg",
-      loaiDichVuID: s.loaiDichVuID
-    }));
-    serviceTypes.value = ldvRes;
-  } catch (err) {
-    console.error('Lỗi tải dữ liệu:', err);
-  }
+// Methods
 
-  // Initialize AOS with enhanced settings
-  if (window.AOS) {
-    window.AOS.init({
-      duration: 1200,
-      once: true,
-      offset: 120,
-      easing: 'ease-out-cubic',
-      delay: 100
+const addServiceFromCard = (service) => {
+  if (!bookingForm.value.services.some((s) => s.id === service.id)) {
+    bookingForm.value.services.push({
+      ...service,
+      soLuong: 1,
     });
   }
+  // Scroll to booking section
+  const bookingSection = document.getElementById("booking");
+  if (bookingSection) {
+    bookingSection.scrollIntoView({ behavior: "smooth" });
+  }
+};
+const fetchSlots = async () => {
+  if (!bookingForm.value.date) return;
+  try {
+    const res = await apiClient.get("/DatLich/slots", {
+      params: { ngay: bookingForm.value.date },
+    });
+    availableSlots.value = res.filter((slot) => slot.conLai > 0);
+  } catch (err) {
+    console.error("Lỗi khi lấy giờ hẹn:", err);
+    availableSlots.value = [];
+  }
+};
 
-  // Initialize counter animations
-  initCounterAnimations();
-});
+// Gọi API khi đổi ngày
+watch(
+  () => bookingForm.value.date,
+  () => {
+    fetchSlots();
+    bookingForm.value.time = "";
+  }
+);
 
-async function loadPricesForService(serviceId) {
-  if (!servicePrices.value[serviceId]) {
-    try {
-      const res = await apiClient.get(`BangGiaDichVu/GetGiaTheoThoiGian/${serviceId}`);
-      servicePrices.value[serviceId] = res;
-    } catch (err) {
-      console.error('Lỗi tải giá:', err);
-      servicePrices.value[serviceId] = [];
+const fetchCategories = async () => {
+  try {
+    const response = await apiClient.get("/LoaiDichVu");
+    const data = response;
+    categories.value = Array.isArray(data) ? data : data.data || [];
+    if (categories.value.length === 0) {
+      throw new Error("Không có danh mục dịch vụ nào được trả về");
     }
+  } catch (err) {
+    console.error("Lỗi khi tải danh mục:", err);
+    error.value = "Không thể tải danh mục dịch vụ. Hiển thị danh mục mặc định.";
+    categories.value = [
+      { loaiDichVuID: 1, tenLoai: "Triệt lông" },
+      { loaiDichVuID: 2, tenLoai: "Massage" },
+      { loaiDichVuID: 3, tenLoai: "Chăm sóc da" },
+    ];
   }
-}
+};
 
-function goToBooking() {
-  router.push('/DatLich');
-}
-
-function goToReview() {
-  router.push('/DanhGia');
-}
-
-function scrollToServices() {
-  servicesSection.value?.scrollIntoView({ behavior: 'smooth' });
-}
-
-function scrollToAbout() {
-  aboutSection.value?.scrollIntoView({ behavior: 'smooth' });
-}
-
-function handleBookingSubmit() {
-  if (phoneNumber.value) {
-    goToBooking();
+const fetchServices = async () => {
+  try {
+    const response = await apiClient.get("/DichVu");
+    const data = response;
+    const serviceData = Array.isArray(data) ? data : data.data || [];
+    services.value = serviceData
+      .filter((service) => service.trangThai === 1)
+      .map((service) => ({
+        id: service.dichVuID,
+        name: service.tenDichVu,
+        category:
+          categories.value.find(
+            (cat) => cat.loaiDichVuID === service.loaiDichVuID
+          )?.tenLoai || "Khác",
+        price: service.gia.toLocaleString("vi-VN"),
+        duration: service.thoiGian,
+        description: service.moTa,
+        image: `${IMAGE_BASE_URL}${service.hinhAnh}`,
+      }));
+    if (services.value.length === 0) {
+      throw new Error("Không có dịch vụ nào được trả về");
+    }
+  } catch (err) {
+    console.error("Lỗi khi tải dịch vụ:", err);
+    error.value = "Không thể tải danh sách dịch vụ. Hiển thị dịch vụ mặc định.";
+    services.value = [
+      {
+        id: 1,
+        name: "Triệt lông full chân",
+        category: "Triệt lông",
+        price: "500.000",
+        duration: 45,
+        description:
+          "Triệt lông vùng chân bằng công nghệ ánh sáng SHR không đau rát, hiệu quả cao",
+        image: `${IMAGE_BASE_URL}triet_long_full_chan.jpg`,
+      },
+    ];
   }
-}
+};
 
-function highlightStars(n) {
-  // Star highlighting logic
-}
+const filterServices = (category) => {
+  currentCategory.value = category;
+  filteredServices.value =
+    category === "all"
+      ? [...services.value]
+      : services.value.filter((service) => service.category === category);
+};
 
-function resetStars() {
-  // Reset star highlighting
-}
+const addService = () => {
+  if (
+    selectedService.value &&
+    !bookingForm.value.services.some((s) => s.id === selectedService.value.id)
+  ) {
+    bookingForm.value.services.push({ ...selectedService.value, soLuong: 1 });
+    selectedService.value = null; // Reset dropdown
+  }
+};
 
-function initCounterAnimations() {
-  // Initialize counter animations for stats
-}
+const removeService = (index) => {
+  bookingForm.value.services.splice(index, 1);
+};
+
+const submitBooking = async () => {
+  try {
+    const thoiGian = new Date(
+      new Date(
+        `${bookingForm.value.date}T${bookingForm.value.time}`
+      ).getTime() +
+        7 * 60 * 60 * 1000
+    ).toISOString();
+
+    const dichVus = bookingForm.value.consultAtStore
+      ? []
+      : bookingForm.value.services.map((s) => ({
+          dichVuID: s.id,
+          soLuong: s.soLuong,
+        }));
+
+    const payload = {
+      soDienThoai: bookingForm.value.phone,
+      thoiGian,
+      dichVus,
+      ghiChu: bookingForm.value.notes,
+      datTruoc: true,
+    };
+
+    const res = await apiClient.post("/DatLich", payload);
+
+    alert("Đặt lịch thành công!");
+    bookingForm.value = {
+      phone: "",
+      services: [],
+      date: new Date().toISOString().split("T")[0],
+      time: "",
+      notes: "",
+    };
+    selectedService.value = null;
+  } catch (err) {
+    console.error("Lỗi đặt lịch:", err);
+    alert("Đặt lịch thất bại!");
+  }
+};
+
+const resetBookingForm = () => {
+  bookingForm.value = {
+    phone: "",
+    services: [],
+    date: "",
+    time: "",
+    notes: "",
+  };
+  selectedService.value = null;
+};
+
+const resetModalForm = () => {
+  modalForm.value = {
+    name: "",
+    phone: "",
+    email: "",
+    date: "",
+    time: "",
+    notes: "",
+  };
+};
+
+// Lifecycle hook
+onMounted(async () => {
+  minDate.value = new Date().toISOString().split("T")[0];
+  loading.value = true;
+  await fetchCategories();
+  await fetchServices();
+  loading.value = false;
+  filterServices("all");
+  fetchSlots();
+});
 </script>
 
-<style scoped>
-/* Enhanced Global Styles with Modern Variables */
-:root {
-  --primary-color: #00695c;
-  --primary-light: #4db6ac;
-  --primary-dark: #004d40;
-  --secondary-color: #22c55e;
-  --secondary-light: #86efac;
-  --accent-color: #f59e0b;
-  --accent-light: #fbbf24;
-  --background-light: #f8fafc;
-  --background-dark: #1e293b;
-  --text-primary: #1f2937;
-  --text-secondary: #64748b;
-  --white: #ffffff;
-  --glass-bg: rgba(255, 255, 255, 0.1);
-  --glass-border: rgba(255, 255, 255, 0.2);
-  --shadow-light: 0 4px 20px rgba(0, 0, 0, 0.08);
-  --shadow-medium: 0 8px 30px rgba(0, 0, 0, 0.12);
-  --shadow-heavy: 0 20px 60px rgba(0, 0, 0, 0.15);
-  --shadow-glow: 0 0 50px rgba(34, 197, 94, 0.3);
-  --border-radius: 16px;
-  --border-radius-lg: 24px;
-  --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-fast: all 0.2s ease;
-  --gradient-primary: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
-  --gradient-accent: linear-gradient(135deg, var(--accent-color), #d97706);
-  --gradient-text: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-}
-
-/* Glass Morphism Components */
-.glass-panel {
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--border-radius-lg);
-}
-
-.glass-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(30px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-medium);
-}
-
-.glass-badge {
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
-}
-
-.glass-input {
-  background: var(--glass-bg);
-  backdrop-filter: blur(15px);
-  border: 1px solid var(--glass-border);
-}
-
-.glass-button {
-  background: var(--glass-bg);
-  backdrop-filter: blur(15px);
-  border: 1px solid var(--glass-border);
-}
-
-/* Enhanced Animations */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(50px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-50px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(50px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-}
-
-@keyframes glow {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 40px rgba(34, 197, 94, 0.6);
-  }
-}
-
-@keyframes floatAnimation {
-  0%, 100% { 
-    transform: translateY(0px) rotate(0deg); 
-    opacity: 0.4; 
-  }
-  25% { 
-    transform: translateY(-30px) rotate(5deg); 
-    opacity: 0.7; 
-  }
-  50% { 
-    transform: translateY(-20px) rotate(-5deg); 
-    opacity: 0.5; 
-  }
-  75% { 
-    transform: translateY(-25px) rotate(3deg); 
-    opacity: 0.6; 
-  }
-}
-
-@keyframes particleFloat {
-  0% {
-    transform: translateY(100vh) rotate(0deg);
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(-100px) rotate(360deg);
-    opacity: 0;
-  }
-}
-
-@keyframes bounceArrow {
-  0%, 20%, 50%, 80%, 100% {
-    transform: translateY(0);
-  }
-  40% {
-    transform: translateY(-10px);
-  }
-  60% {
-    transform: translateY(-5px);
-  }
-}
-
-/* Animation Classes */
-.animate-badge {
-  animation: fadeInUp 1s ease-out 0.3s both;
-}
-
-.animate-title {
-  animation: slideInLeft 1s ease-out 0.6s both;
-}
-
-.animate-subtitle {
-  animation: slideInRight 1s ease-out 0.9s both;
-}
-
-.animate-button {
-  animation: fadeInUp 1s ease-out 1.2s both;
-}
-
-.pulse {
-  animation: pulse 2s infinite;
-}
-
-.hover-glow:hover {
-  animation: glow 2s infinite;
-}
-
-.hover-lift {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.hover-lift:hover {
-  transform: translateY(-10px) scale(1.02);
-  box-shadow: var(--shadow-heavy);
-}
-
-.count-up {
-  font-variant-numeric: tabular-nums;
-}
-
-/* Enhanced Hero Section */
-.hero-section {
-  position: relative;
+<style>
+.carousel-item {
   height: 100vh;
-  overflow: hidden;
+  background-size: cover !important;
+  background-position: center !important;
 }
 
-.hero-slide {
-  height: 100vh;
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.carousel-caption {
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-.hero-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, 
-    rgba(0, 105, 92, 0.8) 0%, 
-    rgba(34, 197, 94, 0.6) 50%, 
-    rgba(245, 158, 11, 0.4) 100%);
-  backdrop-filter: blur(2px);
+.font-lora {
+  font-family: "Lora", serif;
 }
 
-.hero-particles {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #fbbf24;
 }
 
-.hero-particles::before,
-.hero-particles::after {
-  content: '';
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.6);
-  border-radius: 50%;
-  animation: particleFloat 15s infinite linear;
-}
-
-.hero-particles::before {
-  left: 20%;
-  animation-delay: 0s;
-}
-
-.hero-particles::after {
-  left: 80%;
-  animation-delay: 7s;
-}
-
-.hero-content {
-  position: relative;
-  z-index: 3;
-  text-align: center;
-  color: var(--white);
-  max-width: 900px;
-  padding: 2rem;
-}
-
-.hero-badge {
-  display: inline-block;
-  background: var(--glass-bg);
-  backdrop-filter: blur(25px);
-  border: 1px solid var(--glass-border);
-  padding: 0.75rem 1.5rem;
-  border-radius: 50px;
+.stat-label {
   font-size: 0.9rem;
-  font-weight: 600;
-  letter-spacing: 1px;
-  margin-bottom: 2rem;
-  text-transform: uppercase;
-  box-shadow: var(--shadow-light);
+  opacity: 0.9;
 }
 
-.hero-title {
-  font-size: clamp(2.5rem, 5vw, 4.5rem);
-  font-weight: 800;
-  margin-bottom: 1.5rem;
-  line-height: 1.1;
-  background: linear-gradient(135deg, #ffffff 0%, #84cc16 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+/* Features Section */
+.features {
+  padding: 6rem 2rem;
+  background: white;
 }
 
-.hero-subtitle {
-  font-size: clamp(1.1rem, 2.5vw, 1.4rem);
-  margin-bottom: 3rem;
-  opacity: 0.95;
-  font-weight: 400;
-  line-height: 1.6;
-  max-width: 700px;
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(280px, 1fr));
+  gap: 3rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.feature-card {
+  text-align: center;
+  padding: 2rem;
+  border-radius: 15px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(120, 186, 126, 0.2);
+}
+
+.feature-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #78ba7e;
+}
+
+.feature-card h3 {
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+  color: #2d4a2d;
+}
+
+/* Services Section */
+.services {
+  padding: 8rem 2rem;
+  background: linear-gradient(135deg, #f8fdf8 0%, #f0fdf4 50%, #e8f5e8 100%);
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.section-title {
+  text-align: center;
+  font-size: 2.8rem;
+  margin-bottom: 1rem;
+  color: #2d4a2d;
+  position: relative;
+  font-family: "Lora", serif;
+}
+
+.section-subtitle {
+  text-align: center;
+  font-size: 1.1rem;
+  color: #4b5563;
+  margin-bottom: 4rem;
+  max-width: 600px;
   margin-left: auto;
   margin-right: auto;
 }
 
-/* Enhanced CTA Buttons */
-.btn-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1.25rem 2.5rem;
-  border: none;
-  border-radius: 50px;
-  font-weight: 600;
-  font-size: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  transition: var(--transition);
-  position: relative;
-  overflow: hidden;
-  box-shadow: var(--shadow-medium);
-}
-
-.btn-cta::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.6s ease;
-}
-
-.btn-cta:hover::before {
-  left: 100%;
-}
-
-.btn-cta.primary {
-  background: var(--gradient-primary);
-  color: var(--white);
-}
-
-.btn-cta.secondary {
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-  color: var(--white);
-}
-
-.btn-cta.tertiary {
-  background: var(--gradient-accent);
-  color: var(--white);
-}
-
-.btn-cta.quaternary {
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-  color: var(--white);
-}
-
-.btn-cta:hover {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-}
-
-.btn-cta i {
-  font-size: 1.1rem;
-  transition: transform 0.3s ease;
-}
-
-.btn-cta:hover i {
-  transform: translateX(3px);
-}
-
-/* Enhanced Navigation */
-.custom-nav {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  z-index: 10;
-  transition: var(--transition);
-}
-
-.nav-icon {
-  width: 70px;
-  height: 70px;
-  background: var(--glass-bg);
-  backdrop-filter: blur(25px);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--white);
-  font-size: 1.5rem;
-  transition: var(--transition);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--shadow-light);
-}
-
-.nav-icon:hover {
-  background: rgba(34, 197, 94, 0.3);
-  transform: scale(1.1);
-  border-color: rgba(34, 197, 94, 0.5);
-  box-shadow: var(--shadow-glow);
-}
-
-.carousel-control-prev { left: 2rem; }
-.carousel-control-next { right: 2rem; }
-
-.custom-indicators {
-  position: absolute;
-  bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 1rem;
-  z-index: 10;
-}
-
-.custom-indicators button {
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  background: transparent;
-  transition: var(--transition);
-  cursor: pointer;
-  position: relative;
-}
-
-.custom-indicators button::after {
-  content: '';
-  position: absolute;
-  inset: -3px;
-  border-radius: 50%;
-  background: var(--gradient-primary);
-  opacity: 0;
-  transition: var(--transition);
-  z-index: -1;
-}
-
-.custom-indicators button.active,
-.custom-indicators button:hover {
-  background: var(--secondary-color);
-  border-color: var(--secondary-color);
-  transform: scale(1.3);
-}
-
-.custom-indicators button.active::after {
-  opacity: 0.3;
-}
-
-/* Enhanced Floating Elements */
-.floating-elements {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.floating-element {
-  position: absolute;
-  font-size: 2.5rem;
-  opacity: 0.4;
-  animation: floatAnimation 10s ease-in-out infinite;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
-}
-
-.element-1 { top: 15%; left: 10%; animation-delay: 0s; }
-.element-2 { top: 35%; right: 15%; animation-delay: 2s; }
-.element-3 { bottom: 25%; left: 20%; animation-delay: 4s; }
-.element-4 { top: 60%; right: 25%; animation-delay: 6s; }
-.element-5 { top: 20%; right: 40%; animation-delay: 1s; font-size: 2rem; }
-.element-6 { bottom: 40%; left: 45%; animation-delay: 5s; font-size: 2rem; }
-
-/* Scroll Indicator */
-.scroll-indicator {
-  position: absolute;
-  bottom: 1rem;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
-  text-align: center;
-  color: var(--white);
-}
-
-.scroll-text {
-  font-size: 0.85rem;
-  margin-bottom: 0.5rem;
-  opacity: 0.8;
-}
-
-.scroll-arrow {
-  font-size: 1.2rem;
-  animation: bounceArrow 2s infinite;
-}
-
-/* Enhanced Sections */
-section {
-  padding: 8rem 0;
-  position: relative;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem;
-}
-
-.section-header {
-  text-align: center;
-  margin-bottom: 5rem;
-}
-
-.section-badge {
-  display: inline-block;
-  background: var(--gradient-primary);
-  color: var(--white);
-  padding: 0.5rem 1.5rem;
-  border-radius: 25px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 1rem;
-  box-shadow: var(--shadow-light);
-}
-
-.section-title {
-  font-size: clamp(2rem, 4vw, 3.5rem);
-  font-weight: 800;
-  color: var(--text-primary);
-  margin-bottom: 1rem;
-  line-height: 1.2;
-}
-
-.gradient-text {
-  background: var(--gradient-text);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.section-subtitle {
-  font-size: 1.2rem;
-  color: var(--text-secondary);
-  max-width: 600px;
-  margin: 0 auto 2rem;
-  line-height: 1.6;
-}
-
-.section-divider {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
-
-.divider-dot {
-  width: 10px;
-  height: 10px;
-  background: var(--secondary-color);
-  border-radius: 50%;
-  box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
-}
-
-.divider-line {
+.section-title::after {
+  content: "";
+  display: block;
   width: 80px;
   height: 3px;
-  background: linear-gradient(90deg, transparent, var(--secondary-color), transparent);
+  background: linear-gradient(45deg, #78ba7e, #5e8c64);
+  margin: 1rem auto 0;
   border-radius: 2px;
 }
 
-.divider-icon {
-  color: var(--secondary-color);
-  font-size: 1.8rem;
-  filter: drop-shadow(0 2px 4px rgba(34, 197, 94, 0.3));
-}
-
-/* Enhanced About Section */
-.about-section {
-  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-  position: relative;
-}
-
-.about-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 200px;
-  background: linear-gradient(180deg, rgba(248, 250, 252, 0.8), transparent);
-}
-
-.about-container {
-  max-width: 1100px;
-  margin: 0 auto;
-  position: relative;
-  z-index: 2;
-}
-
-.about-content {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 5rem;
-  align-items: center;
-}
-
-.about-text {
-  padding-right: 2rem;
-}
-
-.about-heading {
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: var(--primary-color);
-  margin-bottom: 1.5rem;
-  line-height: 1.3;
-}
-
-.about-description {
-  font-size: 1.15rem;
-  line-height: 1.8;
-  color: var(--text-primary);
-  margin-bottom: 1.5rem;
-}
-
-.about-mission {
-  font-size: 1.1rem;
-  color: var(--text-secondary);
-  font-style: italic;
-  margin-bottom: 2rem;
-  line-height: 1.7;
-  padding: 1.5rem;
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
-  border-radius: var(--border-radius);
-  border-left: 4px solid var(--secondary-color);
-}
-
-.text-highlight {
-  color: var(--primary-color);
-  font-weight: 600;
-  position: relative;
-}
-
-.text-highlight::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: var(--gradient-primary);
-  border-radius: 1px;
-  opacity: 0.3;
-}
-
-.brand-highlight {
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: black;
-  background-clip: text;
-  font-weight: 700;
-  font-size: 1.1em;
-}
-
-.about-stats {
+.service-categories {
   display: flex;
-  gap: 2.5rem;
-  margin-top: 2rem;
-}
-
-.stat-mini {
-  text-align: center;
-  padding: 1rem;
-  background: var(--glass-bg);
-  backdrop-filter: blur(15px);
-  border-radius: var(--border-radius);
-  border: 1px solid var(--glass-border);
-  transition: var(--transition);
-}
-
-.stat-mini:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-medium);
-}
-
-.stat-mini .stat-number {
-  display: block;
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--secondary-color);
-  margin-bottom: 0.25rem;
-}
-
-.stat-mini .stat-label {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-.about-visual {
-  position: relative;
-}
-
-.visual-card {
-  position: relative;
-  border-radius: var(--border-radius-lg);
-  overflow: hidden;
-  box-shadow: var(--shadow-heavy);
-  transform: rotate(2deg);
-  transition: var(--transition);
-}
-
-.visual-card:hover {
-  transform: rotate(0deg) scale(1.02);
-  box-shadow: var(--shadow-glow);
-}
-
-.visual-image {
-  position: relative;
-  height: 450px;
-  overflow: hidden;
-}
-
-.visual-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.6s ease;
-}
-
-.visual-card:hover .visual-image img {
-  transform: scale(1.1);
-}
-
-.image-badge {
-  position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  padding: 0.75rem 1.25rem;
-  border-radius: 25px;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 600;
-  color: var(--primary-color);
-  font-size: 0.9rem;
-  box-shadow: var(--shadow-light);
-  transition: var(--transition);
-}
-
-.image-badge:hover {
-  transform: scale(1.05);
-  box-shadow: var(--shadow-medium);
-}
-
-/* Enhanced Benefits Section */
-.benefits-section {
-  background: linear-gradient(135deg, #e6f5ef 0%, #ccf2dd 100%);
-  position: relative;
-  overflow: hidden;
-}
-
-.benefits-section::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(34, 197, 94, 0.1) 0%, transparent 70%);
-  animation: pulse 10s infinite;
-}
-
-.benefits-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2.5rem;
-  max-width: 1000px;
-  margin: 0 auto;
-  position: relative;
-  z-index: 2;
-}
-
-.benefit-item {
-  height: 100%;
-}
-
-.benefit-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(30px);
-  border-radius: var(--border-radius-lg);
-  padding: 2.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  transition: var(--transition);
-  position: relative;
-  overflow: hidden;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.benefit-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: var(--gradient-primary);
-  transform: scaleX(0);
-  transition: transform 0.4s ease;
-  border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
-}
-
-.benefit-card:hover {
-  transform: translateY(-10px);
-  box-shadow: var(--shadow-heavy);
-}
-
-.benefit-card:hover::before {
-  transform: scaleX(1);
-}
-
-.benefit-icon {
-  width: 80px;
-  height: 80px;
-  background: var(--gradient-primary);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
   justify-content: center;
-  color: var(--white);
-  font-size: 2rem;
-  margin-bottom: 1.5rem;
-  transition: var(--transition);
-  box-shadow: var(--shadow-medium);
+  gap: 1rem;
+  margin-bottom: 3rem;
+  flex-wrap: wrap;
 }
 
-.benefit-card:hover .benefit-icon {
-  transform: scale(1.1) rotate(5deg);
-  box-shadow: var(--shadow-glow);
-}
-
-.benefit-content {
-  flex: 1;
-}
-
-.benefit-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 1rem;
-  line-height: 1.3;
-}
-
-.benefit-description {
-  color: var(--text-secondary);
-  line-height: 1.7;
-  font-size: 1rem;
-}
-
-.benefit-image {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  overflow: hidden;
-  opacity: 0.1;
-  transition: var(--transition);
-  border: 3px solid rgba(255, 255, 255, 0.5);
-}
-
-.benefit-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.benefit-card:hover .benefit-image {
-  opacity: 0.3;
-  transform: scale(1.1);
-}
-
-.benefit-number {
-  position: absolute;
-  bottom: 1rem;
-  right: 1rem;
-  width: 50px;
-  height: 50px;
-  background: var(--gradient-accent);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--white);
-  font-weight: 700;
-  font-size: 1.2rem;
-  box-shadow: var(--shadow-light);
-  transition: var(--transition);
-}
-
-.benefit-card:hover .benefit-number {
-  transform: scale(1.1);
-  box-shadow: var(--shadow-medium);
-}
-
-/* Enhanced Services Section */
-.services-section {
-  background: linear-gradient(135deg, var(--background-light) 0%, #f1f5f9 100%);
-  position: relative;
-}
-
-.filter-section {
-  text-align: center;
-  margin-bottom: 4rem;
-}
-
-.filter-wrapper {
-  display: inline-flex;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(25px);
-  border-radius: 50px;
-  padding: 0.75rem;
-  gap: 0.5rem;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: var(--shadow-medium);
-}
-
-.filter-button {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  background: transparent;
+.category-btn {
+  background: white;
+  border: 2px solid #78ba7e;
+  color: #78ba7e;
+  padding: 0.8rem 2rem;
   border-radius: 25px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  transition: var(--transition);
   cursor: pointer;
-  position: relative;
-  white-space: nowrap;
+  font-weight: 500;
+  transition: all 0.3s ease;
 }
 
-.filter-button::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 25px;
-  background: var(--gradient-primary);
-  opacity: 0;
-  transition: var(--transition);
-  z-index: -1;
-}
-
-.filter-button:hover {
-  color: var(--primary-color);
+.category-btn.active,
+.category-btn:hover {
+  background: #78ba7e;
+  color: white;
   transform: translateY(-2px);
-}
-
-.filter-button:hover::before {
-  opacity: 0.1;
-}
-
-.filter-button.active {
-  background: var(--gradient-primary);
-  color: var(--white);
-  box-shadow: var(--shadow-light);
-  transform: translateY(-2px);
-}
-
-.services-container {
-  max-width: 900px;
-  margin: 0 auto;
+  box-shadow: 0 5px 15px rgba(120, 186, 126, 0.4);
 }
 
 .services-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 2.5rem;
-}
-
-.service-item {
-  height: 100%;
+  margin-top: 3rem;
 }
 
 .service-card {
-  background: var(--white);
-  border-radius: var(--border-radius-lg);
-  overflow: hidden;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  transition: var(--transition);
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  box-shadow: var(--shadow-light);
+  background: white;
+  padding: 2.5rem 2rem;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 8px 25px rgba(120, 186, 126, 0.12);
+  transition: all 0.4s ease;
   position: relative;
+  overflow: hidden;
+  border: 1px solid #e8f5e8;
 }
 
 .service-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: var(--border-radius-lg);
-  padding: 2px;
-  background: var(--gradient-primary);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: xor;
-  opacity: 0;
-  transition: var(--transition);
-}
-
-.service-card:hover::before {
-  opacity: 1;
-}
-
-.service-image {
-  position: relative;
-  height: 280px;
-  overflow: hidden;
-}
-
-.service-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.6s ease;
-}
-
-.service-card:hover .service-image img {
-  transform: scale(1.1);
-}
-
-.service-badge {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  background: linear-gradient(135deg, #ef4444, #dc2626);
-  color: var(--white);
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  z-index: 2;
-  animation: pulse 2s infinite;
-}
-
-.service-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, 
-    rgba(0, 105, 92, 0.95) 0%, 
-    rgba(34, 197, 94, 0.9) 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: var(--transition);
-  padding: 2rem;
-  backdrop-filter: blur(5px);
-}
-
-.service-card:hover .service-overlay {
-  opacity: 1;
-}
-
-.overlay-content {
-  text-align: center;
-  color: var(--white);
-  transform: translateY(30px);
-  transition: var(--transition);
-}
-
-.service-card:hover .overlay-content {
-  transform: translateY(0);
-}
-
-.service-name {
-  font-size: 1.6rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  line-height: 1.3;
-}
-
-.service-prices {
-  margin-bottom: 1.5rem;
-}
-
-.prices-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  font-weight: 600;
-  font-size: 1.1rem;
-}
-
-.price-list {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(15px);
-  border-radius: var(--border-radius);
-  padding: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.price-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.price-row:last-child {
-  border-bottom: none;
-}
-
-.duration {
-  font-weight: 500;
-  font-size: 0.95rem;
-}
-
-.price {
-  font-weight: 700;
-  color: var(--accent-light);
-  font-size: 1rem;
-}
-
-.service-button {
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: var(--white);
-  padding: 0.75rem 1.5rem;
-  border-radius: 25px;
-  text-decoration: none;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: var(--transition);
-  backdrop-filter: blur(15px);
-}
-
-.service-button:hover {
-  background: rgba(255, 255, 255, 0.3);
-  color: var(--white);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-light);
-}
-
-.service-info {
-  padding: 2rem;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.service-title {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 1rem;
-  line-height: 1.3;
-}
-
-.service-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.rating, .popularity {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  padding: 0.5rem 1rem;
-  background: var(--glass-bg);
-  border-radius: 20px;
-  border: 1px solid var(--glass-border);
-}
-
-.rating i {
-  color: var(--accent-color);
-}
-
-.popularity i {
-  color: #ef4444;
-}
-
-/* Enhanced CTA Section */
-.cta-section {
-  background: linear-gradient(135deg, 
-    var(--primary-dark) 0%, 
-    var(--primary-color) 50%, 
-    var(--secondary-color) 100%);
-  color: var(--white);
-  position: relative;
-  overflow: hidden;
-}
-
-.cta-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20"><circle cx="10" cy="10" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="30" cy="15" r="1.5" fill="rgba(255,255,255,0.08)"/><circle cx="50" cy="5" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="70" cy="12" r="1.2" fill="rgba(255,255,255,0.06)"/><circle cx="90" cy="8" r="1" fill="rgba(255,255,255,0.09)"/></svg>');
-  animation: floatAnimation 20s linear infinite;
-}
-
-.cta-wrapper {
-  display: grid;
-  grid-template-columns: 1.5fr 1fr;
-  gap: 4rem;
-  align-items: center;
-  position: relative;
-  z-index: 2;
-}
-
-.cta-main {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(25px);
-  border-radius: var(--border-radius-lg);
-  padding: 3.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: var(--shadow-heavy);
-}
-
-.cta-header {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  margin-bottom: 2.5rem;
-}
-
-.cta-icon {
-  width: 70px;
-  height: 70px;
-  background: var(--gradient-accent);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  color: var(--white);
-  box-shadow: var(--shadow-medium);
-  animation: pulse 3s infinite;
-}
-
-.cta-text h3 {
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  background: linear-gradient(135deg, #d1eb71 0%, #fbbf24 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.cta-text p {
-  font-size: 1.1rem;
-  opacity: 0.9;
-  line-height: 1.6;
-}
-
-.booking-form {
-  margin-bottom: 2rem;
-}
-
-.form-container {
-  display: flex;
-  gap: 1rem;
-  align-items: stretch;
-  flex-wrap: wrap;
-}
-
-.input-group {
-  position: relative;
-  flex: 1;
-  min-width: 250px;
-}
-
-.input-icon {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 1.1rem;
-  z-index: 2;
-}
-
-.form-input {
-  width: 100%;
-  padding: 1rem 1rem 1rem 3rem;
-  border: none;
-  border-radius: 25px;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(15px);
-  color: var(--white);
-  font-size: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: var(--transition);
-}
-
-.form-input::placeholder {
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.form-input:focus {
-  outline: none;
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.4);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
-  transform: translateY(-2px);
-}
-
-.submit-button {
-  padding: 1rem 2rem;
-  border: none;
-  border-radius: 25px;
-  background: var(--gradient-accent);
-  color: var(--white);
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: var(--transition);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  min-width: 180px;
-  justify-content: center;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.submit-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4);
-  background: linear-gradient(135deg, #f59e0b, #ea580c);
-}
-
-.trust-indicators {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.trust-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-  opacity: 0.9;
-  padding: 0.75rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 15px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  flex: 1;
-  min-width: 150px;
-  justify-content: center;
-  transition: var(--transition);
-}
-
-.trust-item:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-2px);
-}
-
-.trust-item i {
-  color: var(--accent-light);
-  font-size: 1rem;
-}
-
-.cta-side {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(25px);
-  border-radius: var(--border-radius-lg);
-  padding: 3rem;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  text-align: center;
-}
-
-.review-section {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.review-header {
-  margin-bottom: 2rem;
-}
-
-.review-icon {
-  width: 60px;
-  height: 60px;
-  background: var(--gradient-primary);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  color: var(--white);
-  margin: 0 auto 1rem;
-  box-shadow: var(--shadow-light);
-}
-
-.review-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  color: var(--white);
-}
-
-.review-subtitle {
-  font-size: 1rem;
-  opacity: 0.8;
-  line-height: 1.5;
-}
-
-.review-interaction {
-  margin-bottom: 2rem;
-}
-
-.interactive-stars {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  text-decoration: none;
-}
-
-.star {
-  font-size: 2rem;
-  color: rgba(255, 255, 255, 0.3);
-  transition: var(--transition);
-  cursor: pointer;
-}
-
-.star:hover,
-.star.highlighted {
-  color: var(--accent-light);
-  transform: scale(1.2);
-  text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
-}
-
-.rating-text {
-  font-size: 0.9rem;
-  opacity: 0.8;
-  margin: 0;
-}
-
-.review-stats {
-  display: flex;
-  justify-content: space-around;
-  gap: 1rem;
-}
-
-.review-stat {
-  text-align: center;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: var(--border-radius);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  flex: 1;
-  transition: var(--transition);
-}
-
-.review-stat:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-light);
-}
-
-.stat-value {
-  display: block;
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: var(--accent-light);
-  margin-bottom: 0.25rem;
-}
-
-.stat-desc {
-  font-size: 0.8rem;
-  opacity: 0.8;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* Enhanced Stats Section */
-.stats-section {
-  background: linear-gradient(135deg, var(--background-dark) 0%, #334155 100%);
-  color: var(--white);
-  position: relative;
-  overflow: hidden;
-}
-
-.stats-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(ellipse at center, rgba(34, 197, 94, 0.1) 0%, transparent 70%);
-}
-
-.stats-header {
-  text-align: center;
-  margin-bottom: 5rem;
-  position: relative;
-  z-index: 2;
-}
-
-.stats-title {
-  font-size: clamp(2.5rem, 5vw, 4rem);
-  font-weight: 800;
-  margin-bottom: 1rem;
-  background: linear-gradient(135deg, #ffffff 0%, #22c55e 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.stats-subtitle {
-  font-size: 1.3rem;
-  opacity: 0.8;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2.5rem;
-  max-width: 1000px;
-  margin: 0 auto;
-  position: relative;
-  z-index: 2;
-}
-
-.stat-card {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(25px);
-  border-radius: var(--border-radius-lg);
-  padding: 3rem 2rem;
-  text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: var(--transition);
-  position: relative;
-  overflow: hidden;
-}
-
-.stat-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  transition: left 0.8s ease;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(120, 186, 126, 0.15),
+    transparent
+  );
+  transition: all 0.6s;
 }
 
-.stat-card:hover::before {
+.service-card:hover::before {
   left: 100%;
 }
 
-.stat-card:hover {
-  transform: translateY(-10px) scale(1.02);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  border-color: rgba(34, 197, 94, 0.3);
+.service-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(120, 186, 126, 0.2);
 }
 
-.stat-icon {
-  width: 100px;
-  height: 100px;
-  background: var(--gradient-primary);
+.service-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+}
+
+.service-card h3 {
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+  color: #2d4a2d;
+  font-family: "Lora", serif;
+}
+
+.service-card p {
+  color: #6b7280;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.service-duration {
+  display: inline-block;
+  background: #f0fdf4;
+  color: #4a6741;
+  padding: 0.3rem 1rem;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.service-price {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #f59e0b;
+  margin-bottom: 1.5rem;
+  font-family: "Lora", serif;
+}
+
+.service-book-btn {
+  background: linear-gradient(45deg, #78ba7e, #5e8c64);
+  color: white;
+  padding: 0.9rem 2.5rem;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+}
+
+.service-book-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(120, 186, 126, 0.5);
+}
+
+/* Testimonials */
+.testimonials {
+  padding: 8rem 2rem;
+  background: white;
+}
+
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 4rem auto 0;
+}
+
+.testimonial-card {
+  background: linear-gradient(135deg, #f8fdf8 0%, #f0fdf4 100%);
+  padding: 2rem;
+  border-radius: 15px;
+  position: relative;
+}
+
+.testimonial-card::before {
+  content: '"';
+  position: absolute;
+  top: -10px;
+  left: 20px;
+  font-size: 4rem;
+  color: #78ba7e;
+  opacity: 0.3;
+}
+
+.testimonial-text {
+  font-style: italic;
+  margin-bottom: 1rem;
+  color: #374151;
+}
+
+.testimonial-author {
+  font-weight: bold;
+  color: #2d4a2d;
+}
+
+.testimonial-rating {
+  color: #fbbf24;
+  margin-bottom: 0.5rem;
+}
+
+/* Booking Section */
+.booking {
+  padding: 8rem 2rem;
+  background: linear-gradient(135deg, #78ba7e 0%, #6ba371 50%, #5e8c64 100%);
+  color: white;
+}
+
+.booking-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: center;
+}
+
+.booking-info h2 {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  font-family: "Lora", serif;
+}
+
+.booking-info p {
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+}
+
+.booking-benefits {
+  list-style: none;
+  margin-bottom: 2rem;
+}
+
+.booking-benefits li {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.booking-benefits li::before {
+  content: "✓";
+  color: #fbbf24;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.booking-form {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 3rem;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+  margin-bottom: 2rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: white;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  transition: all 0.3s ease;
+  color: #2d4a2d;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  background: white;
+  transform: scale(1.02);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.submit-btn {
+  background: linear-gradient(45deg, #f59e0b, #f97316);
+  color: white;
+  padding: 1.2rem 3rem;
+  border: none;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4);
+}
+
+.add-service-btn {
+  background: linear-gradient(45deg, #78ba7e, #5e8c64);
+  color: white;
+  padding: 0.8rem 2rem;
+  border: none;
+  border-radius: 25px;
+  margin-top: 1rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: block;
+  width: fit-content;
+}
+
+.add-service-btn:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+}
+
+.add-service-btn:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(120, 186, 126, 0.5);
+}
+
+.selected-services {
+  margin-bottom: 2rem;
+}
+
+.selected-services h4 {
+  font-size: 1.2rem;
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.selected-services ul {
+  list-style: none;
+  padding: 0;
+}
+
+.selected-service-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  margin-bottom: 0.5rem;
+  color: white;
+}
+
+.remove-service-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
   border-radius: 50%;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.5rem;
-  color: var(--white);
-  margin: 0 auto 2rem;
-  box-shadow: var(--shadow-heavy);
-  position: relative;
-  z-index: 2;
-}
-
-.stat-card:hover .stat-icon {
-  animation: pulse 2s infinite;
-  box-shadow: var(--shadow-glow);
-}
-
-.stat-info {
-  position: relative;
-  z-index: 2;
-}
-
-.stat-number {
-  font-size: clamp(2.5rem, 4vw, 4rem);
-  font-weight: 800;
-  color: var(--secondary-color);
-  margin-bottom: 0.5rem;
-  display: block;
-  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.stat-label {
-  font-size: 1.3rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: var(--white);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.stat-description {
+  cursor: pointer;
   font-size: 1rem;
-  opacity: 0.8;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.9);
+  transition: all 0.3s ease;
 }
 
-/* Enhanced Responsive Design */
-@media (max-width: 1200px) {
-  .container {
-    max-width: 95%;
-  }
-  
-  .about-content {
-    grid-template-columns: 1fr;
-    gap: 3rem;
-    text-align: center;
-  }
-  
-  .about-text {
-    padding-right: 0;
-  }
-  
-  .cta-wrapper {
-    grid-template-columns: 1fr;
-    gap: 3rem;
-  }
+.remove-service-btn:hover {
+  background: #dc2626;
+  transform: scale(1.1);
 }
 
-@media (max-width: 768px) {
-  section {
-    padding: 5rem 0;
-  }
-  
-  .hero-content {
-    padding: 1rem;
-  }
-  
-  .hero-title {
-    font-size: 2.5rem;
-  }
-  
-  .hero-subtitle {
-    font-size: 1.1rem;
-  }
-  
-  .btn-cta {
-    padding: 1rem 2rem;
-    font-size: 0.9rem;
-  }
-  
-  .about-stats {
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  .benefits-grid {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-  
-  .services-grid {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-  
-  .filter-wrapper {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  
-  .filter-button {
-    font-size: 0.85rem;
-    padding: 0.6rem 1.2rem;
-  }
-  
-  .stats-grid {
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2rem;
-  }
-  
-  .stat-card {
-    padding: 2rem 1.5rem;
-  }
-  
-  .cta-main,
-  .cta-side {
-    padding: 2rem;
-  }
-  
-  .form-container {
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  .submit-button {
-    width: 100%;
-  }
-  
-  .trust-indicators {
-    flex-direction: column;
-  }
-  
-  .trust-item {
-    min-width: auto;
-  }
-  
-  .nav-icon {
-    width: 50px;
-    height: 50px;
-    font-size: 1.2rem;
-  }
-  
-  .carousel-control-prev { left: 1rem; }
-  .carousel-control-next { right: 1rem; }
-  
-  .floating-element {
-    font-size: 1.5rem;
-  }
+/* About Section */
+.about {
+  padding: 8rem 2rem;
+  background: white;
 }
 
-@media (max-width: 480px) {
-  .hero-content {
-    padding: 0.5rem;
+.about-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5rem;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.about-text h2 {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  color: #2d4a2d;
+  font-family: "Lora", serif;
+}
+
+.about-text p {
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  color: #374151;
+  line-height: 1.8;
+}
+
+.about-features {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.about-feature {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #78ba7e;
+  font-weight: 500;
+}
+
+.about-image {
+  background: linear-gradient(
+    135deg,
+    #78ba7e 0%,
+    #8bc792 30%,
+    #6ba371 70%,
+    #5e8c64 100%
+  );
+  height: 500px;
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 15px 35px rgba(120, 186, 126, 0.25);
+}
+
+/* Modal */
+.modal {
+  display: block;
+  position: fixed;
+  z-index: 2000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  background-color: white;
+  margin: 3% auto;
+  padding: 2.5rem;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 500px;
+  position: relative;
+  animation: slideIn 0.3s ease;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.close {
+  color: #6b7280;
+  float: right;
+  font-size: 2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.close:hover {
+  color: #78ba7e;
+}
+
+/* Error */
+.error {
+  text-align: center;
+  padding: 2rem;
+  color: #ef4444;
+}
+
+/* Loading */
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7280;
+}
+
+.loading-spinner {
+  border: 4px solid #f3f4f6;
+  border-top: 4px solid #78ba7e;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
   }
-  
-  .hero-title {
-    font-size: 2rem;
-  }
-  
-  .hero-subtitle {
-    font-size: 1rem;
-  }
-  
-  .btn-cta {
-    padding: 0.8rem 1.5rem;
-    font-size: 0.8rem;
-  }
-  
-  .section-title {
-    font-size: 2rem;
-  }
-  
-  .benefit-card {
-    padding: 2rem 1.5rem;
-  }
-  
-  .benefit-icon {
-    width: 60px;
-    height: 60px;
-    font-size: 1.5rem;
-  }
-  
-  .stat-card {
-    padding: 1.5rem 1rem;
-  }
-  
-  .stat-icon {
-    width: 80px;
-    height: 80px;
-    font-size: 2rem;
-  }
-  
-  .cta-main,
-  .cta-side {
-    padding: 1.5rem;
-  }
-  
-  .cta-header {
-    flex-direction: column;
-    text-align: center;
-  }
-  
-  .cta-icon {
-    width: 60px;
-    height: 60px;
-    font-size: 1.5rem;
-  }
-  
-  .review-icon {
-    width: 50px;
-    height: 50px;
-    font-size: 1.2rem;
-  }
-  
-  .star {
-    font-size: 1.5rem;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* Enhanced Loading States */
-.loading-shimmer {
-  background: linear-gradient(90deg, 
-    rgba(255, 255, 255, 0.1) 25%, 
-    rgba(255, 255, 255, 0.3) 50%, 
-    rgba(255, 255, 255, 0.1) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
+@keyframes slideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
-@keyframes shimmer {
+@keyframes spin {
   0% {
-    background-position: -200% 0;
+    transform: rotate(0deg);
   }
   100% {
-    background-position: 200% 0;
+    transform: rotate(360deg);
   }
 }
 
-/* Enhanced Scroll Animations */
-.reveal {
-  opacity: 0;
-  transform: translateY(50px);
-  transition: all 0.6s ease;
-}
-
-.reveal.active {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.reveal-left {
-  opacity: 0;
-  transform: translateX(-50px);
-  transition: all 0.6s ease;
-}
-
-.reveal-left.active {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-.reveal-right {
-  opacity: 0;
-  transform: translateX(50px);
-  transition: all 0.6s ease;
-}
-
-.reveal-right.active {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-/* Enhanced Performance Optimizations */
-.gpu-accelerated {
-  transform: translateZ(0);
-  will-change: transform;
-}
-
-.smooth-scroll {
-  scroll-behavior: smooth;
-}
-
-/* Enhanced Accessibility */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+/* Responsive */
+@media (max-width: 768px) {
+  .features-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   }
-  
-  .floating-element,
-  .hero-particles::before,
-  .hero-particles::after {
-    animation: none;
+
+  .services-grid {
+    grid-template-columns: 1fr;
   }
-  
-  .pulse {
-    animation: none;
+
+  .about-content,
+  .booking-content {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .category-btn {
+    font-size: 0.9rem;
+    padding: 0.6rem 1.5rem;
+  }
+
+  .section-title {
+    font-size: 2.2rem;
+  }
+
+  .service-image {
+    height: 150px;
   }
 }
-
-/* Enhanced Focus States for Accessibility */
-.filter-button:focus,
-.btn-cta:focus,
-.form-input:focus,
-.submit-button:focus {
-  outline: 2px solid var(--secondary-color);
-  outline-offset: 2px;
+.quantity-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-/* Enhanced Print Styles */
-@media print {
-  .hero-section,
-  .floating-elements,
-  .scroll-indicator,
-  .custom-nav,
-  .custom-indicators {
-    display: none;
-  }
-  
-  section {
-    page-break-inside: avoid;
-    padding: 2rem 0;
-  }
-  
-  .glass-card,
-  .glass-panel {
-    background: var(--white) !important;
-    border: 1px solid #ddd !important;
-    box-shadow: none !important;
-  }
+.quantity-input {
+  width: 60px;
+
+  border-radius: 5px;
+  text-align: center;
 }
 
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background-light: #0f172a;
-    --text-primary: #f1f5f9;
-    --text-secondary: #94a3b8;
-    --white: #1e293b;
-  }
-  
-  .glass-card {
-    background: rgba(30, 41, 59, 0.95);
-    border-color: rgba(148, 163, 184, 0.2);
-  }
-  
-  .about-section {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  }
-  
-  .benefits-section {
-    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-  }
-  
-  .services-section {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  }
+.selected-service-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  margin-bottom: 0.5rem;
+  color: white;
+}
+
+.quantity-control label {
+  color: white;
+  font-size: 0.9rem;
 }
 </style>
