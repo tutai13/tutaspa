@@ -142,7 +142,7 @@ builder.Services.AddCors(options =>
         builder =>
         {
             builder
-                .WithOrigins(userFrontendUrl, adminFrontendUrl)
+                .WithOrigins(userFrontendUrl, adminFrontendUrl,"https://admin-theta-one-30.vercel.app")
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials();// Quan trọng nếu dùng SignalR
