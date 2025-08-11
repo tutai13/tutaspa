@@ -1,25 +1,31 @@
-<template>
-  <div class="container d-flex flex-column align-items-center justify-content-start mt-5 min-vh-100" style="background: linear-gradient(135deg, #f0f4f8 0%, #d9e2f2 100%);">
-    <h2 class="page-title mb-5 text-dark">Quản lý kho</h2>
 
-    <div class="d-flex flex-wrap gap-4 justify-content-center">
-      <div class="card btn-card" @click="goToProducts">
-        <div class="card-body text-center">
-          <i class="bi bi-box-seam display-4 text-primary"></i>
-          <h4 class="card-title mt-3">Quản lý sản phẩm</h4>
+<template>
+  <div class="container d-flex flex-column align-items-center justify-content-start mt-5 min-vh-100" style="background-color: #ffffff;">
+    <h2 class="page-title mb-4 text-dark">
+      <i class="fa fa-warehouse me-2"></i> Quản lý kho
+    </h2>
+
+    <div class="d-flex flex-wrap justify-content-center gap-4">
+      <div class="menu-card card-gradient-blue" @click="goToProducts">
+        <div class="icon-group">
+          <i class="fa fa-cubes icon"></i>
         </div>
+        <h3>Sản phẩm</h3>
+        <p>Quản lý thông tin sản phẩm trong kho</p>
       </div>
-      <div class="card btn-card" @click="goToCategories">
-        <div class="card-body text-center">
-          <i class="bi bi-list-ul display-4 text-success"></i>
-          <h4 class="card-title mt-3">Quản lý loại sản phẩm</h4>
+      <div class="menu-card card-gradient-purple" @click="goToCategories">
+        <div class="icon-group">
+          <i class="fa fa-list-ul icon"></i>
         </div>
+        <h3>Loại sản phẩm</h3>
+        <p>Phân loại và tổ chức sản phẩm</p>
       </div>
-      <div class="card btn-card" @click="gotoInventory">
-        <div class="card-body text-center">
-          <i class="bi bi-arrow-left-right display-4 text-success"></i>
-          <h4 class="card-title mt-3">Quản lý xuất/nhập hàng</h4>
+      <div class="menu-card card-gradient-pink" @click="gotoInventory">
+        <div class="icon-group">
+          <i class="fa fa-truck-loading icon"></i>
         </div>
+        <h3>Xuất/nhập hàng</h3>
+        <p>Quản lý giao dịch xuất và nhập hàng</p>
       </div>
     </div>
   </div>
@@ -45,65 +51,73 @@ const gotoInventory = () => {
 
 <style scoped>
 .page-title {
-  font-size: 2.8rem;
-  font-weight: 700;
-  color: #333;
-  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  margin-bottom: 3rem;
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #5a4ff3;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.btn-card {
-  width: 250px;
-  height: 200px;
-  border: none;
-  border-radius: 15px;
-  background: white;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  cursor: pointer;
-}
-
-.btn-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-}
-
-.card-body {
+.menu-card {
+  width: 260px;
+  height: 180px;
+  border-radius: 20px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100%;
+  color: white;
+  cursor: pointer;
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  transition: all 0.3s ease;
+  padding: 20px;
+  border: none;
 }
 
-.card-title {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: #444;
+.icon-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
 }
 
-.display-4 {
-  font-size: 2.5rem;
+.menu-card .icon {
+  font-size: 3.5rem; 
+}
+
+.menu-card h3 {
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.menu-card p {
+  font-size: 0.95rem;
+  opacity: 0.85;
+}
+
+.menu-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.2);
+}
+
+.card-gradient-blue {
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+}
+
+.card-gradient-purple {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+.card-gradient-pink {
+  background: linear-gradient(135deg, #ff6a88, #ff99ac);
 }
 
 @media (max-width: 768px) {
-  .page-title {
-    font-size: 2.2rem;
-  }
-
-  .btn-card {
+  .menu-card {
     width: 100%;
-    max-width: 250px;
-    height: 180px;
-  }
-
-  .card-title {
-    font-size: 1.1rem;
-  }
-
-  .display-4 {
-    font-size: 2rem;
+    max-width: 300px;
   }
 }
 </style>
