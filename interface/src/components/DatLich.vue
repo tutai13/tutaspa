@@ -40,17 +40,24 @@
               v-for="dv in dichVuLoc"
               :key="dv.dichVuID"
               class="service-card"
-              :class="{ 'selected': dichVuIDs.includes(dv.dichVuID) }"
+              :class="{ selected: dichVuIDs.includes(dv.dichVuID) }"
               @click="toggleDichVu(dv.dichVuID)"
             >
               <div class="service-image-container">
                 <img
-                  :src="dv.hinhAnh.startsWith('http') ? dv.hinhAnh : '/images/' + dv.hinhAnh"
+                  :src="
+                    dv.hinhAnh.startsWith('http')
+                      ? dv.hinhAnh
+                      : '/images/' + dv.hinhAnh
+                  "
                   class="service-image"
                   :alt="dv.tenDichVu"
                 />
                 <div class="service-overlay">
-                  <div class="service-check" v-if="dichVuIDs.includes(dv.dichVuID)">
+                  <div
+                    class="service-check"
+                    v-if="dichVuIDs.includes(dv.dichVuID)"
+                  >
                     ✓
                   </div>
                 </div>
@@ -59,7 +66,9 @@
                 <h4 class="service-title">{{ dv.tenDichVu }}</h4>
                 <p class="service-description">{{ dv.moTa }}</p>
                 <div class="service-details">
-                  <span class="service-price">{{ dv.gia.toLocaleString() }}đ</span>
+                  <span class="service-price"
+                    >{{ dv.gia.toLocaleString() }}đ</span
+                  >
                   <span class="service-duration">{{ dv.thoiGian }} phút</span>
                 </div>
               </div>
@@ -70,11 +79,13 @@
           <div class="consultation-option">
             <button
               class="consultation-btn"
-              :class="{ 'active': dichVuIDs.length === 0 }"
+              :class="{ active: dichVuIDs.length === 0 }"
               @click="dichVuIDs = []"
             >
               <span class="consultation-icon">💬</span>
-              <span class="consultation-text">Để nhân viên tư vấn dịch vụ phù hợp</span>
+              <span class="consultation-text"
+                >Để nhân viên tư vấn dịch vụ phù hợp</span
+              >
             </button>
           </div>
         </div>
@@ -113,14 +124,16 @@
                   :key="gio.khungGio"
                   class="time-slot"
                   :class="{
-                    'selected': gio.khungGio === khungGioChon,
-                    'unavailable': gio.conLai === 0
+                    selected: gio.khungGio === khungGioChon,
+                    unavailable: gio.conLai === 0,
                   }"
                   :disabled="gio.conLai === 0"
                   @click="khungGioChon = gio.khungGio"
                 >
                   <span class="time-text">{{ gio.khungGio }}</span>
-                  <span v-if="gio.conLai === 0" class="unavailable-badge">Hết chỗ</span>
+                  <span v-if="gio.conLai === 0" class="unavailable-badge"
+                    >Hết chỗ</span
+                  >
                 </button>
               </div>
             </div>
@@ -152,7 +165,10 @@
       </div>
 
       <!-- Booking Summary -->
-      <div class="booking-summary" v-if="dichVuIDs.length > 0 || khungGioChon || soDienThoai">
+      <div
+        class="booking-summary"
+        v-if="dichVuIDs.length > 0 || khungGioChon || soDienThoai"
+      >
         <h3 class="summary-title">Tóm tắt đặt lịch</h3>
         <div class="summary-content">
           <div v-if="dichVuIDs.length > 0" class="summary-item">
@@ -183,7 +199,7 @@
         <button
           class="booking-btn"
           :disabled="!khungGioChon || !soDienThoai"
-          :class="{ 'disabled': !khungGioChon || !soDienThoai }"
+          :class="{ disabled: !khungGioChon || !soDienThoai }"
           @click="datLich"
         >
           <span class="booking-btn-icon">✨</span>
@@ -195,10 +211,10 @@
       <!-- Notification -->
       <div v-if="thongBao" class="notification" :class="getNotificationClass()">
         <div class="notification-icon">
-          {{ thongBao.startsWith('🎉') ? '🎉' : '⚠️' }}
+          {{ thongBao.startsWith("🎉") ? "🎉" : "⚠️" }}
         </div>
         <div class="notification-content">
-          {{ thongBao.replace(/^[🎉❌]\s*/, '') }}
+          {{ thongBao.replace(/^[🎉❌]\s*/, "") }}
         </div>
       </div>
     </div>
@@ -206,7 +222,7 @@
 </template>
 
 <script>
-import apiClient from "../../utils/axiosClient";
+import apiClient from "../utils/axiosClient";
 
 export default {
   name: "DatLichCard",
@@ -232,13 +248,13 @@ export default {
   methods: {
     async layDichVu() {
       const res = await apiClient.get("dichvu");
-      this.danhSachDichVu = res.data;
+      this.danhSachDichVu = res;
     },
     async layKhungGio() {
       const res = await apiClient.get("datlich/slots", {
         params: { ngay: this.ngay },
       });
-      this.danhSachKhungGio = res.data;
+      this.danhSachKhungGio = res;
     },
     toggleDichVu(id) {
       const index = this.dichVuIDs.indexOf(id);
@@ -246,18 +262,23 @@ export default {
       else this.dichVuIDs.splice(index, 1);
     },
     getDichVuName(id) {
-      const dv = this.danhSachDichVu.find(d => d.dichVuID === id);
-      return dv ? dv.tenDichVu : '';
+      const dv = this.danhSachDichVu.find((d) => d.dichVuID === id);
+      return dv ? dv.tenDichVu : "";
     },
     formatDateTime() {
-      if (!this.ngay || !this.khungGioChon) return '';
+      if (!this.ngay || !this.khungGioChon) return "";
       const date = new Date(this.ngay);
-      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      const dateStr = date.toLocaleDateString('vi-VN', options);
+      const options = {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      };
+      const dateStr = date.toLocaleDateString("vi-VN", options);
       return `${dateStr} lúc ${this.khungGioChon}`;
     },
     getNotificationClass() {
-      return this.thongBao.startsWith('🎉') ? 'success' : 'error';
+      return this.thongBao.startsWith("🎉") ? "success" : "error";
     },
     async datLich() {
       const thoiGian = `${this.ngay}T${this.khungGioChon}:00`;
@@ -277,7 +298,7 @@ export default {
         await this.layKhungGio();
       } catch (err) {
         if (err.response?.status === 400) {
-          this.thongBao = "❌ " + err.response.data;
+          this.thongBao = "❌ " + err.response.message;
         } else {
           this.thongBao = "❌ Đã có lỗi xảy ra. Vui lòng thử lại sau.";
         }
@@ -292,7 +313,7 @@ export default {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
 /* CSS Root Variables - Dễ dàng thay đổi màu chủ đạo */
 :root {
@@ -302,17 +323,17 @@ export default {
   --primary-light: #34d399;
   --primary-lighter: #34d399;
   --primary-lightest: #34d399;
-  
+
   /* Secondary Colors */
   --secondary-color: #065f46;
   --secondary-dark: #064e3b;
   --secondary-light: #047857;
-  
+
   /* Accent Colors */
   --accent-color: #fbbf24;
   --accent-dark: #f59e0b;
   --accent-light: #fcd34d;
-  
+
   /* Neutral Colors */
   --neutral-50: #94a3b8;
   --neutral-100: #94a3b8;
@@ -324,7 +345,7 @@ export default {
   --neutral-700: #334155;
   --neutral-800: #1e293b;
   --neutral-900: #0f172a;
-  
+
   /* Semantic Colors */
   --success-color: #10b981;
   --success-light: #d1fae5;
@@ -332,14 +353,34 @@ export default {
   --error-light: #fef2f2;
   --warning-color: #f59e0b;
   --warning-light: #fef3c7;
-  
+
   /* Gradients */
-  --gradient-primary: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-  --gradient-secondary: linear-gradient(135deg, var(--secondary-color) 0%, var(--secondary-dark) 100%);
-  --gradient-accent: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-dark) 100%);
-  --gradient-background: linear-gradient(90deg, var(--primary-color) 100%, var(--secondary-color) 50%);
-  --gradient-card: linear-gradient(135deg, var(--neutral-50) 0%, var(--neutral-100) 100%);
-  
+  --gradient-primary: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--primary-dark) 100%
+  );
+  --gradient-secondary: linear-gradient(
+    135deg,
+    var(--secondary-color) 0%,
+    var(--secondary-dark) 100%
+  );
+  --gradient-accent: linear-gradient(
+    135deg,
+    var(--accent-color) 0%,
+    var(--accent-dark) 100%
+  );
+  --gradient-background: linear-gradient(
+    90deg,
+    var(--primary-color) 100%,
+    var(--secondary-color) 50%
+  );
+  --gradient-card: linear-gradient(
+    135deg,
+    var(--neutral-50) 0%,
+    var(--neutral-100) 100%
+  );
+
   /* Shadows */
   --shadow-sm: 0 4px 12px rgba(16, 185, 129, 0.05);
   --shadow-md: 0 8px 24px rgba(16, 185, 129, 0.1);
@@ -399,7 +440,7 @@ export default {
 */
 
 * {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 .spa-booking-container {
@@ -411,16 +452,23 @@ export default {
 }
 
 .spa-booking-container::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: 
-    radial-gradient(circle at 20% 50%, rgba(16, 185, 129, 0.3) 0%, transparent 50%),
+  background: radial-gradient(
+      circle at 20% 50%,
+      rgba(16, 185, 129, 0.3) 0%,
+      transparent 50%
+    ),
     radial-gradient(circle at 80% 20%, rgba(6, 95, 70, 0.3) 0%, transparent 50%),
-    radial-gradient(circle at 40% 80%, rgba(52, 211, 153, 0.3) 0%, transparent 50%);
+    radial-gradient(
+      circle at 40% 80%,
+      rgba(52, 211, 153, 0.3) 0%,
+      transparent 50%
+    );
   pointer-events: none;
   z-index: 0;
 }
@@ -449,13 +497,13 @@ export default {
   font-weight: 700;
   color: white;
   margin-bottom: 0.5rem;
-  text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   letter-spacing: -0.02em;
 }
 
 .hero-subtitle {
   font-size: 1.2rem;
-  color: rgba(255,255,255,0.9);
+  color: rgba(255, 255, 255, 0.9);
   margin-bottom: 0;
   font-weight: 300;
 }
@@ -467,7 +515,12 @@ export default {
   transform: translateX(-50%);
   width: 100px;
   height: 4px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.8),
+    transparent
+  );
   border-radius: 2px;
 }
 
@@ -488,18 +541,14 @@ export default {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   border-radius: 24px;
-  box-shadow: 
-    var(--shadow-md),
-    0 0 0 1px rgba(255,255,255,0.2);
+  box-shadow: var(--shadow-md), 0 0 0 1px rgba(255, 255, 255, 0.2);
   overflow: hidden;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .booking-card:hover {
   transform: translateY(-8px);
-  box-shadow: 
-    var(--shadow-lg),
-    0 0 0 1px rgba(255,255,255,0.3);
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255, 255, 255, 0.3);
 }
 
 .card-header {
@@ -957,7 +1006,12 @@ export default {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: left 0.6s ease;
 }
 
@@ -1004,8 +1058,13 @@ export default {
 
 /* Animations */
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 @keyframes slideIn {
@@ -1020,8 +1079,13 @@ export default {
 }
 
 @keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 /* Responsive Design */
@@ -1029,51 +1093,51 @@ export default {
   .hero-title {
     font-size: 2rem;
   }
-  
+
   .hero-subtitle {
     font-size: 1rem;
   }
-  
+
   .booking-content {
     padding: 1rem;
     gap: 1.5rem;
   }
-  
+
   .card-header {
     padding: 1.5rem;
     flex-direction: column;
     text-align: center;
     gap: 0.5rem;
   }
-  
+
   .card-body {
     padding: 1.5rem;
   }
-  
+
   .services-grid {
     grid-template-columns: 1fr;
     max-height: 400px;
   }
-  
+
   .datetime-container {
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
-  
+
   .time-slots {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .booking-btn {
     padding: 1rem 2rem;
     font-size: 1rem;
   }
-  
+
   .summary-item {
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .summary-label {
     min-width: auto;
   }
@@ -1083,19 +1147,19 @@ export default {
   .hero-section {
     padding: 2rem 1rem 2rem;
   }
-  
+
   .hero-title {
     font-size: 1.75rem;
   }
-  
+
   .services-grid {
     max-height: 300px;
   }
-  
+
   .time-slots {
     grid-template-columns: 1fr;
   }
-  
+
   .booking-btn {
     width: 100%;
     padding: 1.25rem 1rem;
@@ -1124,15 +1188,23 @@ export default {
 }
 
 .booking-btn.loading .booking-btn-text::after {
-  content: '...';
+  content: "...";
   animation: loading 1.5s infinite;
 }
 
 @keyframes loading {
-  0% { content: ''; }
-  33% { content: '.'; }
-  66% { content: '..'; }
-  100% { content: '...'; }
+  0% {
+    content: "";
+  }
+  33% {
+    content: ".";
+  }
+  66% {
+    content: "..";
+  }
+  100% {
+    content: "...";
+  }
 }
 
 /* Smooth Scrolling */
@@ -1148,13 +1220,17 @@ html {
 
 /* Enhanced Hover Effects */
 .service-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(45deg, rgba(16, 185, 129, 0.05), rgba(6, 95, 70, 0.05));
+  background: linear-gradient(
+    45deg,
+    rgba(16, 185, 129, 0.05),
+    rgba(6, 95, 70, 0.05)
+  );
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: -1;
@@ -1170,13 +1246,17 @@ html {
 }
 
 .booking-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
   pointer-events: none;
   z-index: -1;
 }

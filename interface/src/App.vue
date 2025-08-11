@@ -1,358 +1,207 @@
 <template>
   <div id="app">
-    <!-- ✅ Header Top -->
-    <div
-      class="header-top d-flex justify-content-between align-items-center px-4 py-2"
-    >
-      <!-- Logo -->
-      <div class="logo d-flex align-items-center">
-        <router-link to="/">
-          <img
-            src="/src/assets/img/logo.png"
-            alt="Logo"
-            class="me-2"
-            style="height: 40px"
-          />
-        </router-link>
-        <span class="brand-name ms-2"></span>
-      </div>
-      <!-- Giờ mở cửa -->
-      <div class="open-hours text-end me-4">
-        <small class="text-uppercase text-muted">GIỜ MỞ CỬA</small><br />
-        <strong class="fs-6">8.00AM - 8.00PM</strong>
-      </div>
-      <!-- Hotline & Tài khoản -->
-      <div class="d-flex align-items-center gap-4">
-        <!-- Hotline -->
-        <div class="hotline-box d-flex align-items-center gap-2">
-          <i class="fa-solid fa-phone"></i>
-          <div class="text-start">
-            <span class="d-block" style="font-size: 12px; font-style: italic"
-              >Hotline</span
-            >
-            <span style="font-size: 18px; font-weight: bold">0966193978</span>
-          </div>
+    <!-- Header -->
+    <header class="header">
+      <nav class="nav">
+        <div class="logo">
+          <router-link to="/" class="navbar-brand d-flex align-items-center">
+            <img
+              src="../src/assets/img/logotutaspa.png"
+              alt="TutaSpa Logo"
+              class="me-2"
+              style="height: 50px; width: auto"
+            />
+            <span>TutaSpa 🌿</span>
+          </router-link>
         </div>
-
-        <!-- Đăng nhập và Xem lịch -->
-        <div class="d-flex align-items-center gap-2" >
-          <router-link v-if="!state.isAuthenticated"
+        <ul class="nav-links">
+          <li><router-link to="/">Trang chủ</router-link></li>
+          <li><router-link to="/#services">Dịch vụ</router-link></li>
+          <li><router-link to="/#booking">Đặt lịch</router-link></li>
+          <li><router-link to="/#about">Về chúng tôi</router-link></li>
+          <li><router-link to="/#contact">Liên hệ</router-link></li>
+        </ul>
+        <!-- <router-link to="/#booking" class="book-btn">Đặt lịch ngay</router-link> -->
+        <div class="d-flex align-items-center gap-2">
+          <router-link
+            v-if="!state.isAuthenticated"
             to="/login"
-            class="btn btn-outline-dark btn-sm d-flex align-items-center gap-1"
+            class="book-btn"
           >
             <i class="fa-solid fa-user"></i> Đăng nhập
           </router-link>
-          <router-link v-if="state.isAuthenticated"
+          <router-link
+            v-if="state.isAuthenticated"
             to="/lich-hen"
-            class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1"
+            class="book-btn"
           >
             <i class="fa-regular fa-calendar-check"></i> Xem lịch
           </router-link>
-          <button v-if="state.isAuthenticated"
-            to="/lich-hen"
-            class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1"
+          <button
+            v-if="state.isAuthenticated"
+            class="book-btn"
             @click="state.logout"
           >
-            <i class="fa-regular fa-quit"></i> Đăng Xuất
+            <i class="fa-regular fa-sign-out-alt"></i> Đăng Xuất
           </button>
         </div>
-      </div>
-    </div>
+      </nav>
+    </header>
 
-    <!-- ✅ Navbar -->
-    <nav class="navbar" :class="{ hidden: isNavbarHidden }" ref="navbar">
-      <ul class="nav-links">
-        <li>
-          <router-link to="/"
-            ><i class="fa-solid fa-house"></i> Trang Chủ</router-link
-          >
-        </li>
-        <li>
-          <router-link to="/DichVu"
-            ><i class="fa-solid fa-briefcase"></i> Dịch Vụ</router-link
-          >
-        </li>
-        <li>
-          <router-link to="/DatLich"
-            ><i class="fa-regular fa-calendar-check"></i> Đặt Lịch</router-link
-          >
-        </li>
-        <li>
-          <router-link to="/GioiThieu"
-            ><i class="fa-solid fa-circle-info"></i> Giới Thiệu</router-link
-          >
-        </li>
-        <li>
-          <router-link to="/LienHe"
-            ><i class="fa-solid fa-envelope"></i> Liên Hệ</router-link
-          >
-        </li>
-      </ul>
+    <!-- Content -->
+    <router-view></router-view>
+    <!-- Floating Button -->
+    <div class="chat-popup-wrapper">
+      <!-- Chat Toggle Button -->
+      <button
+        v-if="!chatOpen"
+        @click="toggleChat"
+        class="chat-toggle-btn"
+        title="Hỗ trợ trực tuyến"
+      >
+        <i class="fas fa-comments"></i>
+        <span v-if="hasUnreadMessages" class="notification-badge">{{
+          unreadCount
+        }}</span>
+      </button>
 
-      <!-- 🔍 Thanh tìm kiếm dịch vụ -->
-      <div class="search-bar ms-4">
-        <form @submit.prevent="handleSearch">
+      <!-- Chat Window -->
+      <div v-if="chatOpen" class="chat-window">
+        <div class="chat-header">
+          <h3>Hỗ trợ khách hàng</h3>
+          <p v-if="assignedAdmin.name">
+            Bạn đang trò chuyện với <strong>{{ assignedAdmin.name }}</strong>
+          </p>
+          <p v-else>Chúng tôi luôn sẵn sàng hỗ trợ bạn</p>
+          <div
+            :class="['status-indicator', isConnected ? 'connected' : '']"
+          ></div>
+          <button @click="toggleChat" class="close-btn">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <!-- Welcome Screen -->
+        <div v-if="!chatStarted" class="welcome-screen">
+          <h4>Chào mừng bạn!</h4>
+          <p>Vui lòng nhập tên của bạn để bắt đầu trò chuyện</p>
+          <input
+            v-model="guestName"
+            type="text"
+            placeholder="Tên của bạn (tùy chọn)"
+            maxlength="50"
+            @keypress="handleWelcomeKeyPress"
+          />
+          <button @click="startChat" class="start-chat-btn">
+            Bắt đầu chat
+          </button>
+        </div>
+
+        <!-- Chat Messages -->
+        <div v-if="chatStarted" class="chat-messages" ref="chatMessages">
+          <div
+            v-for="message in messages"
+            :key="message.id"
+            :class="[
+              'message',
+              message.isFromAdmin ? 'support' : '',
+              message.isInlineNotice ? 'inline-notice' : '',
+              message.isFromAdmin === false &&
+              !message.isSystem &&
+              !message.isInlineNotice
+                ? 'user'
+                : '',
+            ]"
+          >
+            <div v-if="message.isInlineNotice" class="inline-system-notice">
+              {{ message.message }}
+            </div>
+            <div v-else class="message-bubble">
+              {{ message.message }}
+              <div class="message-time">
+                {{ formatTime(message.timestamp) }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat Input - chỉ hiện khi chat đang hoạt động và admin chưa disconnect -->
+        <div v-if="chatStarted && !adminDisconnected" class="chat-input">
           <div class="input-group">
             <input
-              v-model="searchQuery"
+              v-model="currentMessage"
               type="text"
-              class="form-control form-control-sm"
-              placeholder="Nhập từ khóa..."
+              class="message-input"
+              placeholder="Nhập tin nhắn..."
+              maxlength="500"
+              @keypress="handleMessageKeyPress"
             />
-            <button type="submit" class="btn btn-warning btn-sm">
-              <i class="fa fa-search"></i>
+            <button
+              @click="sendMessage"
+              class="send-btn"
+              :disabled="!currentMessage.trim()"
+            >
+              <i class="fas fa-paper-plane"></i>
             </button>
           </div>
-        </form>
-      </div>
-    </nav>
+        </div>
 
-    <main class="main-content">
-      <!-- Carousel -->
-
-      <!-- Router View -->
-      <router-view />
-    </main>
-  </div>
-  <!-- Floating Button -->
-  <div class="chat-popup-wrapper">
-    <!-- Chat Toggle Button -->
-    <button
-      v-if="!chatOpen"
-      @click="toggleChat"
-      class="chat-toggle-btn"
-      title="Hỗ trợ trực tuyến"
-    >
-      <i class="fas fa-comments"></i>
-      <span v-if="hasUnreadMessages" class="notification-badge">{{
-        unreadCount
-      }}</span>
-    </button>
-
-    <!-- Chat Window -->
-    <div v-if="chatOpen" class="chat-window">
-        <div class="chat-header">
-      <h3>Hỗ trợ khách hàng</h3>
-      <p v-if="assignedAdmin.name">Bạn đang trò chuyện với <strong>{{ assignedAdmin.name }}</strong></p>
-      <p v-else>Chúng tôi luôn sẵn sàng hỗ trợ bạn</p>
-      <div :class="['status-indicator', isConnected ? 'connected' : '']"></div>
-      <button @click="toggleChat" class="close-btn">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-
-      <!-- Welcome Screen -->
-      <div v-if="!chatStarted" class="welcome-screen">
-        <h4>Chào mừng bạn!</h4>
-        <p>Vui lòng nhập tên của bạn để bắt đầu trò chuyện</p>
-        <input
-          v-model="guestName"
-          type="text"
-          placeholder="Tên của bạn (tùy chọn)"
-          maxlength="50"
-          @keypress="handleWelcomeKeyPress"
-        />
-        <button @click="startChat" class="start-chat-btn">Bắt đầu chat</button>
-      </div>
-
-      <!-- Chat Messages -->
-      <div v-if="chatStarted" class="chat-messages" ref="chatMessages">
+        <!-- Nút bắt đầu phiên mới khi admin disconnect -->
         <div
-          v-for="message in messages"
-          :key="message.id"
-          :class="[
-            'message',
-            message.isFromAdmin ? 'support' : '',
-            message.isInlineNotice ? 'inline-notice' : '',
-            message.isFromAdmin === false &&
-            !message.isSystem &&
-            !message.isInlineNotice
-              ? 'user'
-              : '',
-          ]"
+          v-if="chatStarted && adminDisconnected"
+          class="new-session-section"
         >
-          <div v-if="message.isInlineNotice" class="inline-system-notice">
-            {{ message.message }}
+          <div class="disconnect-notice">
+            <button @click="startNewSession" class="start-new-session-btn">
+              Bắt đầu phiên hỗ trợ mới
+            </button>
           </div>
-          <div v-else class="message-bubble">
-            {{ message.message }}
-            <div class="message-time">{{ formatTime(message.timestamp) }}</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Chat Input - chỉ hiện khi chat đang hoạt động và admin chưa disconnect -->
-      <div v-if="chatStarted && !adminDisconnected" class="chat-input">
-        <div class="input-group">
-          <input
-            v-model="currentMessage"
-            type="text"
-            class="message-input"
-            placeholder="Nhập tin nhắn..."
-            maxlength="500"
-            @keypress="handleMessageKeyPress"
-          />
-          <button
-            @click="sendMessage"
-            class="send-btn"
-            :disabled="!currentMessage.trim()"
-          >
-            <i class="fas fa-paper-plane"></i>
-          </button>
-        </div>
-      </div>
-
-      <!-- Nút bắt đầu phiên mới khi admin disconnect -->
-      <div v-if="chatStarted && adminDisconnected" class="new-session-section">
-        <div class="disconnect-notice">
-          <button @click="startNewSession" class="start-new-session-btn">
-            Bắt đầu phiên hỗ trợ mới
-          </button>
         </div>
       </div>
     </div>
+
+    <!-- Footer -->
+    <footer id="contact" class="footer">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>Liên hệ</h3>
+          <p>📍 123 Đường Nguyễn Huệ, Quận 1, TP.HCM</p>
+          <p>📞 Hotline: 0123 456 789</p>
+          <p>✉️ Email: info@serenityspa.vn</p>
+          <p>🌐 Website: www.serenityspa.vn</p>
+        </div>
+        <div class="footer-section">
+          <h3>Giờ mở cửa</h3>
+          <p>Thứ 2 - Thứ 6: 8:00 - 21:00</p>
+          <p>Thứ 7 - Chủ nhật: 8:00 - 22:00</p>
+          <p>Lễ Tết: 9:00 - 20:00</p>
+          <p>🎯 Đặt lịch trước 24h để được phục vụ tốt nhất</p>
+        </div>
+        <div class="footer-section">
+          <h3>Dịch vụ nổi bật</h3>
+          <p><router-link to="/#services">Massage trị liệu</router-link></p>
+          <p>
+            <router-link to="/#services">Chăm sóc da chuyên sâu</router-link>
+          </p>
+          <p><router-link to="/#services">Detox toàn thân</router-link></p>
+          <p><router-link to="/#services">Liệu pháp thư giãn</router-link></p>
+        </div>
+        <div class="footer-section">
+          <h3>Theo dõi chúng tôi</h3>
+          <p><a href="#">📘 Facebook: Serenity Spa VN</a></p>
+          <p><a href="#">📷 Instagram: @serenityspa_vn</a></p>
+          <p><a href="#">💬 Zalo: 0123 456 789</a></p>
+          <p><a href="#">📺 YouTube: Serenity Spa Vietnam</a></p>
+        </div>
+      </div>
+      <!-- <div class="footer-bottom">
+        <p>
+          &copy; 2024 Serenity Spa. Tất cả quyền được bảo lưu. | Thiết kế bởi
+          Serenity Team
+        </p>
+      </div> -->
+    </footer>
   </div>
-
-  <!-- Footer -->
-  <footer style="background-color: #006641" class="text-white pt-5 pb-4">
-    <div class="container">
-      <div class="row gy-4">
-        <!-- Cột 1: Logo & giới thiệu -->
-        <div class="col-md-3">
-          <img
-            src="/src/assets/img/logo.png"
-            alt="TutaSpa Logo"
-            class="mb-3"
-            width="120"
-          />
-          <p class="text-white-50">
-            <strong>Tuta Spa</strong> – Nơi tôn vinh vẻ đẹp tự nhiên. Dịch vụ
-            chăm sóc da chuyên nghiệp, hiện đại và tận tâm.
-          </p>
-        </div>
-
-        <!-- Cột 2: Liên kết nhanh -->
-        <div class="col-md-3">
-          <h5 class="fw-semibold mb-3">Liên kết nhanh</h5>
-          <ul class="list-unstyled">
-            <li>
-              <router-link
-                to="/"
-                class="text-white-50 text-decoration-none d-block mb-2"
-                >Trang chủ</router-link
-              >
-            </li>
-            <li>
-              <router-link
-                to="/DichVu"
-                class="text-white-50 text-decoration-none d-block mb-2"
-                >Dịch vụ</router-link
-              >
-            </li>
-            <li>
-              <router-link
-                to="/dat-lich"
-                class="text-white-50 text-decoration-none d-block mb-2"
-                >Đặt lịch</router-link
-              >
-            </li>
-            <li>
-              <router-link
-                to="/GioiThieu"
-                class="text-white-50 text-decoration-none d-block mb-2"
-                >Giới thiệu</router-link
-              >
-            </li>
-            <li>
-              <router-link
-                to="/LienHe"
-                class="text-white-50 text-decoration-none d-block"
-                >Liên hệ</router-link
-              >
-            </li>
-          </ul>
-        </div>
-
-        <!-- Cột 3: Liên hệ -->
-        <div class="col-md-3">
-          <h5 class="fw-semibold mb-3">Liên hệ</h5>
-          <p class="mb-2">
-            <i class="fa-solid fa-location-dot me-2"></i>31 Nguyễn Mộng Tuân, Q.
-            Liên Chiểu, Đà Nẵng
-          </p>
-          <p class="mb-2"><i class="fa-solid fa-phone me-2"></i>0901 234 567</p>
-          <p class="mb-2">
-            <i class="fa-solid fa-envelope me-2"></i>info@tutaspa.vn
-          </p>
-          <p><i class="fa-solid fa-clock me-2"></i>Thứ 2 - CN: 8:00 - 20:00</p>
-        </div>
-
-        <!-- Cột 4: Mạng xã hội & thanh toán -->
-        <div class="col-md-3">
-          <h5 class="fw-semibold mb-3">Kết nối với chúng tôi</h5>
-          <div class="d-flex gap-3 mb-3">
-            <a
-              href="https://facebook.com/tutaspa.vn"
-              target="_blank"
-              class="text-white fs-5"
-              ><i class="fa-brands fa-facebook"></i
-            ></a>
-            <a
-              href="https://instagram.com/tutaspa"
-              target="_blank"
-              class="text-white fs-5"
-              ><i class="fa-brands fa-instagram"></i
-            ></a>
-            <a href="https://zalo.me/0901234567" target="_blank">
-              <img
-                src="/src/assets/img/zalo.png"
-                alt="Zalo"
-                width="20"
-                height="20"
-              />
-            </a>
-          </div>
-
-          <h6 class="fw-semibold mb-2">Hỗ trợ thanh toán</h6>
-          <div class="d-flex gap-2 align-items-center">
-            <img
-              src="/src/assets/img/Logo-Vietcombank.webp"
-              alt="VCB"
-              class="rounded"
-              width="50"
-              height="30"
-            />
-            <img
-              src="/src/assets/img/Logo_MB_new.png.webp"
-              alt="MBBank"
-              class="rounded"
-              width="50"
-              height="30"
-            />
-            <img
-              src="/src/assets/img/Techcombank_logo.png"
-              alt="Techcombank"
-              class="rounded"
-              width="50"
-              height="30"
-            />
-            <img
-              src="/src/assets/img/LOGO-VIB-Blue.png"
-              alt="VIB"
-              class="rounded"
-              width="50"
-              height="30"
-            />
-          </div>
-        </div>
-      </div>
-
-      <!-- Footer bottom -->
-      <div class="text-center text-white-50 border-top mt-4 pt-3 small">
-        &copy; 2025 Tuta Spa. Phát triển bởi đội ngũ yêu cái đẹp.
-      </div>
-    </div>
-  </footer>
 </template>
 
 <script setup>
@@ -1090,15 +939,6 @@ body {
   color: #ffd4e1; /* Hồng nhạt nổi bật */
 }
 
-.footer-bottom {
-  text-align: center;
-  border-top: 1px solid #eee;
-  margin-top: 30px;
-  padding-top: 15px;
-  font-size: 14px;
-  color: #f4cdd6;
-}
-
 /* Responsive */
 @media (max-width: 768px) {
   .footer-container {
@@ -1143,11 +983,10 @@ body {
   color: #007bff;
 }
 
-
 new-session-section {
-    padding: 16px;
-  }
-  .start-new-session-btn {
+  padding: 16px;
+}
+.start-new-session-btn {
   background: linear-gradient(135deg, #ff6b6b, #ff5252);
   color: white;
   border: none;
@@ -1175,14 +1014,14 @@ new-session-section {
   bottom: 20px;
   right: 20px;
   z-index: 1000;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .chat-toggle-btn {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #4CAF50, #45a049);
+  background: linear-gradient(135deg, #4caf50, #45a049);
   color: white;
   border: none;
   font-size: 24px;
@@ -1240,7 +1079,7 @@ new-session-section {
 }
 
 .chat-header {
-  background: linear-gradient(135deg, #4CAF50, #45a049);
+  background: linear-gradient(135deg, #4caf50, #45a049);
   color: white;
   padding: 20px;
   text-align: center;
@@ -1270,13 +1109,22 @@ new-session-section {
 }
 
 .status-indicator.connected {
-  background: #4CAF50;
+  background: #4caf50;
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.1); opacity: 0.7; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .close-btn {
@@ -1327,11 +1175,11 @@ new-session-section {
 }
 
 .welcome-screen input:focus {
-  border-color: #4CAF50;
+  border-color: #4caf50;
 }
 
 .start-chat-btn {
-  background: linear-gradient(135deg, #4CAF50, #45a049);
+  background: linear-gradient(135deg, #4caf50, #45a049);
   color: white;
   border: none;
   padding: 10px 20px;
@@ -1438,11 +1286,11 @@ new-session-section {
 }
 
 .message-input:focus {
-  border-color: #4CAF50;
+  border-color: #4caf50;
 }
 
 .send-btn {
-  background: linear-gradient(135deg, #4CAF50, #45a049);
+  background: linear-gradient(135deg, #4caf50, #45a049);
   color: white;
   border: none;
   padding: 10px;
@@ -1470,7 +1318,7 @@ new-session-section {
     bottom: 10px;
     right: 10px;
   }
-  
+
   .chat-window {
     width: 320px;
     height: 450px;
@@ -1488,5 +1336,128 @@ new-session-section {
   font-size: 0.95em;
   font-style: italic;
   opacity: 0.85;
+}
+/* Reset và Base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Georgia", "Times New Roman", serif;
+  line-height: 1.7;
+  color: #2d4a2d;
+  overflow-x: hidden;
+  background-color: #f8fcf8;
+}
+
+/* Header với màu xanh lá tươi */
+.header {
+  background: linear-gradient(135deg, #78ba7e 0%, #6ba371 50%, #5e8c64 100%);
+  color: white;
+  padding: 1rem 0;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(120, 186, 126, 0.3);
+}
+
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.logo {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-links {
+  display: flex;
+  list-style: none;
+  gap: 2rem;
+}
+
+.nav-links a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  padding: 0.5rem 1rem;
+  border-radius: 25px;
+}
+
+.nav-links a:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.book-btn {
+  background: linear-gradient(45deg, #f59e0b, #f97316);
+  padding: 0.8rem 2rem;
+  border-radius: 30px;
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+}
+
+.book-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+}
+
+/* Footer */
+.footer {
+  background: #1f2937;
+  color: white;
+  padding: 4rem 2rem 2rem;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 3rem;
+  margin-bottom: 3rem;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.footer-section h3 {
+  margin-bottom: 1.5rem;
+  color: #8bc792;
+  font-family: "Georgia", serif;
+}
+
+.footer-section p,
+.footer-section a {
+  color: #d1d5db;
+  text-decoration: none;
+  line-height: 2;
+  transition: color 0.3s ease;
+}
+
+.footer-section a:hover {
+  color: #8bc792;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .nav-links {
+    display: none;
+  }
 }
 </style>

@@ -32,7 +32,7 @@ namespace API.Controllers
 
         [HttpPost]
         public IActionResult DatLich([FromBody] DatLichDTO request)
-        {
+            {
             int thoiLuong = 30;
             List<DichVu> danhSachDichVu = new();
 
@@ -231,22 +231,28 @@ namespace API.Controllers
                 .Where(x => x.ThoiGian.Date == ngay.Date)
                 .ToList();
 
+            var now = DateTime.Now;
+
             foreach (var khung in khungGioList)
             {
-                var count = lich.Count(x =>
-                    x.ThoiGian <= khung &&
-                    x.ThoiGian.AddMinutes(x.ThoiLuong) > khung
-                );
-
-                result.Add(new
+                if (ngay.Date > now.Date || khung >= now)
                 {
-                    khungGio = khung.ToString("HH:mm"),
-                    conLai = Math.Max(0, 5 - count)
-                });
+                    var count = lich.Count(x =>
+                        x.ThoiGian <= khung &&
+                        x.ThoiGian.AddMinutes(x.ThoiLuong) > khung
+                    );
+
+                    result.Add(new
+                    {
+                        khungGio = khung.ToString("HH:mm"),
+                        conLai = Math.Max(0, 5 - count)
+                    });
+                }
             }
 
             return Ok(result);
         }
+
     }
 }
 

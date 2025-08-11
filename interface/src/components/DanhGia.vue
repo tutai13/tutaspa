@@ -2,10 +2,22 @@
   <div class="review-wrapper">
     <!-- Floating background elements -->
     <div class="floating-elements">
-      <i class="fas fa-star floating-star" style="top: 10%; left: 10%; font-size: 2rem; animation-delay: 0s;"></i>
-      <i class="fas fa-star floating-star" style="top: 20%; right: 15%; font-size: 1.5rem; animation-delay: 1s;"></i>
-      <i class="fas fa-star floating-star" style="bottom: 30%; left: 20%; font-size: 1.8rem; animation-delay: 2s;"></i>
-      <i class="fas fa-star floating-star" style="bottom: 15%; right: 10%; font-size: 2.2rem; animation-delay: 3s;"></i>
+      <i
+        class="fas fa-star floating-star"
+        style="top: 10%; left: 10%; font-size: 2rem; animation-delay: 0s"
+      ></i>
+      <i
+        class="fas fa-star floating-star"
+        style="top: 20%; right: 15%; font-size: 1.5rem; animation-delay: 1s"
+      ></i>
+      <i
+        class="fas fa-star floating-star"
+        style="bottom: 30%; left: 20%; font-size: 1.8rem; animation-delay: 2s"
+      ></i>
+      <i
+        class="fas fa-star floating-star"
+        style="bottom: 15%; right: 10%; font-size: 2.2rem; animation-delay: 3s"
+      ></i>
     </div>
 
     <div class="main-container">
@@ -27,8 +39,8 @@
             <div v-if="route.params.id" class="service-display">
               <i class="fas fa-star service-icon"></i>
               {{
-                dichVus.find((d) => d.dichVuID === danhGia.maDichVu)?.tenDichVu
-                  || 'Đang tải...'
+                dichVus.find((d) => d.dichVuID === danhGia.maDichVu)
+                  ?.tenDichVu || "Đang tải..."
               }}
             </div>
             <select
@@ -38,7 +50,11 @@
               required
             >
               <option value="" disabled>Chọn dịch vụ</option>
-              <option v-for="d in dichVus" :key="d.dichVuID" :value="d.dichVuID">
+              <option
+                v-for="d in dichVus"
+                :key="d.dichVuID"
+                :value="d.dichVuID"
+              >
                 {{ d.tenDichVu }}
               </option>
             </select>
@@ -56,13 +72,14 @@
                 :key="i"
                 class="star"
                 :class="{
-                  'active': i <= danhGia.soSao,
-                  'inactive': i > danhGia.soSao
+                  active: i <= danhGia.soSao,
+                  inactive: i > danhGia.soSao,
                 }"
                 @click="setRating(i)"
                 @mouseenter="hoverRating(i)"
                 @mouseleave="resetHover"
-              >★</span>
+                >★</span
+              >
             </div>
             <div class="rating-text">
               {{ getRatingText(danhGia.soSao) }}
@@ -112,10 +129,10 @@
           </div>
 
           <!-- Submit button -->
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             class="submit-btn"
-            :class="{ 'loading': isSubmitting, 'success': showSuccess }"
+            :class="{ loading: isSubmitting, success: showSuccess }"
             :disabled="isSubmitting"
           >
             <i v-if="isSubmitting" class="fas fa-spinner fa-spin"></i>
@@ -143,10 +160,11 @@
               :key="i"
               class="star"
               :class="{
-                'active': i <= dg.soSao,
-                'inactive': i > dg.soSao
+                active: i <= dg.soSao,
+                inactive: i > dg.soSao,
               }"
-            >★</span>
+              >★</span
+            >
             <span class="review-date">{{ formatDate(dg.ngayTao) }}</span>
           </div>
           <div class="review-content">
@@ -156,7 +174,9 @@
             <i class="fas fa-user-circle"></i>
             Người đánh giá:
             <span v-if="dg.anDanh" class="anonymous">Ẩn danh</span>
-            <span v-else class="author-name">{{ dg.user?.name || 'Không rõ' }}</span>
+            <span v-else class="author-name">{{
+              dg.user?.name || "Không rõ"
+            }}</span>
           </div>
         </div>
       </div>
@@ -174,7 +194,7 @@
 <script setup>
 import { ref, onMounted, watch, nextTick } from "vue";
 import { useRoute } from "vue-router";
-import axios from "axios";
+import axiosClient from "../utils/axiosClient";
 
 const route = useRoute();
 
@@ -198,10 +218,10 @@ const userId = localStorage.getItem("userId");
 // Rating text mapping
 const ratingTexts = {
   1: "😞 Rất không hài lòng",
-  2: "😐 Không hài lòng", 
+  2: "😐 Không hài lòng",
   3: "🙂 Bình thường",
   4: "😊 Hài lòng",
-  5: "🤩 Rất hài lòng"
+  5: "🤩 Rất hài lòng",
 };
 
 // Methods
@@ -211,10 +231,10 @@ const setRating = (rating) => {
   danhGia.value.soSao = rating;
   // Add click animation
   nextTick(() => {
-    const stars = document.querySelectorAll('.star-rating .star');
-    stars[rating - 1].style.animation = 'star-click 0.3s ease';
+    const stars = document.querySelectorAll(".star-rating .star");
+    stars[rating - 1].style.animation = "star-click 0.3s ease";
     setTimeout(() => {
-      stars[rating - 1].style.animation = '';
+      stars[rating - 1].style.animation = "";
     }, 300);
   });
 };
@@ -228,25 +248,25 @@ const resetHover = () => {
 };
 
 const onTextareaFocus = (e) => {
-  e.target.parentElement.classList.add('focused');
+  e.target.parentElement.classList.add("focused");
 };
 
 const onTextareaBlur = (e) => {
-  e.target.parentElement.classList.remove('focused');
+  e.target.parentElement.classList.remove("focused");
 };
 
 const formatDate = (dateString) => {
-  if (!dateString) return '';
+  if (!dateString) return "";
   const date = new Date(dateString);
-  return date.toLocaleDateString('vi-VN');
+  return date.toLocaleDateString("vi-VN");
 };
 
 // Load data
 onMounted(async () => {
   try {
     isLoading.value = true;
-    const res = await axios.get("http://localhost:5055/api/DichVu");
-    dichVus.value = res.data;
+    const res = await axiosClient.get("DichVu");
+    dichVus.value = res;
 
     const idFromRoute = route.params.id;
     if (idFromRoute) {
@@ -272,10 +292,8 @@ watch(
 async function loadDanhGia(maDichVu) {
   try {
     isLoading.value = true;
-    const res = await axios.get(
-      `http://localhost:5055/api/DanhGia/dichvu/${maDichVu}`
-    );
-    danhSach.value = res.data;
+    const res = await axiosClient.get(`DanhGia/dichvu/${maDichVu}`);
+    danhSach.value = res;
   } catch (err) {
     console.error("❌ Lỗi khi tải đánh giá:", err);
   } finally {
@@ -286,10 +304,10 @@ async function loadDanhGia(maDichVu) {
 async function submitDanhGia() {
   try {
     isSubmitting.value = true;
-    
+
     console.log("🚀 Submit payload:", { ...danhGia.value, userId });
 
-    await axios.post("http://localhost:5055/api/DanhGia", {
+    await axiosClient.post("DanhGia", {
       ...danhGia.value,
       userId,
     });
@@ -308,7 +326,7 @@ async function submitDanhGia() {
       noiDung: "",
       anDanh: false,
     };
-    
+
     await loadDanhGia(currentDichVuID);
   } catch (err) {
     console.error(err);
@@ -321,7 +339,7 @@ async function submitDanhGia() {
 
 <style scoped>
 * {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .review-wrapper {
@@ -348,8 +366,13 @@ async function submitDanhGia() {
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-20px) rotate(180deg); }
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(180deg);
+  }
 }
 
 .main-container {
@@ -386,8 +409,13 @@ async function submitDanhGia() {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .glass-container {
@@ -411,7 +439,7 @@ async function submitDanhGia() {
 }
 
 .form-container::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -423,8 +451,13 @@ async function submitDanhGia() {
 }
 
 @keyframes shimmer {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 .form-group {
@@ -447,7 +480,8 @@ async function submitDanhGia() {
   gap: 0.5rem;
 }
 
-.form-control, .premium-select {
+.form-control,
+.premium-select {
   border: 2px solid #e2e8f0;
   border-radius: 12px;
   padding: 1rem;
@@ -457,7 +491,8 @@ async function submitDanhGia() {
   width: 100%;
 }
 
-.form-control:focus, .premium-select:focus {
+.form-control:focus,
+.premium-select:focus {
   border-color: #22c55e;
   box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
   background: white;
@@ -483,8 +518,12 @@ async function submitDanhGia() {
 }
 
 @keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .star-rating {
@@ -501,19 +540,28 @@ async function submitDanhGia() {
 }
 
 .star-rating::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.1), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(34, 197, 94, 0.1),
+    transparent
+  );
   animation: star-glow 2s ease-in-out infinite;
 }
 
 @keyframes star-glow {
-  0% { left: -100%; }
-  100% { left: 100%; }
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
 }
 
 .star {
@@ -542,8 +590,13 @@ async function submitDanhGia() {
 }
 
 @keyframes star-click {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.4); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.4);
+  }
 }
 
 .rating-text {
@@ -613,7 +666,7 @@ async function submitDanhGia() {
 }
 
 .toggle-slider::before {
-  content: '';
+  content: "";
   position: absolute;
   width: 26px;
   height: 26px;
@@ -675,13 +728,18 @@ async function submitDanhGia() {
 }
 
 .submit-btn::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: left 0.6s ease;
 }
 
@@ -781,19 +839,19 @@ async function submitDanhGia() {
   .main-container {
     padding: 1rem;
   }
-  
+
   .title-section h1 {
     font-size: 2rem;
   }
-  
+
   .form-container {
     padding: 1.5rem;
   }
-  
+
   .star {
     font-size: 2rem;
   }
-  
+
   .form-switch {
     flex-direction: column;
     gap: 1rem;

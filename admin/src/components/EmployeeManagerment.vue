@@ -1,13 +1,5 @@
 <template>
   <div class="employees-management">
-    <!-- Header -->
-    <div class="header">
-      <h1 class="title">
-        <i class="fas fa-users"></i>
-        Quản lý nhân viên
-      </h1>
-    </div>
-
     <!-- Add Employee Section -->
     <div class="card add-employee-section">
       <div class="card-header">
