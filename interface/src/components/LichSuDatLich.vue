@@ -1,6 +1,8 @@
 <template>
   <div class="container my-5">
-    <h2 class="text-center fw-bold text-primary mb-4">🧾 Lịch Sử Sử Dụng Dịch Vụ</h2>
+    <h2 class="text-center fw-bold text-primary mb-4">
+      🧾 Lịch Sử Sử Dụng Dịch Vụ
+    </h2>
 
     <div v-if="lichSu.length === 0" class="text-muted text-center">
       Bạn chưa sử dụng dịch vụ nào.
@@ -12,7 +14,8 @@
       class="card mb-4 shadow-sm"
     >
       <div class="card-header bg-light">
-        🗓️ Ngày: {{ formatDate(hoaDon.ngayTao) }} - 💳 {{ hoaDon.hinhThucThanhToan }}
+        🗓️ Ngày: {{ formatDate(hoaDon.ngayTao) }} - 💳
+        {{ hoaDon.hinhThucThanhToan }}
       </div>
       <div class="card-body">
         <ul class="list-group list-group-flush">
@@ -21,11 +24,12 @@
             :key="ct.chiTietHoaDonID"
             class="list-group-item"
           >
-            <strong>{{ ct.dichVu.tenDichVu }}</strong><br />
+            <strong>{{ ct.dichVu.tenDichVu }}</strong
+            ><br />
             Số lượng: {{ ct.soLuongSP }}<br />
             Giá: {{ formatCurrency(ct.dichVu.gia) }}<br />
             Thành tiền: {{ formatCurrency(ct.thanhTien) }}<br />
-            
+
             <!-- ✅ Nút đánh giá có truyền ID -->
             <router-link
               :to="`/DanhGia/${ct.dichVu.dichVuID}`"
@@ -41,40 +45,40 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import apiClient from '../../utils/axiosClient'
+import { ref, onMounted } from "vue";
+import apiClient from "../utils/axiosClient";
 
-const lichSu = ref([])
+const lichSu = ref([]);
 
 onMounted(() => {
-  loadLichSu()
-})
+  loadLichSu();
+});
 
 const loadLichSu = async () => {
   try {
-    const res = await apiClient.get('/ThanhToan/by-user')
-    lichSu.value = res
+    const res = await apiClient.get("/ThanhToan/by-user");
+    lichSu.value = res;
   } catch (err) {
-    console.error('❌ Lỗi tải lịch sử dịch vụ:', err)
+    console.error("❌ Lỗi tải lịch sử dịch vụ:", err);
   }
-}
+};
 
 const formatDate = (str) => {
-  const d = new Date(str)
-  return d.toLocaleDateString('vi-VN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
+  const d = new Date(str);
+  return d.toLocaleDateString("vi-VN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
 
 const formatCurrency = (value) =>
-  new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND',
-  }).format(value)
+  new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(value);
 </script>
 
 <style scoped>

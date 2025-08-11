@@ -1,6 +1,8 @@
 <template>
   <div class="container py-5">
-    <h2 class="text-soft-red fw-bold mb-4 text-center">Chi tiết dịch vụ thư giãn </h2>
+    <h2 class="text-soft-red fw-bold mb-4 text-center">
+      Chi tiết dịch vụ thư giãn
+    </h2>
 
     <div v-if="service" class="row g-4">
       <!-- Hình ảnh dịch vụ -->
@@ -9,7 +11,7 @@
           <img
             :src="getImageUrl(service.hinhAnh)"
             class="img-fluid w-100"
-            style="object-fit: contain; max-height: 450px; background: #fefafa;"
+            style="object-fit: contain; max-height: 450px; background: #fefafa"
             alt="Hình ảnh dịch vụ"
           />
         </div>
@@ -24,18 +26,37 @@
           <p class="text-muted">{{ service.moTa }}</p>
 
           <ul class="list-unstyled my-3">
-            <li><i class="bi bi-cash-coin text-success"></i> <strong>Giá:</strong> {{ service.gia.toLocaleString() }} VND</li>
-            <li><i class="bi bi-clock-history text-warning"></i> <strong>Thời gian:</strong> {{ service.thoiGian }} phút</li>
-            <li><i class="bi bi-star-fill text-warning"></i> <strong>Đánh giá:</strong> 4.8/5 (200+ lượt)</li>
-            <li><i class="bi bi-heart-pulse text-danger"></i> <strong>Lợi ích:</strong> 
-              Cải thiện tuần hoàn máu, giảm căng thẳng, trẻ hóa làn da, thư giãn tinh thần.
+            <li>
+              <i class="bi bi-cash-coin text-success"></i>
+              <strong>Giá:</strong> {{ service.gia.toLocaleString() }} VND
             </li>
-            <li><i class="bi bi-person-arms-up text-info"></i> <strong>Phù hợp với:</strong> Người làm việc văn phòng, mẹ bỉm sữa, người cao tuổi.</li>
+            <li>
+              <i class="bi bi-clock-history text-warning"></i>
+              <strong>Thời gian:</strong> {{ service.thoiGian }} phút
+            </li>
+            <li>
+              <i class="bi bi-star-fill text-warning"></i>
+              <strong>Đánh giá:</strong> 4.8/5 (200+ lượt)
+            </li>
+            <li>
+              <i class="bi bi-heart-pulse text-danger"></i>
+              <strong>Lợi ích:</strong>
+              Cải thiện tuần hoàn máu, giảm căng thẳng, trẻ hóa làn da, thư giãn
+              tinh thần.
+            </li>
+            <li>
+              <i class="bi bi-person-arms-up text-info"></i>
+              <strong>Phù hợp với:</strong> Người làm việc văn phòng, mẹ bỉm
+              sữa, người cao tuổi.
+            </li>
           </ul>
 
           <!-- Nút đặt ngay -->
           <div class="mt-auto text-center">
-            <button class="btn btn-lg btn-success px-4 py-2 rounded-pill shadow" @click="datNgay">
+            <button
+              class="btn btn-lg btn-success px-4 py-2 rounded-pill shadow"
+              @click="datNgay"
+            >
               <i class="bi bi-cart-check-fill me-2"></i>Đặt ngay
             </button>
             <p class="mt-2 text-muted small">
@@ -51,10 +72,10 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { onMounted, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
-import axiosClient from '../../utils/axiosClient';
+import axiosClient from "../utils/axiosClient";
 
 const api_url = import.meta.env.VITE_BASE_URL;
 const route = useRoute();
@@ -65,7 +86,7 @@ const getImageUrl = (path) => `${api_url}${path}`;
 
 const datNgay = () => {
   if (service.value) {
-    router.push({ name: 'ThanhToan', params: { id: service.value.id } });
+    router.push({ name: "ThanhToan", params: { id: service.value.id } });
   }
 };
 
@@ -81,7 +102,7 @@ onMounted(async () => {
 
 <style scoped>
 .text-soft-red {
-  color: #B94C63; /* Màu mận nhạt */
+  color: #b94c63; /* Màu mận nhạt */
 }
 
 .card {

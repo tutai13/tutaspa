@@ -10,12 +10,26 @@
       <!-- Box thời gian & giá -->
       <div class="row g-4 mb-5 justify-content-center" v-if="giaDichVu.length">
         <div class="col-lg-4 col-md-6" v-for="(g, i) in giaDichVu" :key="i">
-          <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden service-card">
-            <img :src="getImageUrl(service.hinhAnh)" class="card-img-top img-zoom" style="height: 230px; object-fit: cover;" />
+          <div
+            class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden service-card"
+          >
+            <img
+              :src="getImageUrl(service.hinhAnh)"
+              class="card-img-top img-zoom"
+              style="height: 230px; object-fit: cover"
+            />
             <div class="card-body text-center">
-              <h5 class="fw-bold text-primary mb-2">{{ service.tenDichVu }} - {{ g.thoiLuong }} phút</h5>
-              <p class="text-success fs-5 fw-semibold">{{ formatCurrency(g.gia) }}</p>
-              <router-link to="/dat-lich" class="btn btn-success rounded-pill px-4 shadow-sm btn-hover">Đặt dịch vụ</router-link>
+              <h5 class="fw-bold text-primary mb-2">
+                {{ service.tenDichVu }} - {{ g.thoiLuong }} phút
+              </h5>
+              <p class="text-success fs-5 fw-semibold">
+                {{ formatCurrency(g.gia) }}
+              </p>
+              <router-link
+                to="/dat-lich"
+                class="btn btn-success rounded-pill px-4 shadow-sm btn-hover"
+                >Đặt dịch vụ</router-link
+              >
             </div>
           </div>
         </div>
@@ -26,7 +40,11 @@
         <h5 class="fw-bold mb-2">⭐ Đánh giá trung bình:</h5>
         <div v-if="trungBinh !== null">
           <div class="fs-4 text-warning mb-1">
-            <i class="fa-solid fa-star" v-for="n in Math.round(trungBinh)" :key="n"></i>
+            <i
+              class="fa-solid fa-star"
+              v-for="n in Math.round(trungBinh)"
+              :key="n"
+            ></i>
           </div>
           <span class="text-muted fs-5">{{ trungBinh.toFixed(1) }}/5</span>
         </div>
@@ -45,12 +63,14 @@
             <div class="text-warning">
               <i class="fa-solid fa-star me-1" v-for="n in dg.sao" :key="n"></i>
             </div>
-            <div class="text-muted small">{{ new Date(dg.ngayTao).toLocaleDateString() }}</div>
+            <div class="text-muted small">
+              {{ new Date(dg.ngayTao).toLocaleDateString() }}
+            </div>
           </div>
           <p class="mb-2 fst-italic">"{{ dg.noiDung }}"</p>
           <div class="text-muted small d-flex align-items-center">
             <i class="fa-regular fa-user-circle me-1"></i>
-            {{ dg.anDanh ? 'Ẩn danh' : 'Khách hàng' }}
+            {{ dg.anDanh ? "Ẩn danh" : "Khách hàng" }}
           </div>
         </div>
       </div>
@@ -65,9 +85,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
-import axiosClient from '../../utils/axiosClient';
+import { ref, onMounted } from "vue";
+import { useRoute } from "vue-router";
+import axiosClient from "../utils/axiosClient";
 
 var base_url = import.meta.env.VITE_BASE_URL;
 base_url = base_url.replace("/api", "");
@@ -85,7 +105,7 @@ onMounted(async () => {
       axiosClient.get(`DichVu/${id}`),
       axiosClient.get(`BangGiaDichVu/GetGiaTheoThoiGian/${id}`),
       axiosClient.get(`DanhGia/dichvu/${id}`),
-      axiosClient.get(`DanhGia/trungbinh/${id}`)
+      axiosClient.get(`DanhGia/trungbinh/${id}`),
     ]);
 
     service.value = res1;
@@ -93,15 +113,15 @@ onMounted(async () => {
     danhGias.value = res3;
     trungBinh.value = res4;
   } catch (err) {
-    console.error('Lỗi khi tải dữ liệu dịch vụ:', err);
+    console.error("Lỗi khi tải dữ liệu dịch vụ:", err);
   }
 });
 
 const getImageUrl = (path) => `${base_url}/images/${path}`;
 const formatCurrency = (num) =>
-  new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND'
+  new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
   }).format(num);
 </script>
 

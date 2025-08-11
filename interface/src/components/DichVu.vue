@@ -1,205 +1,203 @@
 <template>
-  <section class="py-5 bg-light min-vh-100">
-    <div class="container">
-      <div class="text-center mb-5">
-        <h2 class="fw-bold text-title text-uppercase mb-3">Dịch vụ tại TuTa Spa</h2>
-        <p class="text-muted fs-5">Khám phá dịch vụ đa dạng và thư giãn tại không gian đẳng cấp của chúng tôi</p>
+  <section id="home" class="min-vh-100 position-relative">
+    <div
+      id="spaCarousel"
+      class="carousel slide"
+      data-bs-ride="carousel"
+      data-bs-interval="5000"
+    >
+      <!-- Carousel Indicators -->
+      <div class="carousel-indicators">
+        <button
+          v-for="(slide, index) in slides"
+          :key="index"
+          type="button"
+          :data-bs-target="'#spaCarousel'"
+          :data-bs-slide-to="index"
+          :class="{ active: index === currentSlide }"
+          :aria-current="index === currentSlide ? 'true' : 'false'"
+          :aria-label="'Slide ' + (index + 1)"
+        ></button>
       </div>
 
-      <!-- Ưu đãi nổi bật -->
-      <!-- <div class="alert alert-success text-center rounded-4 fw-bold shadow-sm mb-5">
-        🎁 Giảm 30% dịch vụ massage toàn thân – Chỉ hôm nay!
-      </div> -->
-
-      <div class="row g-4">
-        <!-- Bộ lọc bên trái -->
-        <div class="col-lg-3">
-          <div class="position-sticky sticky-top shadow-sm p-4 rounded-4 bg-white" style="top: 100px">
-            <h5 class="fw-semibold text-green mb-3">Bộ lọc dịch vụ</h5>
-            <input v-model="searchKeyword" type="text" class="form-control rounded-pill px-4 mb-3" placeholder="Tìm kiếm dịch vụ...">
-
-            <div class="mb-3">
-              <h6 class="fw-bold mb-2 text-dark">Loại dịch vụ</h6>
-              <button @click="selectedTypeID = null" :class="['btn w-100 mb-2 rounded-pill fw-semibold', selectedTypeID === null ? 'btn-green text-white' : 'btn-outline-secondary']">
-                <i class="fa-solid fa-layer-group me-2"></i>Tất cả
-              </button>
-              <button v-for="type in serviceTypes" :key="type.loaiDichVuID" @click="selectedTypeID = type.loaiDichVuID" :class="['btn w-100 mb-2 rounded-pill fw-semibold', selectedTypeID === type.loaiDichVuID ? 'btn-green text-white' : 'btn-outline-secondary']">
-                <i class="fa-solid fa-leaf me-2 text-success"></i>{{ type.tenLoai }}
-              </button>
-            </div>
-
-            <div>
-              <h6 class="fw-bold mb-2 text-dark">Khoảng giá</h6>
-              <input type="range" v-model="priceRange" min="0" max="2000000" step="50000" class="form-range">
-              <div class="small text-muted">Tối đa: {{ priceRange.toLocaleString('vi-VN') }}đ</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Danh sách dịch vụ -->
-        <div class="col-lg-9">
-          <transition-group name="fade" tag="div" class="row g-4">
-            <div class="col-md-6 col-lg-4" v-for="service in filteredServices" :key="service.id">
-              <div class="card service-card shadow-sm rounded-4 overflow-hidden bg-white">
-                <div class="position-relative">
-                  <img :src="'images/' + service.image" class="w-100 service-img rounded-top" style="height: 240px; object-fit: cover;" />
-                  <h5 class="pre-hover-title text-dark fw-bold position-absolute bottom-0 start-0 p-3 m-0 w-100 text-center bg-light bg-opacity-75">
-                    {{ service.name }}
-                  </h5>
-                  <div class="hover-overlay" @mouseenter="loadPricesForService(service.id)">
-                    <h5 class="hover-title fw-bold text-dark mb-2">{{ service.name }}</h5>
-                    <span class="badge bg-danger mb-2">KHUYẾN MÃI LÊN ĐẾN 25%</span>
-                    <!--  -->
-                    <div v-if="servicePrices[service.id]" class="text-dark small mb-3">
-                      <div v-for="gia in servicePrices[service.id]" :key="gia.thoiLuong">
-                        {{ gia.thoiLuong }}’: {{ gia.gia.toLocaleString('vi-VN') }}đ
-                      </div>
-                    </div>
-                    <router-link :to="`/DichVuChiTiet/${service.id}`" class="btn btn-outline-success rounded-pill">Xem chi tiết</router-link>
-                  </div>
-                </div>
+      <!-- Carousel Items -->
+      <div class="carousel-inner">
+        <div
+          v-for="(slide, index) in slides"
+          :key="slide.title"
+          class="carousel-item"
+          :class="{ active: index === currentSlide }"
+          :style="{
+            backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(120, 186, 126, 0.3)), url(${slide.image})`,
+          }"
+        >
+          <div
+            class="carousel-caption d-flex flex-column justify-content-center h-100"
+          >
+            <div class="mb-4 animate__animated animate__fadeInDown">
+              <div
+                class="d-inline-block p-4 rounded-circle bg-success bg-opacity-75 shadow-lg"
+              >
+                <svg
+                  class="w-50 h-50 text-white"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"
+                  />
+                </svg>
               </div>
             </div>
-          </transition-group>
-          <div v-if="filteredServices.length === 0" class="text-center py-5">
-            <p class="text-muted">Không tìm thấy dịch vụ phù hợp</p>
+            <h1
+              class="display-2 fw-bold mb-4 font-lora animate__animated animate__fadeInDown"
+            >
+              Chào mừng đến TutaSpa
+            </h1>
+            <h2
+              class="fs-3 fw-semibold text-white mb-4 animate__animated animate__fadeInUp animate__delay-1s"
+            >
+              {{ slides[currentSlide].subtitle }}
+            </h2>
+            <p
+              class="lead text-white mb-5 mx-auto animate__animated animate__fadeInUp animate__delay-2s"
+              style="max-width: 700px"
+            >
+              Hành trình thư giãn và tái tạo năng lượng với những liệu pháp tự
+              nhiên, mang đến sự cân bằng hoàn hảo cho cơ thể và tâm hồn bạn
+            </p>
+            <div
+              class="d-flex flex-wrap justify-content-center gap-4 mb-5 animate__animated animate__fadeInUp animate__delay-3s"
+            >
+              <div
+                v-for="(stat, index) in stats"
+                :key="index"
+                class="text-center px-3"
+              >
+                <div class="fs-1 mb-2">{{ stat.icon }}</div>
+                <div class="fs-3 fw-bold text-warning">{{ stat.number }}</div>
+                <div class="text-white">{{ stat.label }}</div>
+              </div>
+            </div>
+            <div
+              class="d-flex flex-column flex-sm-row justify-content-center gap-3 animate__animated animate__fadeInUp animate__delay-4s"
+            >
+              <router-link
+                to="/#services"
+                class="btn btn-primary btn-lg rounded-pill px-5 py-3 fw-bold"
+              >
+                Khám phá dịch vụ
+              </router-link>
+              <router-link
+                to="/#booking"
+                class="btn btn-outline-light btn-lg rounded-pill px-5 py-3"
+              >
+                Đặt lịch ngay
+              </router-link>
+            </div>
           </div>
         </div>
+      </div>
+
+      <!-- Carousel Controls -->
+      <button
+        class="carousel-control-prev"
+        type="button"
+        data-bs-target="#spaCarousel"
+        data-bs-slide="prev"
+      >
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+      </button>
+      <button
+        class="carousel-control-next"
+        type="button"
+        data-bs-target="#spaCarousel"
+        data-bs-slide="next"
+      >
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+      </button>
+    </div>
+    <!-- Scroll Indicator -->
+    <div
+      class="position-absolute bottom-0 start-50 translate-middle-x z-30 animate__animated animate__bounce animate__infinite"
+    >
+      <div
+        class="border border-2 border-white border-opacity-50 rounded-pill p-1"
+        style="width: 1.5rem; height: 2.5rem"
+      >
+        <div
+          class="bg-white bg-opacity-75 rounded-pill animate-pulse"
+          style="width: 0.5rem; height: 0.75rem"
+        ></div>
       </div>
     </div>
   </section>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import axios from 'axios';
-import axiosClient from '../../utils/axiosClient';
+import { ref, onMounted, onUnmounted } from "vue";
 
-const services = ref([]);
-const serviceTypes = ref([]);
-const selectedTypeID = ref(null);
-const searchKeyword = ref('');
-const priceRange = ref(2000000);
-const servicePrices = ref({});
+const currentSlide = ref(0);
 
-onMounted(async () => {
-  try {
-    const [dvRes, ldvRes] = await Promise.all([
-      axiosClient.get('DichVu'),
-      axiosClient.get('LoaiDichVu')
-    ]);
-    services.value = dvRes.map(s => ({
-      id: s.dichVuID,
-      name: s.tenDichVu,
-      description: s.moTa,
-      image: s.hinhAnh || "default-service.jpg",
-      loaiDichVuID: s.loaiDichVuID
-    }));
-    serviceTypes.value = ldvRes;
-  } catch (err) {
-    console.error('Lỗi tải dữ liệu:', err);
-  }
+const slides = [
+  {
+    image:
+      "https://images.unsplash.com/photo-1540555700478-4be289fbecef?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+    title: "Thư Giãn & Tái Tạo",
+    subtitle: "Trải nghiệm không gian yên bình",
+  },
+  {
+    image:
+      "https://images.unsplash.com/photo-1596178065887-1198b6148b2b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+    title: "Chăm Sóc Chuyên Nghiệp",
+    subtitle: "Với đội ngũ chuyên gia giàu kinh nghiệm",
+  },
+  {
+    image:
+      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+    title: "Làm Đẹp Tự Nhiên",
+    subtitle: "Sử dụng 100% sản phẩm thiên nhiên",
+  },
+];
+
+const stats = [
+  { number: "10+", label: "Năm kinh nghiệm", icon: "🏆" },
+  { number: "5000+", label: "Khách hàng hài lòng", icon: "👥" },
+  { number: "24", label: "Dịch vụ chuyên nghiệp", icon: "🌿" },
+];
+
+const nextSlide = () => {
+  currentSlide.value = (currentSlide.value + 1) % slides.length;
+};
+
+onMounted(() => {
+  const timer = setInterval(nextSlide, 5000);
+  onUnmounted(() => clearInterval(timer));
 });
-
-const filteredServices = computed(() => {
-  return services.value.filter(s => {
-    const matchType = !selectedTypeID.value || s.loaiDichVuID === selectedTypeID.value;
-    const matchKeyword = s.name.toLowerCase().includes(searchKeyword.value.toLowerCase());
-    const priceList = servicePrices.value[s.id] || [];
-    const matchPrice = priceList.some(p => p.gia <= priceRange.value) || priceList.length === 0;
-    return matchType && matchKeyword && matchPrice;
-  });
-});
-
-async function loadPricesForService(serviceId) {
-  if (!servicePrices.value[serviceId]) {
-    try {
-      const res = await axiosClient.get(`BangGiaDichVu/GetGiaTheoThoiGian/${serviceId}`);
-      servicePrices.value[serviceId] = res;
-    } catch (err) {
-      console.error('Lỗi tải giá:', err);
-      servicePrices.value[serviceId] = [];
-    }
-  }
-}
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&display=swap');
-
-.text-title {
-  color: #2f3e46;
-  font-family: 'Playfair Display', serif;
-}
-.text-muted {
-  color: #6c757d;
-}
-.text-green {
-  color: #007E5A;
-}
-.bg-light {
-  background: linear-gradient(90deg, #a0e5a8 0%, #fff8e1 100%) !important;
+.carousel-item {
+  height: 100vh;
+  background-size: cover !important;
+  background-position: center !important;
 }
 
-
-.bg-card {
-  background-color: #ffffff;
+.carousel-caption {
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-.btn-green {
-  background-color: #007E5A;
-  color: white;
-}
-.btn-green:hover {
-  background-color: #099c6a;
+.font-lora {
+  font-family: "Lora", serif;
 }
 
-.service-card {
-  transition: transform 0.3s;
-  font-family: 'Playfair Display', serif;
-}
-.service-card:hover {
-  transform: translateY(-5px);
-}
-.service-img {
-  transition: transform 0.3s ease;
-}
-.service-card:hover .service-img {
-  transform: scale(1.05);
-}
-.hover-overlay {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-color: rgba(248, 240, 226, 0.92);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 20px;
-  transition: opacity 0.3s ease;
-  opacity: 0;
-  z-index: 10;
-}
-.service-card:hover .hover-overlay {
-  opacity: 1;
-}
-.service-card:hover .pre-hover-title {
-  opacity: 0;
-}
-.hover-title {
-  font-size: 1.25rem;
-  transition: opacity 0.3s ease;
-  font-family: 'Playfair Display', serif;
+.w-50 {
+  width: 50px;
 }
 
-.fade-enter-active,
-.fade-leave-active {
-  transition: all 0.3s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-  transform: translateY(10px);
+.h-50 {
+  height: 50px;
 }
 </style>
