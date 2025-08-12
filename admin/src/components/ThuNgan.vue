@@ -516,7 +516,7 @@ const taoThanhToan = async () => {
       ? Math.max(0, tienKhach - tongTien.value)
       : null;
   const data = {
-    ngayTao: new Date().toISOString(),
+    ngayTao: new Date(Date.now() + 7 * 60 * 60 * 1000).toISOString(),
     maGiamGia: maGiamGia.value.toUpperCase(),
     hinhThucThanhToan: hinhThuc.value,
     trangThai: 1,
@@ -759,7 +759,15 @@ const apDungMaGiamGia = async () => {
     trangThaiGiamGia.value = "❌ Lỗi hệ thống";
   }
 };
-
+const doiTrangThai = async (id) => {
+  try {
+    const res = await apiClient.put(`/DatLich/doitrangthai/${id}`);
+    layDanhSach();
+  } catch (err) {
+    alert("Lỗi khi đổi trạng thái!");
+    console.error(err);
+  }
+};
 onMounted(async () => {
   try {
     const status = route.query.status;
