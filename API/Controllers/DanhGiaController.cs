@@ -108,21 +108,50 @@ namespace API.Controllers
         }
 
 
-        [HttpGet("trungbinh")]
-        public async Task<ActionResult<double>> GetTrungBinhDanhGia()
+        [HttpGet("trungbinh-trongso")]
+        public async Task<ActionResult<double>> GetTrungBinhTrongSo()
         {
-            // Chỉ tính những đánh giá đã duyệt và đang active
+            // Lấy dữ liệu đã duyệt
             var danhGias = await _context.DanhGias
                 .Where(d => d.DaDuyet && d.IsActive)
                 .ToListAsync();
 
-            if (danhGias.Count == 0)
-                return Ok(0); // Chưa có đánh giá nào
+            // Nếu không có đánh giá đã duyệt → fallback sang tất cả đánh giá active
+            if (!danhGias.Any())
+            {
+                danhGias = await _context.DanhGias
+                    .Where(d => d.IsActive)
+                    .ToListAsync();
+            }
 
-            double trungBinh = danhGias.Average(d => d.SoSao);
+            if (!danhGias.Any())
+                return Ok(0);
 
-            return Ok(Math.Round(trungBinh, 2)); // Làm tròn 2 chữ số thập phân
+            // Nhóm theo mã dịch vụ
+            var groupByService = danhGias
+                .GroupBy(d => d.MaDichVu)
+                .Select(g => new
+                {
+                    MaDichVu = g.Key,
+                    SoLuot = g.Count(),
+                    DiemTrungBinh = g.Average(x => x.SoSao)
+                })
+                .ToList();
+
+            // Tính trung bình có trọng số
+            double tongDiemTrongSo = groupByService.Sum(s => s.DiemTrungBinh * s.SoLuot);
+            double tongSoLuot = groupByService.Sum(s => s.SoLuot);
+
+            double trungBinhTrongSo = tongSoLuot > 0
+                ? Math.Round(tongDiemTrongSo / tongSoLuot, 2)
+                : 0;
+
+            return Ok(trungBinhTrongSo);
         }
+
+
+
+
 
 
     }
