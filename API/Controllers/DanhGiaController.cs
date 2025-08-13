@@ -108,6 +108,22 @@ namespace API.Controllers
         }
 
 
+        [HttpGet("trungbinh")]
+        public async Task<ActionResult<double>> GetTrungBinhDanhGia()
+        {
+            // Chỉ tính những đánh giá đã duyệt và đang active
+            var danhGias = await _context.DanhGias
+                .Where(d => d.DaDuyet && d.IsActive)
+                .ToListAsync();
+
+            if (danhGias.Count == 0)
+                return Ok(0); // Chưa có đánh giá nào
+
+            double trungBinh = danhGias.Average(d => d.SoSao);
+
+            return Ok(Math.Round(trungBinh, 2)); // Làm tròn 2 chữ số thập phân
+        }
+
 
     }
 

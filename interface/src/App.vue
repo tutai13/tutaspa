@@ -32,10 +32,10 @@
           </router-link>
           <router-link
             v-if="state.isAuthenticated"
-            to="/lich-hen"
+            to="/LichSuDatLich"
             class="book-btn"
           >
-            <i class="fa-regular fa-calendar-check"></i> Xem lịch
+            <i class=""></i> Dịch vụ đã dùng
           </router-link>
           <button
             v-if="state.isAuthenticated"
