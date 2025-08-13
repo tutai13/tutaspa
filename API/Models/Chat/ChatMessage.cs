@@ -17,8 +17,7 @@ namespace API.Models.Chat
         [Required]
         public string Message { get; set; }
 
-        public DateTime Timestamp { get; set; } = DateTime.Now;
-
+        public DateTime Timestamp { get; set; } =TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
         public bool IsFromAdmin { get; set; }
         public MessageStatus Status { get; set; } = MessageStatus.Sent;
         public bool IsRead { get; set; }
