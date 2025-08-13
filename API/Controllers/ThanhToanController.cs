@@ -14,6 +14,7 @@ using Twilio.TwiML.Voice;
 using DinkToPdf.Contracts;
 using API.Extensions;
 using DinkToPdf;
+using Microsoft.AspNetCore.Identity;
 
 namespace API.Controllers
 {
@@ -25,8 +26,9 @@ namespace API.Controllers
         private readonly PayOS _payOS;
         private readonly IConverter _converter;
         private readonly IWebHostEnvironment _env;
+        private readonly UserManager<User> _userManager;
 
-        public ThanhToanController(ApplicationDbContext context, IConfiguration configuration, IConverter converter, IWebHostEnvironment env)
+        public ThanhToanController(ApplicationDbContext context, IConfiguration configuration, IConverter converter, IWebHostEnvironment env, UserManager<User> userManager)
         {
             _context = context;
             string clientId = configuration["PayOSConfig:ClientId"] ?? throw new ArgumentNullException("ClientId");
@@ -36,6 +38,7 @@ namespace API.Controllers
             _payOS = new PayOS(clientId, apiKey, checksumKey);
             _converter = converter;
             _env = env;
+            _userManager = userManager;
         }
         
 
@@ -81,8 +84,10 @@ namespace API.Controllers
         public async Task<IActionResult> GetHoaDonByUser()
         {
             var userId = User.GetUserId();
+            var user = await _userManager.FindByIdAsync(userId);
+            var username = user?.UserName;
             var hoaDonList = await _context.HoaDons
-                .Where(h => h.UserID == userId)
+                .Where(h => h.UserID == username)
                 .Include(h => h.ChiTietHoaDons)
                 .ThenInclude(ct => ct.DichVu)
                 .OrderByDescending(h => h.NgayTao)
