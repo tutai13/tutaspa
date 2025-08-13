@@ -217,7 +217,7 @@ namespace API.Controllers
         public IActionResult GetSlotInfo(DateTime ngay)
         {
             var startHour = 9;
-            var endHour = 17;
+            var endHour = 23;
             var result = new List<object>();
 
             var khungGioList = new List<DateTime>();
