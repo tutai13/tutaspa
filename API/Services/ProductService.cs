@@ -19,7 +19,6 @@ namespace API.Services
 
 		public async Task<IEnumerable<ProductDTO>> GetAllAsync()
 		{
-			var baseUrl = "https://localhost:7183/images/";
 
 			return await _context.Products
 				.Include(p => p.ProductBatches)
@@ -33,7 +32,7 @@ namespace API.Services
 						.Where(b => b.ExpiryDate > DateTime.Now)
 						.Sum(b => b.Quantity),
 					LoaiSanPhamId = p.CategoryId,
-					HinhAnh = string.IsNullOrEmpty(p.Images) ? null : baseUrl + p.Images
+					HinhAnh =  p.Images
 				})
 				.ToListAsync();
 		}
