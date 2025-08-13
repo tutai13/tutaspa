@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using API.Models;
+using Newtonsoft.Json;
 
 public class DanhGia
 {
@@ -7,7 +8,7 @@ public class DanhGia
 
     [ForeignKey("DichVu")] // 🔥 dòng này rất quan trọng
     public int MaDichVu { get; set; }
-
+    [JsonIgnore]
     public DichVu? DichVu { get; set; }
 
     //public int? MaNhanVien { get; set; }
@@ -18,6 +19,7 @@ public class DanhGia
     public string UserId { get; set; } = string.Empty;
 
     [ForeignKey("UserId")]
+    [JsonIgnore]
     public User? User { get; set; }
 
     public int SoSao { get; set; } = 5;
