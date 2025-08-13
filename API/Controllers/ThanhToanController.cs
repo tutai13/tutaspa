@@ -110,7 +110,7 @@ namespace API.Controllers
 
                 var hoaDon = new HoaDon
                 {
-                    NgayTao = request.NgayTao,
+                    NgayTao = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
                     HinhThucThanhToan = request.HinhThucThanhToan,
                     TrangThai = request.TrangThai,
                     TienKhachDua = request.TienKhachDua,
