@@ -15,6 +15,7 @@ namespace API.Models
         [JsonIgnore]
 
         public ICollection<Product>? Products { get; set; }
+        public string? maCategory {  get; set; }
 
     }
 }
