@@ -40,7 +40,7 @@ namespace API.Models
         [ForeignKey("LoaiDichVuID")]
         [JsonIgnore]
         public LoaiDichVu? LoaiDichVu { get; set; }
-        public string maDichVu { get;set; }
+        public string? maDichVu { get;set; }
     }
 
 }

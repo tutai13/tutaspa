@@ -28,5 +28,6 @@ namespace API.Models
 
 		[NotMapped]
 		public int Quantity => ProductBatches?.Where(b => b.ExpiryDate > DateTime.Now).Sum(b => b.Quantity) ?? 0;
+		public string? maProduct {  get; set; }
 	}
 }
