@@ -29,9 +29,10 @@ namespace API.Data
 
         public DbSet<ChatSession> ChatSessions { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
+		public DbSet<Expense> Expenses { get; set; }
 
-        // -------------------------- Fluent API --------------------------
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+		// -------------------------- Fluent API --------------------------
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
@@ -114,6 +115,15 @@ namespace API.Data
                       .HasPrincipalKey(s => s.SessionId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
-        }
+			modelBuilder.Entity<Expense>(entity =>
+			{
+				entity.ToTable("Expenses");
+				entity.HasKey(e => e.ExpenseId);
+				entity.Property(e => e.Amount).HasColumnType("decimal(18,2)");
+				entity.Property(e => e.ExpenseType).HasMaxLength(100);
+				entity.Property(e => e.Date);
+				entity.Property(e => e.Note).HasMaxLength(500);
+			});
+		}
     }
 }
