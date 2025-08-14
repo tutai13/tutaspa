@@ -14,5 +14,7 @@ namespace API.Models
 
         [JsonIgnore]
         public ICollection<DichVu>? DichVus { get; set; }
+        public string maLoaiDichVu { get; set; }
+
     }
 }

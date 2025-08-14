@@ -117,7 +117,8 @@ namespace API.Migrations
                 {
                     LoaiDichVuID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    TenLoai = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
+                    TenLoai = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    maLoaiDichVu = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -333,7 +334,8 @@ namespace API.Migrations
                     HinhAnh = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     TrangThai = table.Column<int>(type: "int", nullable: false),
                     NgayTao = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LoaiDichVuID = table.Column<int>(type: "int", nullable: false)
+                    LoaiDichVuID = table.Column<int>(type: "int", nullable: false),
+                    maDichVu = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
