@@ -57,11 +57,11 @@ namespace API.Controllers
                 Console.WriteLine(nameof(refreshToken) +":" + refreshToken );
                 var cookieOptions = new CookieOptions
                 {
-                    HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.Strict,
-                    Expires = DateTime.UtcNow.AddDays(7),
-                    Path = "/api/account"
+                     HttpOnly = true,
+                     Secure = true,
+                     SameSite = SameSiteMode.None,
+                     Expires = DateTime.UtcNow.AddDays(7),
+                     Path = "/api/account"
                 };
 
             Response.Cookies.Append("User_refreshToken", refreshToken, cookieOptions);
@@ -90,11 +90,11 @@ namespace API.Controllers
                     return Unauthorized(new { result.Message });
                 }
 
-                Response.Cookies.Append("refreshToken", result.Token.RefreshToken, new CookieOptions
+                Response.Cookies.Append("User_refreshToken", result.Token.RefreshToken, new CookieOptions
                 {
                     HttpOnly = true,
                     Secure = true,
-                    SameSite = SameSiteMode.Strict,
+                    SameSite = SameSiteMode.None,
                     Expires = DateTime.UtcNow.AddDays(7),
                     Path = "/api/account"
                 });
