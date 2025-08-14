@@ -23,25 +23,43 @@ namespace API.Controllers
         public IActionResult GetSanPhamSoLuong()
         {
             var now = DateTime.Now;
+
+            // Lấy danh sách hóa đơn trong tháng hiện tại
             var hoaDonIds = _context.HoaDons
                 .Where(h => h.NgayTao.Month == now.Month && h.NgayTao.Year == now.Year)
                 .Select(h => h.HoaDonID)
-                .ToList(); 
+                .ToList();
 
+            // Lấy chi tiết hóa đơn có sản phẩm
             var chiTietSanPham = _context.ChiTietHoaDons
                 .Where(c => c.SanPhamID != null && hoaDonIds.Contains(c.HoaDonID))
-                .ToList(); 
+                .ToList();
 
-            var result = chiTietSanPham
+            // Gom nhóm theo sản phẩm và join với bảng Products để lấy tên
+            var grouped = chiTietSanPham
                 .GroupBy(c => c.SanPhamID)
                 .Join(_context.Products.ToList(),
                       g => g.Key,
                       p => p.ProductId,
-                      (g, p) => new ThongKeSanPhamDTO
+                      (g, p) => new
                       {
                           ProductName = p.ProductName,
                           SoLuong = g.Sum(x => x.SoLuongSP)
                       })
+                .ToList();
+
+            // Tính tổng số lượng tất cả sản phẩm trong tháng
+            var total = grouped.Sum(x => x.SoLuong);
+
+            // Tính phần trăm cho từng sản phẩm, làm tròn 2 chữ số và sắp xếp giảm dần theo phần trăm
+            var result = grouped
+                .Select(x => new ThongKeSanPhamDTO
+                {
+                    ProductName = x.ProductName,
+                    SoLuong = x.SoLuong,
+                    PhanTram = (float)(total > 0 ? Math.Round((x.SoLuong * 100.0) / total, 2) : 0)
+                })
+                .OrderByDescending(x => x.PhanTram)
                 .ToList();
 
             return Ok(result);
