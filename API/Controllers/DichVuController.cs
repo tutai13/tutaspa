@@ -25,9 +25,29 @@ namespace API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<DichVu>>> GetDichVus()
         {
-            return await _context.DichVus
-                .Where(dv => dv.TrangThai == 1)
-                .ToListAsync();
+            var result = await _context.DichVus
+    .Where(dv => dv.TrangThai == 1)
+    .GroupJoin(
+        _context.DanhGias.Where(x => x.DaDuyet && x.IsActive),
+        dv => dv.DichVuID,
+        dg => dg.MaDichVu,
+        (dv, dgs) => new
+        {
+            dv.DichVuID,
+            dv.TenDichVu,
+            dv.TrangThai,
+            dv.Gia,
+            dv.ThoiGian,
+            dv.MoTa,
+            dv.HinhAnh,
+            dv.NgayTao,
+            dv.LoaiDichVuID,
+            dv.maDichVu,
+            MucDanhGia = dgs.Any() ? dgs.Average(x => x.SoSao) : 0
+        }
+    ).Take(12)
+    .ToListAsync();
+            return Ok(result);
         }
         // ✅ (Tùy chọn) Trả về tất cả dịch vụ (admin dùng)
         [HttpGet("all")]
