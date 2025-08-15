@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250814020352_init")]
+    [Migration("20250815124320_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -37,6 +37,9 @@ namespace API.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("maCategory")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("CategoryId");
 
@@ -305,7 +308,6 @@ namespace API.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("maDichVu")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("DichVuID");
@@ -313,6 +315,35 @@ namespace API.Migrations
                     b.HasIndex("LoaiDichVuID");
 
                     b.ToTable("DichVus");
+                });
+
+            modelBuilder.Entity("API.Models.Expense", b =>
+                {
+                    b.Property<int>("ExpenseId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ExpenseId"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ExpenseType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("ExpenseId");
+
+                    b.ToTable("Expenses", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.HoaDon", b =>
@@ -424,7 +455,6 @@ namespace API.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("maLoaiDichVu")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("LoaiDichVuID");
@@ -459,6 +489,9 @@ namespace API.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("maProduct")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("ProductId");
 

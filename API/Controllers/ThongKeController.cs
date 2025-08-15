@@ -213,6 +213,146 @@ namespace API.Controllers
             return Ok(new{SoLuotDichVu = soLuotDichVu});
         }
 
+		[HttpGet("ThuChi")]
+		public IActionResult GetThuChi()
+		{
+			var now = DateTime.Now;
 
-    }
+			// Thống kê thu từ HoaDon theo HinhThucThanhToan
+			var thu = _context.HoaDons
+				.Where(h => h.NgayTao.Month == now.Month && h.NgayTao.Year == now.Year)
+				.GroupBy(h => h.HinhThucThanhToan ?? "Không xác định")
+				.Select(g => new
+				{
+					LoaiThu = g.Key,
+					SoTien = g.Sum(h => h.TongTien)
+				})
+				.ToList();
+
+			// Thống kê chi từ InventoryHistory (nhập hàng)
+			var chiNhapHang = _context.InventoryHistories
+				.Where(h => h.ActionType == "Import"
+						 && h.Timestamp.Month == now.Month
+						 && h.Timestamp.Year == now.Year)
+				.GroupBy(h => h.ActionType)
+				.Select(g => new
+				{
+					LoaiChi = "Nhập hàng",
+					SoTien = g.Sum(h => (h.ImportPrice ?? 0m) * (decimal)(h.QuantityChanged))
+				})
+				.ToList();
+
+			// Thống kê chi từ Expenses (chi phí ngoài nhập hàng)
+			var chiKhac = _context.Expenses
+				.Where(e => e.Date.Month == now.Month && e.Date.Year == now.Year)
+				.GroupBy(e => e.ExpenseType ?? "Không xác định")
+				.Select(g => new
+				{
+					LoaiChi = g.Key,
+					SoTien = g.Sum(e => e.Amount)
+				})
+				.ToList();
+
+			// Kết hợp tất cả chi
+			var chi = chiNhapHang.Concat(chiKhac)
+				.Select(x => new ThongKeChiDTO
+				{
+					LoaiChi = x.LoaiChi,
+					SoTien = x.SoTien,
+					PhanTram = 0 // Sẽ tính lại dưới đây
+				})
+				.ToList();
+
+			// Tính tổng thu và chi
+			var tongThu = thu.Sum(x => x.SoTien);
+			var tongChi = chi.Sum(x => x.SoTien);
+
+			// Tính phần trăm
+			var result = new ThongKeThuChiDTO
+			{
+				Thu = thu.Select(x => new ThongKeThuDTO
+				{
+					LoaiThu = x.LoaiThu,
+					SoTien = x.SoTien,
+					PhanTram = tongThu > 0 ? (float)Math.Round((x.SoTien * 100.0M / tongThu), 2) : 0
+				}).ToList(),
+				Chi = chi.Select(x => new ThongKeChiDTO
+				{
+					LoaiChi = x.LoaiChi,
+					SoTien = x.SoTien,
+					PhanTram = tongChi > 0 ? (float)Math.Round((x.SoTien * 100.0M / tongChi), 2) : 0
+				}).ToList(),
+				TongThu = tongThu,
+				TongChi = tongChi
+			};
+
+			return Ok(result);
+		}
+
+		[HttpPost("Expense")]
+		public async Task<IActionResult> CreateExpense([FromBody] ExpenseDTO dto)
+		{
+			if (dto == null || string.IsNullOrEmpty(dto.ExpenseType))
+			{
+				return BadRequest("Dữ liệu chi phí không hợp lệ");
+			}
+
+			var expense = new Expense
+			{
+				Amount = dto.Amount,
+				ExpenseType = dto.ExpenseType,
+				Date = dto.Date,
+				Note = dto.Note
+			};
+			_context.Expenses.Add(expense);
+			await _context.SaveChangesAsync();
+			return Ok("Thêm chi phí thành công");
+		}
+
+		[HttpGet("Expense")]
+		public async Task<IActionResult> GetExpenses()
+		{
+			var expenses = await _context.Expenses
+				.Select(e => new
+				{
+					e.ExpenseId,
+					e.Amount,
+					e.ExpenseType,
+					e.Date,
+					e.Note
+				})
+				.ToListAsync();
+			return Ok(expenses.Any() ? expenses : new List<object>());
+		}
+
+		[HttpPut("Expense/{id}")]
+		public async Task<IActionResult> UpdateExpense(int id, [FromBody] ExpenseDTO dto)
+		{
+			if (dto == null || string.IsNullOrEmpty(dto.ExpenseType))
+			{
+				return BadRequest("Dữ liệu chi phí không hợp lệ");
+			}
+
+			var expense = await _context.Expenses.FindAsync(id);
+			if (expense == null) return NotFound("Chi phí không tồn tại");
+
+			expense.Amount = dto.Amount;
+			expense.ExpenseType = dto.ExpenseType;
+			expense.Date = dto.Date;
+			expense.Note = dto.Note;
+			await _context.SaveChangesAsync();
+			return Ok("Cập nhật chi phí thành công");
+		}
+
+		[HttpDelete("Expense/{id}")]
+		public async Task<IActionResult> DeleteExpense(int id)
+		{
+			var expense = await _context.Expenses.FindAsync(id);
+			if (expense == null) return NotFound("Chi phí không tồn tại");
+
+			_context.Expenses.Remove(expense);
+			await _context.SaveChangesAsync();
+			return Ok("Xóa chi phí thành công");
+		}
+	}
 }
