@@ -58,6 +58,8 @@ namespace API.Services
                 var accessToken = GenerateAccessToken(user, Roles);
                 var refreshToken = GenerateRefreshToken();
 
+                _logger.LogInformation("Token gen : " + refreshToken);
+
                 await SaveRefreshToken(refreshToken, user.Id);
 
                 _logger.LogInformation("Tạo token thành công cho  {UserId}", user.Id);
@@ -94,6 +96,7 @@ namespace API.Services
             };
 
             await _tokenRepository.CreateAsync(newToken).ConfigureAwait(false);
+            _logger.LogInformation("Đã Lưu token" + newToken.Token);
         }
 
         private string GenerateAccessToken(User user, IList<string> Roles)
