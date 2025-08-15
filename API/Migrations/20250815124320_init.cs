@@ -60,7 +60,8 @@ namespace API.Migrations
                 {
                     CategoryId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    CategoryName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
+                    CategoryName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    maCategory = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -112,13 +113,29 @@ namespace API.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Expenses",
+                columns: table => new
+                {
+                    ExpenseId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ExpenseType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Note = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Expenses", x => x.ExpenseId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "LoaiDichVus",
                 columns: table => new
                 {
                     LoaiDichVuID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     TenLoai = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    maLoaiDichVu = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    maLoaiDichVu = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -281,7 +298,8 @@ namespace API.Migrations
                     CategoryId = table.Column<int>(type: "int", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CurrentSellingPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Images = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false)
+                    Images = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
+                    maProduct = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -335,7 +353,7 @@ namespace API.Migrations
                     TrangThai = table.Column<int>(type: "int", nullable: false),
                     NgayTao = table.Column<DateTime>(type: "datetime2", nullable: false),
                     LoaiDichVuID = table.Column<int>(type: "int", nullable: false),
-                    maDichVu = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    maDichVu = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -735,6 +753,9 @@ namespace API.Migrations
 
             migrationBuilder.DropTable(
                 name: "DanhGias");
+
+            migrationBuilder.DropTable(
+                name: "Expenses");
 
             migrationBuilder.DropTable(
                 name: "InventoryHistories");
