@@ -21,7 +21,8 @@ namespace API.Services
                 .Select(c => new CategoryDTO
                 {
                     LoaiSanPhamId = c.CategoryId,
-                    TenLoai = c.CategoryName
+                    TenLoai = c.CategoryName,
+                    maCategory = c.maCategory,
                 }).ToListAsync();
         }
 
