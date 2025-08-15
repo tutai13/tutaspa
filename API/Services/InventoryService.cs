@@ -17,26 +17,31 @@ public class InventoryService : IInventoryService
 
 	public async Task<bool> ImportWithBatchAsync(ImportProductRequest dto)
 	{
-		var product = await _context.Products
+		// Kiểm tra xem sản phẩm đã tồn tại hay chưa dựa trên ProductName và CategoryId
+		var existingProduct = await _context.Products
 			.FirstOrDefaultAsync(p => p.ProductName == dto.ProductName && p.CategoryId == dto.CategoryId);
 
-		if (product == null)
+		if (existingProduct != null)
 		{
-			var imagePath = await SaveImageAsync(dto.Image);
-
-			product = new Product
-			{
-				ProductName = dto.ProductName,
-				Description = dto.Description,
-				CurrentSellingPrice = dto.CurrentSellingPrice,
-				CategoryId = dto.CategoryId,
-				Images = imagePath,
-				ProductBatches = new List<ProductBatch>()
-			};
-
-			_context.Products.Add(product);
-			await _context.SaveChangesAsync();
+			// Sản phẩm đã tồn tại, trả về false
+			return false;
 		}
+
+		// Nếu sản phẩm chưa tồn tại, tạo sản phẩm mới
+		var imagePath = await SaveImageAsync(dto.Image);
+
+		var product = new Product
+		{
+			ProductName = dto.ProductName,
+			Description = dto.Description,
+			CurrentSellingPrice = dto.CurrentSellingPrice,
+			CategoryId = dto.CategoryId,
+			Images = imagePath,
+			ProductBatches = new List<ProductBatch>()
+		};
+
+		_context.Products.Add(product);
+		await _context.SaveChangesAsync();
 
 		string productBatchCode = $"BATCH-{Guid.NewGuid().ToString("N")[..8].ToUpper()}";
 
