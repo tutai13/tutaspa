@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace API.Controllers
 {
@@ -223,7 +224,7 @@ namespace API.Controllers
         }
 
         [HttpGet("slots")]
-        public IActionResult GetSlotInfo(DateTime ngay)
+        public async Task<IActionResult> GetSlotInfo(DateTime ngay)
         {
             var startHour = 9;
             var endHour = 23;
@@ -236,9 +237,9 @@ namespace API.Controllers
                 khungGioList.Add(new DateTime(ngay.Year, ngay.Month, ngay.Day, h, 30, 0));
             }
 
-            var lich = _context.DatLiches
+            var lich = await _context.DatLiches
                 .Where(x => x.ThoiGian.Date == ngay.Date)
-                .ToList();
+                .ToListAsync();
 
             var now = DateTime.Now;
 
