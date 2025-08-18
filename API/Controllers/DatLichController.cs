@@ -1,8 +1,10 @@
-﻿using API.Data;
+﻿using API.ChatHub;
+using API.Data;
 using API.DTOs.DatLich;
 using API.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
@@ -12,11 +14,12 @@ namespace API.Controllers
     [ApiController]
     public class DatLichController : ControllerBase
     {
-
+        private readonly IHubContext<BookingHub> _hubContext;
         private readonly ApplicationDbContext _context;
-        public DatLichController(ApplicationDbContext context)
+        public DatLichController(ApplicationDbContext context, IHubContext<BookingHub> hubContext)
         {
             _context = context;
+            _hubContext = hubContext;
         }
 
         [HttpGet]
@@ -31,7 +34,7 @@ namespace API.Controllers
         }
 
         [HttpPost]
-        public IActionResult DatLich([FromBody] DatLichDTO request)
+        public async Task<IActionResult> DatLich([FromBody] DatLichDTO request)
             {
             int thoiLuong = 30;
             List<DichVu> danhSachDichVu = new();
@@ -97,6 +100,12 @@ namespace API.Controllers
 
                 _context.SaveChanges();
             }
+            var datLichDayDu = await _context.DatLiches
+            .Include(dl => dl.ChiTietDichVus)
+            .ThenInclude(ct => ct.DichVu)
+            .FirstOrDefaultAsync(dl => dl.DatLichID == datLich.DatLichID);
+
+                await _hubContext.Clients.All.SendAsync("ReceiveBookingNotification", datLichDayDu);
 
             return Ok("🎉 Đặt lịch thành công!");
         }
