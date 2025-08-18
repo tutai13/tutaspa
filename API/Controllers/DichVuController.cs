@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using API.Data;
 using API.Models;
 using ClosedXML.Excel;
+using API.DTOs;
 
 namespace API.Controllers
 {
@@ -22,6 +23,104 @@ namespace API.Controllers
             _context = context;
             _env = env;
         }
+        [HttpGet("filter")]
+        public async Task<ActionResult<object>> GetDichVus(
+   [FromQuery] string keyword = "",
+   [FromQuery] int? cateId = null,
+   [FromQuery] int page = 1,
+   [FromQuery] int pageSize = 12)
+        {
+            try
+            {
+                // Validate page parameters
+                if (page < 1) page = 1;
+                if (pageSize < 1) pageSize = 12;
+                if (pageSize > 50) pageSize = 50; // Giới hạn tối đa
+
+                // Build query
+                var query = _context.DichVus
+                    .Include(dv => dv.LoaiDichVu)
+                    .Where(dv => dv.TrangThai == 1)
+                    .AsQueryable();
+
+                // Filter by keyword
+                if (!string.IsNullOrWhiteSpace(keyword))
+                {
+                    var searchKeyword = keyword.Trim().ToLower();
+                    query = query.Where(dv =>
+                        dv.TenDichVu.ToLower().Contains(searchKeyword) ||
+                        dv.MoTa.ToLower().Contains(searchKeyword)
+                    );
+                }
+
+                // Filter by category
+                if (cateId.HasValue && cateId.Value > 0)
+                {
+                    query = query.Where(dv => dv.LoaiDichVuID == cateId.Value);
+                }
+
+                // Get total count before pagination
+                var totalItems = await query.CountAsync();
+                var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+                // Apply pagination and ordering
+                var dichVus = await query
+                    .OrderByDescending(dv => dv.NgayTao)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(dv => new
+                    {
+                        dichVuID = dv.DichVuID,
+                        tenDichVu = dv.TenDichVu,
+                        gia = dv.Gia,
+                        thoiGian = dv.ThoiGian,
+                        moTa = dv.MoTa,
+                        hinhAnh = dv.HinhAnh,
+                        ngayTao = dv.NgayTao,
+                        trangThai = dv.TrangThai,
+                        loaiDichVuID = dv.LoaiDichVuID,
+                        tenLoai = dv.LoaiDichVu.TenLoai,
+                        // Thêm rating trung bình nếu có bảng đánh giá
+                        mucDanhGia = _context.DanhGias
+                            .Where(dg => dg.MaDichVu == dv.DichVuID && dg.DaDuyet && dg.IsActive)
+                            .Average(dg => (double?)dg.SoSao) ?? 0.0
+                    })
+                    .ToListAsync();
+
+                // Return paginated response
+                var response = new
+                {
+                    success = true,
+                    data = dichVus,
+                    pagination = new
+                    {
+                        currentPage = page,
+                        pageSize = pageSize,
+                        totalItems = totalItems,
+                        totalPages = totalPages,
+                        hasNextPage = page < totalPages,
+                        hasPreviousPage = page > 1
+                    },
+                    filters = new
+                    {
+                        keyword = keyword,
+                        cateId = cateId
+                    }
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Lỗi khi tải danh sách dịch vụ",
+                    error = ex.Message
+                });
+            }
+        }
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<DichVu>>> GetDichVus()
         {
@@ -49,6 +148,102 @@ namespace API.Controllers
     .ToListAsync();
             return Ok(result);
         }
+
+
+        [HttpGet("detail/{id}")]
+        public async Task<ActionResult<DichVuDTO>> GetDichVusAsync(int id)
+        {
+            var result = await _context.DichVus
+                .Where(dv => dv.DichVuID == id)
+                .Select(dv => new DichVuDTO
+                {
+                    Id = dv.DichVuID,
+                    TenDichVu = dv.TenDichVu,
+                    Mota = dv.MoTa,
+                    Gia = dv.Gia,
+                    ThoiGian = dv.ThoiGian,
+                    HinhAnh = dv.HinhAnh,
+                    LoaiDichVuID = dv.LoaiDichVuID,
+                    LoaiDichVu = dv.LoaiDichVu
+                })
+                .FirstOrDefaultAsync();
+
+            return result != null ? Ok(result) : NotFound();
+
+        }
+
+        [HttpGet("{id}/related")]
+        public async Task<ActionResult<List<DichVu>>> GetRelatedDichVus(int id)
+        {
+            var pivot = await _context.DichVus.AsNoTracking()
+                .Where(x => x.DichVuID == id && x.TrangThai == 1)
+                .Select(x => new { x.DichVuID, x.LoaiDichVuID, x.Gia, x.ThoiGian })
+                .SingleOrDefaultAsync();
+
+            if (pivot == null)
+                return NotFound("Dịch vụ không tồn tại hoặc đã ngưng hoạt động.");
+
+            var relatedByCate = await _context.DichVus.AsNoTracking()
+                .Where(x => x.LoaiDichVuID == pivot.LoaiDichVuID
+                            && x.DichVuID != pivot.DichVuID
+                            && x.TrangThai == 1)
+                .OrderByDescending(x => x.NgayTao)
+                .Take(5)
+                .ToListAsync();
+
+            if (relatedByCate.Any())
+                return Ok(relatedByCate);
+
+            var minPrice = pivot.Gia * (1 - 0.20m);
+            var maxPrice = pivot.Gia * (1 + 0.20m);
+            var minTime = pivot.ThoiGian - 15;
+            var maxTime = pivot.ThoiGian + 15;
+
+            var relatedByPriceOrTime = await _context.DichVus.AsNoTracking()
+                .Where(x => x.TrangThai == 1
+                            && x.DichVuID != pivot.DichVuID
+                            && (
+                                 (x.Gia >= minPrice && x.Gia <= maxPrice)
+                                 || (x.ThoiGian >= minTime && x.ThoiGian <= maxTime)
+                               )
+                      )
+                .OrderByDescending(x => x.NgayTao)
+                .Take(5)
+                .ToListAsync();
+
+            if (relatedByPriceOrTime.Any())
+                return Ok(relatedByPriceOrTime);
+
+            return NotFound();
+        }
+
+        [HttpGet("{id}/reviews")]
+        public async Task<ActionResult<ReviewsDTO>> GetReviews(int id)
+        {
+            var reviews = await _context.DanhGias.AsNoTracking()
+                .Where(r => r.MaDichVu == id && r.DaDuyet && r.IsActive)
+                .Select(r => new Review
+                {
+                    Rate = r.SoSao,
+                    Name = r.User.Name ?? "Ẩn danh",
+                    Content = r.NoiDung,
+                    CreatedDate = r.NgayTao
+                })
+                .ToListAsync();
+            if (reviews == null)
+                return NotFound();
+
+            var result = new ReviewsDTO
+            {
+                DichVuId = id,
+                Rating = reviews.Any() ? reviews.Average(r => r.Rate) : 0,
+                Reviews = reviews
+            };
+
+            return Ok(result);
+        }
+
+
         // ✅ (Tùy chọn) Trả về tất cả dịch vụ (admin dùng)
         [HttpGet("all")]
         public async Task<ActionResult<IEnumerable<object>>> GetAllDichVus()
