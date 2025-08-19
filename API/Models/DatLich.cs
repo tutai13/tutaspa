@@ -22,7 +22,7 @@ namespace API.Models
         public bool DaThanhToan { get; set; } = false;
         public bool DatTruoc {  get; set; } 
         
-        public ICollection<ChiTietDatLich>? ChiTietDichVus { get; set; }
+        public ICollection<ChiTietDatLich>? ChiTietDatLichs { get; set; }
 
     }
 }
