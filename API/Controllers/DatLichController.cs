@@ -1,8 +1,11 @@
 ﻿using API.ChatHub;
 using API.Data;
 using API.DTOs.DatLich;
+using API.Extensions;
 using API.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -17,21 +20,39 @@ namespace API.Controllers
     {
         private readonly IHubContext<BookingHub> _hubContext;
         private readonly ApplicationDbContext _context;
-        public DatLichController(ApplicationDbContext context, IHubContext<BookingHub> hubContext)
+        private readonly UserManager<User> _userManager;
+        public DatLichController(ApplicationDbContext context, IHubContext<BookingHub> hubContext, UserManager<User> userManager)
         {
             _context = context;
             _hubContext = hubContext;
+            _userManager = userManager;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<DatLich>>> GetDatLich()
         {
             var result = await _context.DatLiches
-                    .Include(dl => dl.ChiTietDichVus)
+                    .Include(dl => dl.ChiTietDatLichs)
                     .ThenInclude(ct => ct.DichVu)
                     .ToListAsync();
 
             return Ok(result);
+        }
+        [HttpGet("by-user")]
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "User")]
+        public async Task<IActionResult> GetHoaDonByUser()
+        {
+            var userId = User.GetUserId();
+            var user = await _userManager.FindByIdAsync(userId);
+            var username = user?.UserName;
+            var datLichList = await _context.DatLiches
+                .Where(h => h.SoDienThoai == username)
+                .Include(h => h.ChiTietDatLichs)
+                .ThenInclude(ct => ct.DichVu)
+                .OrderByDescending(h => h.ThoiGian)
+                .ToListAsync();
+
+            return Ok(datLichList);
         }
 
         [HttpPost]
@@ -102,7 +123,7 @@ namespace API.Controllers
                 _context.SaveChanges();
             }
             var datLichDayDu = await _context.DatLiches
-            .Include(dl => dl.ChiTietDichVus)
+            .Include(dl => dl.ChiTietDatLichs)
             .ThenInclude(ct => ct.DichVu)
             .FirstOrDefaultAsync(dl => dl.DatLichID == datLich.DatLichID);
 

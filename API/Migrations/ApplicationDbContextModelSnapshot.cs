@@ -40,7 +40,7 @@ namespace API.Migrations
 
                     b.HasKey("CategoryId");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.Chat.ChatMessage", b =>
@@ -193,7 +193,7 @@ namespace API.Migrations
 
                     b.HasIndex("DichVuID");
 
-                    b.ToTable("ChiTietDatLiches");
+                    b.ToTable("ChiTietDatLiches", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.ChiTietHoaDon", b =>
@@ -227,7 +227,7 @@ namespace API.Migrations
 
                     b.HasIndex("SanPhamID");
 
-                    b.ToTable("ChiTietHoaDons");
+                    b.ToTable("ChiTietHoaDons", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.DatLich", b =>
@@ -263,7 +263,7 @@ namespace API.Migrations
 
                     b.HasKey("DatLichID");
 
-                    b.ToTable("DatLiches");
+                    b.ToTable("DatLiches", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.DichVu", b =>
@@ -311,7 +311,7 @@ namespace API.Migrations
 
                     b.HasIndex("LoaiDichVuID");
 
-                    b.ToTable("DichVus");
+                    b.ToTable("DichVus", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.Expense", b =>
@@ -388,7 +388,7 @@ namespace API.Migrations
 
                     b.HasIndex("VoucherID");
 
-                    b.ToTable("HoaDons");
+                    b.ToTable("HoaDons", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.InventoryHistory", b =>
@@ -435,7 +435,7 @@ namespace API.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("InventoryHistories");
+                    b.ToTable("InventoryHistories", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.LoaiDichVu", b =>
@@ -456,7 +456,7 @@ namespace API.Migrations
 
                     b.HasKey("LoaiDichVuID");
 
-                    b.ToTable("LoaiDichVus");
+                    b.ToTable("LoaiDichVus", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.Product", b =>
@@ -494,7 +494,7 @@ namespace API.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.ProductBatch", b =>
@@ -537,7 +537,7 @@ namespace API.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductBatches");
+                    b.ToTable("ProductBatches", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.RefreshToken", b =>
@@ -566,7 +566,7 @@ namespace API.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RefreshTokens");
+                    b.ToTable("RefreshTokens", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.User", b =>
@@ -685,7 +685,7 @@ namespace API.Migrations
 
                     b.HasKey("VoucherID");
 
-                    b.ToTable("Vouchers");
+                    b.ToTable("Vouchers", (string)null);
                 });
 
             modelBuilder.Entity("DanhGia", b =>
@@ -727,7 +727,7 @@ namespace API.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("DanhGias");
+                    b.ToTable("DanhGias", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
