@@ -4,5 +4,6 @@ namespace API.ChatHub
 {
     public class BookingHub : Hub
     {
+
     }
 }
