@@ -25,10 +25,10 @@ namespace API.Controllers
         }
         [HttpGet("filter")]
         public async Task<ActionResult<object>> GetDichVus(
-   [FromQuery] string keyword = "",
-   [FromQuery] int? cateId = null,
-   [FromQuery] int page = 1,
-   [FromQuery] int pageSize = 12)
+        [FromQuery] string keyword = "",
+        [FromQuery] int? cateId = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 12)
         {
             try
             {
@@ -125,8 +125,8 @@ namespace API.Controllers
         public async Task<ActionResult<IEnumerable<DichVu>>> GetDichVus()
         {
             var result = await _context.DichVus
-    .Where(dv => dv.TrangThai == 1)
-    .GroupJoin(
+        .Where(dv => dv.TrangThai == 1)
+        .GroupJoin(
         _context.DanhGias.Where(x => x.DaDuyet && x.IsActive),
         dv => dv.DichVuID,
         dg => dg.MaDichVu,
@@ -330,12 +330,36 @@ namespace API.Controllers
         [HttpPost]
         public async Task<ActionResult<DichVu>> PostDichVu(DichVu dichVu)
         {
-            dichVu.NgayTao =DateTime.Now;
+            if (string.IsNullOrWhiteSpace(dichVu.TenDichVu))
+            {
+                return BadRequest(new { message = "Tên dịch vụ không được để trống." });
+            }
+
+            // Kiểm tra có chứa số
+            if (dichVu.TenDichVu.Any(char.IsDigit))
+            {
+                return BadRequest(new { message = "Tên dịch vụ không được chứa số." });
+            }
+
+            // Kiểm tra trùng tên (không phân biệt hoa thường, bỏ khoảng trắng thừa)
+            var tenDichVuNormalized = dichVu.TenDichVu.Trim().ToLower();
+
+            var existed = await _context.DichVus
+                .AnyAsync(dv => dv.TenDichVu.Trim().ToLower() == tenDichVuNormalized);
+
+            if (existed)
+            {
+                return BadRequest(new { message = "Tên dịch vụ đã tồn tại." });
+            }
+
+            // Nếu hợp lệ thì thêm mới
+            dichVu.NgayTao = DateTime.Now;
             _context.DichVus.Add(dichVu);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetDichVu", new { id = dichVu.DichVuID }, dichVu);
         }
+
         [HttpGet("name")]
         public async Task<ActionResult<IEnumerable<DichVu>>> SearchByName(string ten)
         {
