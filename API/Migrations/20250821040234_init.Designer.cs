@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250815143743_init")]
+    [Migration("20250821040234_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -416,7 +416,6 @@ namespace API.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Note")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ProductId")
@@ -881,7 +880,7 @@ namespace API.Migrations
             modelBuilder.Entity("API.Models.ChiTietDatLich", b =>
                 {
                     b.HasOne("API.Models.DatLich", "DatLich")
-                        .WithMany("ChiTietDichVus")
+                        .WithMany("ChiTietDatLichs")
                         .HasForeignKey("DatLichID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1073,7 +1072,7 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Models.DatLich", b =>
                 {
-                    b.Navigation("ChiTietDichVus");
+                    b.Navigation("ChiTietDatLichs");
                 });
 
             modelBuilder.Entity("API.Models.HoaDon", b =>

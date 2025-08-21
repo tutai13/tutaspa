@@ -40,7 +40,7 @@ namespace API.Migrations
 
                     b.HasKey("CategoryId");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("API.Models.Chat.ChatMessage", b =>
@@ -193,7 +193,7 @@ namespace API.Migrations
 
                     b.HasIndex("DichVuID");
 
-                    b.ToTable("ChiTietDatLiches", (string)null);
+                    b.ToTable("ChiTietDatLiches");
                 });
 
             modelBuilder.Entity("API.Models.ChiTietHoaDon", b =>
@@ -227,7 +227,7 @@ namespace API.Migrations
 
                     b.HasIndex("SanPhamID");
 
-                    b.ToTable("ChiTietHoaDons", (string)null);
+                    b.ToTable("ChiTietHoaDons");
                 });
 
             modelBuilder.Entity("API.Models.DatLich", b =>
@@ -263,7 +263,7 @@ namespace API.Migrations
 
                     b.HasKey("DatLichID");
 
-                    b.ToTable("DatLiches", (string)null);
+                    b.ToTable("DatLiches");
                 });
 
             modelBuilder.Entity("API.Models.DichVu", b =>
@@ -311,7 +311,7 @@ namespace API.Migrations
 
                     b.HasIndex("LoaiDichVuID");
 
-                    b.ToTable("DichVus", (string)null);
+                    b.ToTable("DichVus");
                 });
 
             modelBuilder.Entity("API.Models.Expense", b =>
@@ -388,7 +388,7 @@ namespace API.Migrations
 
                     b.HasIndex("VoucherID");
 
-                    b.ToTable("HoaDons", (string)null);
+                    b.ToTable("HoaDons");
                 });
 
             modelBuilder.Entity("API.Models.InventoryHistory", b =>
@@ -434,7 +434,7 @@ namespace API.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("InventoryHistories", (string)null);
+                    b.ToTable("InventoryHistories");
                 });
 
             modelBuilder.Entity("API.Models.LoaiDichVu", b =>
@@ -455,7 +455,7 @@ namespace API.Migrations
 
                     b.HasKey("LoaiDichVuID");
 
-                    b.ToTable("LoaiDichVus", (string)null);
+                    b.ToTable("LoaiDichVus");
                 });
 
             modelBuilder.Entity("API.Models.Product", b =>
@@ -493,7 +493,7 @@ namespace API.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("API.Models.ProductBatch", b =>
@@ -536,7 +536,7 @@ namespace API.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductBatches", (string)null);
+                    b.ToTable("ProductBatches");
                 });
 
             modelBuilder.Entity("API.Models.RefreshToken", b =>
@@ -565,7 +565,7 @@ namespace API.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RefreshTokens", (string)null);
+                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("API.Models.User", b =>
@@ -684,7 +684,7 @@ namespace API.Migrations
 
                     b.HasKey("VoucherID");
 
-                    b.ToTable("Vouchers", (string)null);
+                    b.ToTable("Vouchers");
                 });
 
             modelBuilder.Entity("DanhGia", b =>
@@ -726,7 +726,7 @@ namespace API.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("DanhGias", (string)null);
+                    b.ToTable("DanhGias");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -877,7 +877,7 @@ namespace API.Migrations
             modelBuilder.Entity("API.Models.ChiTietDatLich", b =>
                 {
                     b.HasOne("API.Models.DatLich", "DatLich")
-                        .WithMany("ChiTietDichVus")
+                        .WithMany("ChiTietDatLichs")
                         .HasForeignKey("DatLichID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1069,7 +1069,7 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Models.DatLich", b =>
                 {
-                    b.Navigation("ChiTietDichVus");
+                    b.Navigation("ChiTietDatLichs");
                 });
 
             modelBuilder.Entity("API.Models.HoaDon", b =>
