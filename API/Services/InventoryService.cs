@@ -17,18 +17,24 @@ public class InventoryService : IInventoryService
 
 	public async Task<bool> ImportWithBatchAsync(ImportProductRequest dto)
 	{
-		// Kiểm tra xem sản phẩm đã tồn tại hay chưa dựa trên ProductName và CategoryId
+		
+		if (dto.Quantity <= 0)
+		{
+			return false; 
+		}
+		if (dto.ImportPrice <= 0 || dto.CurrentSellingPrice <= 0)
+		{
+			return false; 
+		}
+
 		var existingProduct = await _context.Products
 			.FirstOrDefaultAsync(p => p.ProductName == dto.ProductName && p.CategoryId == dto.CategoryId);
 
 		if (existingProduct != null)
 		{
-			// Sản phẩm đã tồn tại, trả về false
-			return false;
+			
+			return false; 
 		}
-
-		// Nếu sản phẩm chưa tồn tại, tạo sản phẩm mới
-		var imagePath = await SaveImageAsync(dto.Image);
 
 		var product = new Product
 		{
@@ -36,7 +42,7 @@ public class InventoryService : IInventoryService
 			Description = dto.Description,
 			CurrentSellingPrice = dto.CurrentSellingPrice,
 			CategoryId = dto.CategoryId,
-			Images = imagePath,
+			Images = await SaveImageAsync(dto.Image),
 			ProductBatches = new List<ProductBatch>()
 		};
 
@@ -67,7 +73,7 @@ public class InventoryService : IInventoryService
 			SupplierName = dto.SupplierName,
 			ImportPrice = dto.ImportPrice,
 			ExpirationDate = dto.ExpirationDate,
-			Note = $"Nhập từ {dto.SupplierName}",
+			Note = string.IsNullOrEmpty(dto.Note) ? null : dto.Note,
 			Batch = batch
 		};
 		_context.InventoryHistories.Add(history);

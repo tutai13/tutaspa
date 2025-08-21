@@ -13,7 +13,7 @@
 		public decimal? ImportPrice { get; set; }
 		public DateTime? ManufactureDate { get; set; }
 		public DateTime? ExpirationDate { get; set; }
-		public string Note { get; set; }
+		public string? Note { get; set; }
 		
 	}
 }

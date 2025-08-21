@@ -14,7 +14,7 @@ namespace API.Models
 		public string ActionType { get; set; } // Import | Export
 		public int QuantityChanged { get; set; }
 
-		public string Note { get; set; }
+		public string? Note { get; set; }
 		public DateTime Timestamp { get; set; }
 
 		public DateTime? ExpirationDate { get; set; }
