@@ -105,8 +105,18 @@ namespace API.Controllers
             try
             {
                 var tongTien = request.ChiTietHoaDon.Sum(x => x.ThanhTien);
-                var voucherId = await _context.Vouchers
+                var voucher = await _context.Vouchers
                 .FirstOrDefaultAsync(v => v.MaCode == request.MaGiamGia);
+                if (voucher != null)
+                {
+                    if (voucher.SoLuong > 0)
+                    {
+                        voucher.SoLuong -= 1;
+                        _context.Vouchers.Update(voucher);
+                    }
+                    tongTien -= (decimal)request.tienGiam;
+                }
+                
 
                 var hoaDon = new HoaDon
                 {
@@ -119,7 +129,7 @@ namespace API.Controllers
                     GiaTriGiam = request.tienGiam,
                     NhanVienID = request.NhanVienID,
                     UserID = request.UserID,
-                    VoucherID = voucherId?.VoucherID,
+                    VoucherID = voucher?.VoucherID,
                 };
 
                 _context.HoaDons.Add(hoaDon);

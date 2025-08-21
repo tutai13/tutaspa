@@ -38,6 +38,27 @@ namespace API.Controllers
 
             return Ok(result);
         }
+        [HttpGet("by-date")]
+        public async Task<ActionResult<IEnumerable<DatLich>>> GetDatLichByDate(DateTime date)
+        {
+            try
+            {
+                var startOfDay = date.Date;
+                var endOfDay = startOfDay.AddDays(1).AddTicks(-1); // End of the specified date
+
+                var result = await _context.DatLiches
+                    .Include(dl => dl.ChiTietDatLichs)
+                    .ThenInclude(ct => ct.DichVu)
+                    .Where(dl => dl.ThoiGian >= startOfDay && dl.ThoiGian <= endOfDay)
+                    .ToListAsync();
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = "Invalid date format or server error", details = ex.Message });
+            }
+        }
         [HttpGet("by-user")]
         [Authorize(AuthenticationSchemes = "Bearer", Roles = "User")]
         public async Task<IActionResult> GetHoaDonByUser()
