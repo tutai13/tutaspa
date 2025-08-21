@@ -12,6 +12,6 @@
 		public DateTime ManufactureDate { get; set; }
 		public DateTime ExpirationDate { get; set; }
 		public IFormFile Image { get; set; }
-		public string Note { get; set; }
+		public string? Note { get; set; }
 	}
 }

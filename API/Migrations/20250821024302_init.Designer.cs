@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250815124320_init")]
+    [Migration("20250821024302_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -416,7 +416,6 @@ namespace API.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Note")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ProductId")

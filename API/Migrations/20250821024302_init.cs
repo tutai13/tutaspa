@@ -520,7 +520,7 @@ namespace API.Migrations
                     ProductId = table.Column<int>(type: "int", nullable: false),
                     ActionType = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     QuantityChanged = table.Column<int>(type: "int", nullable: false),
-                    Note = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Note = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ExpirationDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ImportPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),

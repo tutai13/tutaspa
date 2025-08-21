@@ -413,7 +413,6 @@ namespace API.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Note")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ProductId")

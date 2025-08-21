@@ -285,6 +285,108 @@ namespace API.Controllers
 				TongThu = tongThu,
 				TongChi = tongChi
 			};
+			return GetThuChiByMonth(DateTime.Now.Month, DateTime.Now.Year);
+
+			return Ok(result);
+		}
+		// Mới: Theo ngày cụ thể
+		[HttpGet("ThuChiByDay")]
+		public IActionResult GetThuChiByDay(DateTime day)
+		{
+			var start = day.Date;
+			var end = start.AddDays(1);
+
+			return GetThuChiFiltered(start, end);
+		}
+
+		// Mới: Theo tháng và năm
+		[HttpGet("ThuChiByMonth")]
+		public IActionResult GetThuChiByMonth(int month, int year)
+		{
+			var start = new DateTime(year, month, 1);
+			var end = start.AddMonths(1);
+
+			return GetThuChiFiltered(start, end);
+		}
+
+		// Mới: Theo năm
+		[HttpGet("ThuChiByYear")]
+		public IActionResult GetThuChiByYear(int year)
+		{
+			var start = new DateTime(year, 1, 1);
+			var end = start.AddYears(1);
+
+			return GetThuChiFiltered(start, end);
+		}
+
+		// Hàm helper để tính ThuChi theo khoảng thời gian
+		private IActionResult GetThuChiFiltered(DateTime start, DateTime end)
+		{
+			// Thống kê thu từ HoaDon
+			var thu = _context.HoaDons
+				.Where(h => h.NgayTao >= start && h.NgayTao < end)
+				.GroupBy(h => h.HinhThucThanhToan ?? "Không xác định")
+				.Select(g => new
+				{
+					LoaiThu = g.Key,
+					SoTien = g.Sum(h => h.TongTien)
+				})
+				.ToList();
+
+			// Thống kê chi từ InventoryHistory (nhập hàng)
+			var chiNhapHang = _context.InventoryHistories
+				.Where(h => h.ActionType == "Import" && h.Timestamp >= start && h.Timestamp < end)
+				.GroupBy(h => h.ActionType)
+				.Select(g => new
+				{
+					LoaiChi = "Nhập hàng",
+					SoTien = g.Sum(h => (h.ImportPrice ?? 0m) * (decimal)(h.QuantityChanged))
+				})
+				.ToList();
+
+			// Thống kê chi từ Expenses
+			var chiKhac = _context.Expenses
+				.Where(e => e.Date >= start && e.Date < end)
+				.GroupBy(e => e.ExpenseType ?? "Không xác định")
+				.Select(g => new
+				{
+					LoaiChi = g.Key,
+					SoTien = g.Sum(e => e.Amount)
+				})
+				.ToList();
+
+			// Kết hợp chi
+			var chi = chiNhapHang.Concat(chiKhac)
+				.Select(x => new ThongKeChiDTO
+				{
+					LoaiChi = x.LoaiChi,
+					SoTien = x.SoTien,
+					PhanTram = 0 // Sẽ tính sau
+				})
+				.ToList();
+
+			// Tính tổng
+			var tongThu = thu.Sum(x => x.SoTien);
+			var tongChi = chi.Sum(x => x.SoTien);
+
+			// Tính phần trăm
+			var result = new ThongKeThuChiDTO
+			{
+				Thu = thu.Select(x => new ThongKeThuDTO
+				{
+					LoaiThu = x.LoaiThu,
+					SoTien = x.SoTien,
+					PhanTram = tongThu > 0 ? (float)Math.Round((x.SoTien * 100.0M / tongThu), 2) : 0
+				}).ToList(),
+				Chi = chi.Select(x => new ThongKeChiDTO
+				{
+					LoaiChi = x.LoaiChi,
+					SoTien = x.SoTien,
+					PhanTram = tongChi > 0 ? (float)Math.Round((x.SoTien * 100.0M / tongChi), 2) : 0
+				}).ToList(),
+				TongThu = tongThu,
+				TongChi = tongChi
+			};
 
 			return Ok(result);
 		}

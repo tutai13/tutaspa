@@ -17,26 +17,37 @@ public class InventoryService : IInventoryService
 
 	public async Task<bool> ImportWithBatchAsync(ImportProductRequest dto)
 	{
-		var product = await _context.Products
+		
+		if (dto.Quantity <= 0)
+		{
+			return false; 
+		}
+		if (dto.ImportPrice <= 0 || dto.CurrentSellingPrice <= 0)
+		{
+			return false; 
+		}
+
+		var existingProduct = await _context.Products
 			.FirstOrDefaultAsync(p => p.ProductName == dto.ProductName && p.CategoryId == dto.CategoryId);
 
-		if (product == null)
+		if (existingProduct != null)
 		{
-			var imagePath = await SaveImageAsync(dto.Image);
-
-			product = new Product
-			{
-				ProductName = dto.ProductName,
-				Description = dto.Description,
-				CurrentSellingPrice = dto.CurrentSellingPrice,
-				CategoryId = dto.CategoryId,
-				Images = imagePath,
-				ProductBatches = new List<ProductBatch>()
-			};
-
-			_context.Products.Add(product);
-			await _context.SaveChangesAsync();
+			
+			return false; 
 		}
+
+		var product = new Product
+		{
+			ProductName = dto.ProductName,
+			Description = dto.Description,
+			CurrentSellingPrice = dto.CurrentSellingPrice,
+			CategoryId = dto.CategoryId,
+			Images = await SaveImageAsync(dto.Image),
+			ProductBatches = new List<ProductBatch>()
+		};
+
+		_context.Products.Add(product);
+		await _context.SaveChangesAsync();
 
 		string productBatchCode = $"BATCH-{Guid.NewGuid().ToString("N")[..8].ToUpper()}";
 
@@ -62,7 +73,7 @@ public class InventoryService : IInventoryService
 			SupplierName = dto.SupplierName,
 			ImportPrice = dto.ImportPrice,
 			ExpirationDate = dto.ExpirationDate,
-			Note = $"Nhập từ {dto.SupplierName}",
+			Note = string.IsNullOrEmpty(dto.Note) ? null : dto.Note,
 			Batch = batch
 		};
 		_context.InventoryHistories.Add(history);
