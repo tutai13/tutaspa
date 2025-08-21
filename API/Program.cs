@@ -22,6 +22,7 @@ using DinkToPdf.Contracts;
 using DinkToPdf;
 using System.IdentityModel.Tokens.Jwt;
 using ChatSupport.Hubs;
+using API.ChatHub;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -222,6 +223,7 @@ app.UseEndpoints(enpoints =>
     enpoints.MapControllers();
 
     enpoints.MapHub<ChatHub>("/chat").RequireCors("AllowVueApp");
+    enpoints.MapHub<BookingHub>("/bookingHub").RequireCors("AllowVueApp");
 }
 );
 

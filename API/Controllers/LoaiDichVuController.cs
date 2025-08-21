@@ -76,14 +76,35 @@ namespace API.Controllers
 
         // POST: api/LoaiDichVus
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // POST: api/LoaiDichVus
         [HttpPost]
         public async Task<ActionResult<LoaiDichVu>> PostLoaiDichVu(LoaiDichVu loaiDichVu)
         {
+            if (string.IsNullOrWhiteSpace(loaiDichVu.TenLoai))
+            {
+                return BadRequest(new { message = "Tên loại dịch vụ không được để trống." });
+            }
+
+            if (loaiDichVu.TenLoai.Any(char.IsDigit))
+            {
+                return BadRequest(new { message = "Tên loại dịch vụ không được chứa số." });
+            }
+
+            var tenLoaiNormalized = loaiDichVu.TenLoai.Trim().ToLower();
+            var existed = await _context.LoaiDichVus
+                .AnyAsync(x => x.TenLoai.Trim().ToLower() == tenLoaiNormalized);
+
+            if (existed)
+            {
+                return BadRequest(new { message = "Tên loại dịch vụ đã tồn tại." });
+            }
+
             _context.LoaiDichVus.Add(loaiDichVu);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetLoaiDichVu", new { id = loaiDichVu.LoaiDichVuID }, loaiDichVu);
         }
+
 
         // DELETE: api/LoaiDichVus/5
         [HttpDelete("{id}")]
@@ -161,14 +182,23 @@ namespace API.Controllers
                     var sheetLoai = workbook.Worksheets.FirstOrDefault(s => s.Name == "LoaiDichVu");
                     if (sheetLoai != null)
                     {
+                        var existedLoaiDVNames = await _context.LoaiDichVus
+                        .Select(x => x.TenLoai.ToLower())
+                        .ToListAsync();
+
                         foreach (var row in sheetLoai.RowsUsed().Skip(1))
                         {
                             var tenLoai = row.Cell(1).GetString()?.Trim();
                             var maLoai = row.Cell(2).GetString()?.Trim();
-                            
+
 
                             if (!string.IsNullOrEmpty(maLoai) && !string.IsNullOrEmpty(tenLoai))
                             {
+                                if (existedLoaiDVNames.Contains(tenLoai.ToLower()) ||
+                                   loaiDVList.Any(x => x.TenLoai.Equals(tenLoai, StringComparison.OrdinalIgnoreCase)))
+                                {
+                                    return BadRequest("Loại dịch vụ đã tồn tại.");
+                                }
                                 loaiDVList.Add(new LoaiDichVu
                                 {
                                     maLoaiDichVu = maLoai,
@@ -194,7 +224,7 @@ namespace API.Controllers
                         {
                             try
                             {
-                               
+
                                 var tenDichVu = row.Cell(1).GetString()?.Trim();
                                 var gia = row.Cell(2).GetValue<decimal>();
                                 var thoiGian = row.Cell(3).GetValue<int>();

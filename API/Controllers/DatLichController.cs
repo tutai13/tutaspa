@@ -1,10 +1,16 @@
-﻿using API.Data;
+﻿using API.ChatHub;
+using API.Data;
 using API.DTOs.DatLich;
+using API.Extensions;
 using API.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace API.Controllers
 {
@@ -12,26 +18,45 @@ namespace API.Controllers
     [ApiController]
     public class DatLichController : ControllerBase
     {
-
+        private readonly IHubContext<BookingHub> _hubContext;
         private readonly ApplicationDbContext _context;
-        public DatLichController(ApplicationDbContext context)
+        private readonly UserManager<User> _userManager;
+        public DatLichController(ApplicationDbContext context, IHubContext<BookingHub> hubContext, UserManager<User> userManager)
         {
             _context = context;
+            _hubContext = hubContext;
+            _userManager = userManager;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<DatLich>>> GetDatLich()
         {
             var result = await _context.DatLiches
-                    .Include(dl => dl.ChiTietDichVus)
+                    .Include(dl => dl.ChiTietDatLichs)
                     .ThenInclude(ct => ct.DichVu)
                     .ToListAsync();
 
             return Ok(result);
         }
+        [HttpGet("by-user")]
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "User")]
+        public async Task<IActionResult> GetHoaDonByUser()
+        {
+            var userId = User.GetUserId();
+            var user = await _userManager.FindByIdAsync(userId);
+            var username = user?.UserName;
+            var datLichList = await _context.DatLiches
+                .Where(h => h.SoDienThoai == username)
+                .Include(h => h.ChiTietDatLichs)
+                .ThenInclude(ct => ct.DichVu)
+                .OrderByDescending(h => h.ThoiGian)
+                .ToListAsync();
+
+            return Ok(datLichList);
+        }
 
         [HttpPost]
-        public IActionResult DatLich([FromBody] DatLichDTO request)
+        public async Task<IActionResult> DatLich([FromBody] DatLichDTO request)
             {
             int thoiLuong = 30;
             List<DichVu> danhSachDichVu = new();
@@ -97,6 +122,12 @@ namespace API.Controllers
 
                 _context.SaveChanges();
             }
+            var datLichDayDu = await _context.DatLiches
+            .Include(dl => dl.ChiTietDatLichs)
+            .ThenInclude(ct => ct.DichVu)
+            .FirstOrDefaultAsync(dl => dl.DatLichID == datLich.DatLichID);
+
+                await _hubContext.Clients.All.SendAsync("ReceiveBookingNotification", datLichDayDu);
 
             return Ok("🎉 Đặt lịch thành công!");
         }
@@ -214,7 +245,7 @@ namespace API.Controllers
         }
 
         [HttpGet("slots")]
-        public IActionResult GetSlotInfo(DateTime ngay)
+        public async Task<IActionResult> GetSlotInfo(DateTime ngay)
         {
             var startHour = 9;
             var endHour = 23;
@@ -227,9 +258,9 @@ namespace API.Controllers
                 khungGioList.Add(new DateTime(ngay.Year, ngay.Month, ngay.Day, h, 30, 0));
             }
 
-            var lich = _context.DatLiches
+            var lich = await _context.DatLiches
                 .Where(x => x.ThoiGian.Date == ngay.Date)
-                .ToList();
+                .ToListAsync();
 
             var now = DateTime.Now;
 

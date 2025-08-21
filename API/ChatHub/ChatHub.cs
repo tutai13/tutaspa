@@ -13,14 +13,25 @@ namespace ChatSupport.Hubs
     {
         private readonly IChatService _chatService;
         private const int MaxUserAssignToAdmin = 2;
+
+        // User session stores
         private static readonly ConcurrentDictionary<string, UserSession> _userSessions = new();
         private static readonly ConcurrentDictionary<string, string> _connectionToUser = new();
+
+        // Admin session stores
         private static readonly ConcurrentDictionary<string, AdminSession> _adminSessions = new();
+        // connectionId -> adminId
+        private static readonly ConcurrentDictionary<string, string> _connectionToAdmin = new();
+
+        // how long to wait before considering disconnect real (for refresh/F5)
+        private static readonly TimeSpan DisconnectGrace = TimeSpan.FromSeconds(7);
 
         public ChatHub(IChatService chatService)
         {
             _chatService = chatService;
         }
+
+        #region Join / Init
 
         public async Task JoinAsGuest(string guestName)
         {
@@ -37,7 +48,7 @@ namespace ChatSupport.Hubs
             // Nếu phiên chat đã đóng thì không cho join
             if (dbSession.Status == ChatSessionStatus.Closed)
             {
-                await Clients.Caller.SendAsync("ChatClosed", new {sessionId = dbSession.SessionId});
+                await Clients.Caller.SendAsync("ChatClosed", new { sessionId = dbSession.SessionId });
                 return;
             }
 
@@ -71,21 +82,39 @@ namespace ChatSupport.Hubs
                 return;
             }
 
-            if (_adminSessions.ContainsKey(adminId))
+            // Nếu admin đã tồn tại, chỉ thêm connectionId (multi-tab support)
+            if (_adminSessions.TryGetValue(adminId, out var existing))
             {
-                var oldSession = _adminSessions[adminId];
-                await Clients.Client(oldSession.ConnectionId).SendAsync("ForceLogout", "Bạn đã đăng nhập từ thiết bị khác");
-                _adminSessions.TryRemove(adminId, out _);
+                existing.ConnectionIds.Add(Context.ConnectionId);
+                _connectionToAdmin[Context.ConnectionId] = adminId;
+
+                // join the admin connection to Admins group (so broadcast still works)
+                await Groups.AddToGroupAsync(Context.ConnectionId, "Admins");
+
+                // try assign waiting users if this admin has capacity
+                await AutoAssignWaitingUsersToAdmin(existing);
+
+                // notify other admins (except this connection)
+                await Clients.GroupExcept("Admins", Context.ConnectionId).SendAsync("AdminJoined", new
+                {
+                    AdminId = adminId,
+                    AdminName = adminName
+                });
+
+                return;
             }
 
+            // tạo session admin mới
             var adminSession = new AdminSession
             {
                 AdminId = adminId,
-                AdminName = adminName,
-                ConnectionId = Context.ConnectionId
+                AdminName = adminName
             };
+            adminSession.ConnectionIds.Add(Context.ConnectionId);
 
             _adminSessions.TryAdd(adminId, adminSession);
+            _connectionToAdmin[Context.ConnectionId] = adminId;
+
             await Groups.AddToGroupAsync(Context.ConnectionId, "Admins");
 
             await AutoAssignWaitingUsersToAdmin(adminSession);
@@ -96,6 +125,10 @@ namespace ChatSupport.Hubs
                 AdminName = adminName
             });
         }
+
+        #endregion
+
+        #region Assignment / Messaging
 
         private async Task<bool> TryAssignUserToAvailableAdmin(UserSession user)
         {
@@ -153,14 +186,13 @@ namespace ChatSupport.Hubs
             if (user.AssignedAdminId == admin.AdminId && admin.AssignedUsers.Contains(user.UserId))
                 return;
 
-            var oldAssignedAdminId = user.AssignedAdminId;
-
             if (admin.AssignedUsers.Count >= MaxUserAssignToAdmin)
                 return;
 
-            if (!string.IsNullOrEmpty(oldAssignedAdminId) && oldAssignedAdminId != admin.AdminId)
+            // Nếu có oldAdmin thì remove ở đó
+            if (!string.IsNullOrEmpty(user.AssignedAdminId) && user.AssignedAdminId != admin.AdminId)
             {
-                if (_adminSessions.TryGetValue(oldAssignedAdminId, out var oldAdminSession))
+                if (_adminSessions.TryGetValue(user.AssignedAdminId, out var oldAdminSession))
                 {
                     oldAdminSession.AssignedUsers.Remove(user.UserId);
                 }
@@ -181,31 +213,33 @@ namespace ChatSupport.Hubs
                 IsFromAdmin = true
             };
 
-            if (string.IsNullOrEmpty(oldAssignedAdminId) || oldAssignedAdminId != admin.AdminId)
+            // Notify customer once when initial assignment
+            await Clients.Client(user.ConnectionId).SendAsync("AdminAssigned", new
             {
-                await Clients.Client(user.ConnectionId).SendAsync("AdminAssigned", new
-                {
-                    AdminId = admin.AdminId,
-                    AdminName = admin.AdminName,
-                    Message = $"Bạn đã được kết nối với {admin.AdminName}.",
-                    ChatMessage = chatMessage
-                });
-
-                await _chatService.SaveMessageAsync(chatMessage, user.SessionId);
-            }
-
-            await Clients.Client(admin.ConnectionId).SendAsync("UserAssigned", new
-            {
-                SessionId = user.SessionId,
-                CustomerId = user.UserId,
-                CustomerName = user.UserName,
-                StartTime = user.StartTime,
-                IsOnline = user.IsOnline,
-                LastMessage = "",
-                LastMessageTime = user.StartTime,
-                UnreadCount = user.WaitingMessages?.Count ?? 0,
-                WaitingMessages = user.WaitingMessages
+                AdminId = admin.AdminId,
+                AdminName = admin.AdminName,
+                Message = $"Bạn đã được kết nối với {admin.AdminName}.",
+                ChatMessage = chatMessage
             });
+
+            await _chatService.SaveMessageAsync(chatMessage, user.SessionId);
+
+            // Notify admin (all connections)
+            foreach (var conn in admin.ConnectionIds.ToList())
+            {
+                await Clients.Client(conn).SendAsync("UserAssigned", new
+                {
+                    SessionId = user.SessionId,
+                    CustomerId = user.UserId,
+                    CustomerName = user.UserName,
+                    StartTime = user.StartTime,
+                    IsOnline = user.IsOnline,
+                    LastMessage = "",
+                    LastMessageTime = user.StartTime,
+                    UnreadCount = user.WaitingMessages?.Count ?? 0,
+                    WaitingMessages = user.WaitingMessages
+                });
+            }
 
             user.WaitingMessages.Clear();
         }
@@ -228,27 +262,6 @@ namespace ChatSupport.Hubs
             }
         }
 
-        private async Task BroadcastCustomerListUpdate()
-        {
-            var customerList = _userSessions.Values
-                .Where(u => u.IsOnline)
-                .Select(u => new
-                {
-                    u.UserId,
-                    u.UserName,
-                    u.StartTime,
-                    u.AssignedAdminId,
-                    IsAssigned = !string.IsNullOrEmpty(u.AssignedAdminId),
-                    LastMessage = "",
-                    LastMessageTime = u.StartTime,
-                    UnreadCount = 0
-                })
-                .OrderByDescending(u => u.StartTime)
-                .ToList();
-
-            await Clients.Group("Admins").SendAsync("CustomerListUpdated", customerList);
-        }
-
         public async Task SendMessageToSupport(string message)
         {
             if (!_connectionToUser.TryGetValue(Context.ConnectionId, out var userId) ||
@@ -258,11 +271,10 @@ namespace ChatSupport.Hubs
                 return;
             }
 
-            // Kiểm tra trạng thái phiên chat
             var dbSession = await _chatService.GetSessionByIdAsync(session.SessionId);
             if (dbSession.Status == ChatSessionStatus.Closed)
             {
-                await Clients.Caller.SendAsync("ChatClosed", new {sessionId = dbSession.SessionId});
+                await Clients.Caller.SendAsync("ChatClosed", new { sessionId = dbSession.SessionId });
                 return;
             }
 
@@ -285,7 +297,11 @@ namespace ChatSupport.Hubs
 
                     await _chatService.SaveMessageAsync(chatMessage, session.SessionId);
 
-                    await Clients.Client(assignedAdmin.ConnectionId).SendAsync("ReceiveMessage", chatMessage);
+                    foreach (var conn in assignedAdmin.ConnectionIds.ToList())
+                    {
+                        await Clients.Client(conn).SendAsync("ReceiveMessage", chatMessage);
+                    }
+
                     messageSentToAdmin = true;
                 }
             }
@@ -319,18 +335,17 @@ namespace ChatSupport.Hubs
                 return;
             }
 
-            var adminSession = _adminSessions.Values.FirstOrDefault(a => a.ConnectionId == Context.ConnectionId);
+            var adminSession = _adminSessions.Values.FirstOrDefault(a => a.ConnectionIds.Contains(Context.ConnectionId));
             if (adminSession == null)
             {
                 await Clients.Caller.SendAsync("Error", "Phiên admin không hợp lệ");
                 return;
             }
 
-            // Kiểm tra trạng thái phiên chat
             var dbSession = await _chatService.GetSessionByIdAsync(customerSession.SessionId);
             if (dbSession.Status == ChatSessionStatus.Closed)
             {
-                await Clients.Caller.SendAsync("ChatClosed", new {sessionId = dbSession.SessionId});
+                await Clients.Caller.SendAsync("ChatClosed", new { sessionId = dbSession.SessionId });
                 return;
             }
 
@@ -352,6 +367,10 @@ namespace ChatSupport.Hubs
 
             await Clients.Caller.SendAsync("MessageSent", chatMessage);
         }
+
+        #endregion
+
+        #region Queries
 
         [Authorize(AuthenticationSchemes = "Bearer", Roles = "Cashier")]
         public async Task GetOnlineCustomers()
@@ -378,7 +397,7 @@ namespace ChatSupport.Hubs
                         SessionId = userSession.SessionId
                     });
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     onlineCustomers.Add(new
                     {
@@ -444,6 +463,7 @@ namespace ChatSupport.Hubs
                     CustomerName = session.CustomerName,
                     SessionId = session.SessionId,
                     StartTime = session.StartTime,
+                    IsOnline = _userSessions.TryGetValue(session.CustomerId, out var userSession) && userSession.IsOnline,
                     Messages = messages.Select(m => new
                     {
                         m.MessageId,
@@ -472,91 +492,152 @@ namespace ChatSupport.Hubs
             }
         }
 
+        #endregion
+
+        #region Disconnect handling
+
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            // Nếu là customer
+            // Nếu là customer disconnected
             if (_connectionToUser.TryRemove(Context.ConnectionId, out var userId))
             {
                 if (_userSessions.TryGetValue(userId, out var session))
                 {
                     session.IsOnline = false;
 
-                    // Đợi 7 giây để phân biệt disconnect thật sự hay F5
-                    await Task.Delay(7000);
+                    // Đợi ngắn để phân biệt F5/reconnect
+                    await Task.Delay(DisconnectGrace);
 
-                    // Nếu user không reconnect lại
+                    // Nếu user reconnect (another connection added)
                     if (_userSessions.TryGetValue(userId, out var checkSession) && checkSession.IsOnline)
                         return;
 
-                    // Đóng phiên chat trong database
+                    // Khách thật sự offline -> đóng phiên ở DB
                     await _chatService.CloseSessionAsync(session.SessionId);
 
-                    // Thông báo cho admin nếu có
+                    // Thông báo admin (nếu có)
                     if (!string.IsNullOrEmpty(session.AssignedAdminId) &&
                         _adminSessions.TryGetValue(session.AssignedAdminId, out var assignedAdmin))
                     {
                         assignedAdmin.AssignedUsers.Remove(userId);
-
-                        await Clients.Client(assignedAdmin.ConnectionId).SendAsync("CustomerDisconnected", new
+                        foreach (var conn in assignedAdmin.ConnectionIds.ToList())
                         {
-                            sessionId = session.SessionId
-                        });
+                            await Clients.Client(conn).SendAsync("CustomerDisconnected", new
+                            {
+                                sessionId = session.SessionId
+                            });
+                        }
                     }
 
                     await BroadcastCustomerListUpdate();
                 }
             }
 
-
-            // Nếu là admin
-            var adminSession = _adminSessions.Values.FirstOrDefault(a => a.ConnectionId == Context.ConnectionId);
-            if (adminSession != null)
+            // Nếu là admin disconnected
+            if (_connectionToAdmin.TryRemove(Context.ConnectionId, out var adminId))
             {
-                var adminId = adminSession.AdminId;
-                var oldConnId = adminSession.ConnectionId;
-
-                // Đợi 7 giây để phân biệt disconnect thật sự hay F5
-                await Task.Delay(7000);
-
-                // Nếu admin đã reconnect thì bỏ qua
-                if (_adminSessions.ContainsKey(adminId) && _adminSessions[adminId].ConnectionId != oldConnId)
-                    return;
-
-                // Xóa admin session
-                _adminSessions.TryRemove(adminId, out _);
-
-                // Đóng tất cả phiên chat mà admin này phụ trách
-                var orphanedCustomerIds = new List<string>(adminSession.AssignedUsers);
-
-                foreach (var customerId in orphanedCustomerIds)
+                if (_adminSessions.TryGetValue(adminId, out var adminSession))
                 {
-                    if (_userSessions.TryGetValue(customerId, out var customerSession))
-                    {
-                        // Đóng phiên chat trong database
-                        await _chatService.CloseSessionAsync(customerSession.SessionId);
+                    // remove this connectionId from the admin
+                    adminSession.ConnectionIds.Remove(Context.ConnectionId);
 
-                        // Thông báo cho khách hàng
-                        if (customerSession.IsOnline)
+                    // wait short grace to avoid refresh
+                    await Task.Delay(DisconnectGrace);
+
+                    // if admin has other active connectionIds -> still online, nothing to do
+                    if (adminSession.ConnectionIds.Count > 0)
+                        return;
+
+                    // Admin thật sự offline -> remove admin session and CLOSE sessions of assigned users immediately
+                    _adminSessions.TryRemove(adminId, out _);
+
+                    var orphanedCustomerIds = new List<string>(adminSession.AssignedUsers);
+
+                    foreach (var customerId in orphanedCustomerIds)
+                    {
+                        if (_userSessions.TryGetValue(customerId, out var customerSession))
                         {
-                            await Clients.Client(customerSession.ConnectionId).SendAsync("AdminDisconnected", new
+                            // Close DB session immediately because requirement: do not reassign to other admin
+                            try
                             {
-                               sessionID  = customerSession.SessionId
-                            });
+                                await _chatService.CloseSessionAsync(customerSession.SessionId);
+                            }
+                            catch
+                            {
+                                // optionally log error
+                            }
+
+                            // Notify customer if online
+                            if (customerSession.IsOnline)
+                            {
+                                await Clients.Client(customerSession.ConnectionId).SendAsync("ChatClosed", new { sessionId = customerSession.SessionId });
+                            }
+
+                            // Update local structures
+                            customerSession.AssignedAdminId = null;
                         }
                     }
+
+                    // Notify other admins that this admin left
+                    await Clients.Group("Admins").SendAsync("AdminLeft", new
+                    {
+                        AdminId = adminSession.AdminId,
+                        AdminName = adminSession.AdminName
+                    });
+
+                    await BroadcastCustomerListUpdate();
                 }
-
-                await Clients.Group("Admins").SendAsync("AdminLeft", new
+            }
+            else
+            {
+                // fallback: try find admin session by scanning connectionIds (rare)
+                var adminSession = _adminSessions.Values.FirstOrDefault(a => a.ConnectionIds.Contains(Context.ConnectionId));
+                if (adminSession != null)
                 {
-                    AdminId = adminSession.AdminId,
-                    AdminName = adminSession.AdminName
-                });
+                    adminSession.ConnectionIds.Remove(Context.ConnectionId);
+                    _connectionToAdmin.TryRemove(Context.ConnectionId, out _);
 
-                await BroadcastCustomerListUpdate();
+                    await Task.Delay(DisconnectGrace);
+
+                    if (adminSession.ConnectionIds.Count == 0)
+                    {
+                        _adminSessions.TryRemove(adminSession.AdminId, out _);
+
+                        var orphanedCustomerIds = new List<string>(adminSession.AssignedUsers);
+                        foreach (var customerId in orphanedCustomerIds)
+                        {
+                            if (_userSessions.TryGetValue(customerId, out var customerSession))
+                            {
+                                try
+                                {
+                                    await _chatService.CloseSessionAsync(customerSession.SessionId);
+                                }
+                                catch { }
+
+                                if (customerSession.IsOnline)
+                                {
+                                    await Clients.Client(customerSession.ConnectionId).SendAsync("ChatClosed", new { sessionId = customerSession.SessionId });
+                                }
+
+                                customerSession.AssignedAdminId = null;
+                            }
+                        }
+
+                        await Clients.Group("Admins").SendAsync("AdminLeft", new
+                        {
+                            AdminId = adminSession.AdminId,
+                            AdminName = adminSession.AdminName
+                        });
+
+                        await BroadcastCustomerListUpdate();
+                    }
+                }
             }
 
             await base.OnDisconnectedAsync(exception);
         }
+
+        #endregion
 
         [Authorize(AuthenticationSchemes = "Bearer", Roles = "Cashier")]
         public async Task CloseSession(string sessionId)
@@ -573,7 +654,6 @@ namespace ChatSupport.Hubs
             }
         }
 
-
         private string GetAdminId()
         {
             return Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
@@ -584,8 +664,30 @@ namespace ChatSupport.Hubs
         {
             return Context.User?.FindFirst(ClaimTypes.Name)?.Value ?? throw new UnauthorizedAccessException("User không hợp lệ");
         }
+
+        private async Task BroadcastCustomerListUpdate()
+        {
+            var customerList = _userSessions.Values
+                .Where(u => u.IsOnline)
+                .Select(u => new
+                {
+                    u.UserId,
+                    u.UserName,
+                    u.StartTime,
+                    u.AssignedAdminId,
+                    IsAssigned = !string.IsNullOrEmpty(u.AssignedAdminId),
+                    LastMessage = "",
+                    LastMessageTime = u.StartTime,
+                    UnreadCount = 0
+                })
+                .OrderByDescending(u => u.StartTime)
+                .ToList();
+
+            await Clients.Group("Admins").SendAsync("CustomerListUpdated", customerList);
+        }
     }
 
+    // Models
     public class UserSession
     {
         public string SessionId { get; set; }
@@ -602,9 +704,8 @@ namespace ChatSupport.Hubs
     {
         public string AdminId { get; set; }
         public string AdminName { get; set; }
-        public string ConnectionId { get; set; }
+        // multiple connections allowed for same adminId
+        public HashSet<string> ConnectionIds { get; set; } = new();
         public List<string> AssignedUsers { get; set; } = new();
     }
 }
-
-

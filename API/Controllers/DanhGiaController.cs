@@ -1,4 +1,5 @@
 ﻿using API.Data;
+using API.DTOs;
 using API.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -52,12 +53,39 @@ namespace API.Controllers
         public async Task<IActionResult> LayTatCa()
         {
             var danhGias = await _context.DanhGias
-                .Include(d => d.DichVu)
-                .Include(d => d.User)
+               .AsNoTracking()
+               .Where(d => d.DaDuyet && d.IsActive && d.SoSao == 5)
+               .Select(x => new Review
+               {
+                   Content = x.NoiDung,
+                   Rate = x.SoSao,
+                   CreatedDate = x.NgayTao,
+                   Name = x.User.Name ?? "Ẩn danh"
+               }).OrderByDescending(x => x.CreatedDate).Take(9)
+               .ToListAsync();
+
+            return Ok(danhGias);
+        }
+
+        
+        [HttpGet("approved")]
+        public async Task<IActionResult> GetReviews()
+        {
+            var danhGias = await _context.DanhGias
+                .AsNoTracking()
+                .Where(d => d.DaDuyet && d.IsActive && d.SoSao == 5 )
+                .Select( x => new Review
+                {
+                    Content = x.NoiDung,
+                    Rate = x.SoSao,
+                    CreatedDate = x.NgayTao,
+                    Name = x.User.Name ?? "Ẩn danh"
+                } ).OrderByDescending(x => x.CreatedDate).Take(10)
                 .ToListAsync();
 
             return Ok(danhGias);
         }
+
 
         // Duyệt đánh giá
         [HttpPut("duyet/{id}")]

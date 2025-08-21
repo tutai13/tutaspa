@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Services
 {
-	public class ProductService : IProductService
+	public class ProductService :	IProductService
 	{
 		private readonly ApplicationDbContext _context;
 		private readonly IWebHostEnvironment _env;
