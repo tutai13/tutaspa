@@ -22,11 +22,11 @@ public class InventoryService : IInventoryService
 		{
 			return false; 
 		}
-		if (dto.ImportPrice <= 0 || dto.CurrentSellingPrice <= 0)
+		if (dto.ImportPrice <= 0 || dto.CurrentSellingPrice <= 0 || dto.CurrentSellingPrice <= dto.ImportPrice)
 		{
 			return false; 
 		}
-
+		
 		var existingProduct = await _context.Products
 			.FirstOrDefaultAsync(p => p.ProductName == dto.ProductName && p.CategoryId == dto.CategoryId);
 
