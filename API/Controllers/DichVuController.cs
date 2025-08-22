@@ -82,10 +82,11 @@ namespace API.Controllers
                         tenLoai = dv.LoaiDichVu.TenLoai,
                         // Thêm rating trung bình nếu có bảng đánh giá
                         mucDanhGia = _context.DanhGias
-                            .Where(dg => dg.MaDichVu == dv.DichVuID && dg.DaDuyet && dg.IsActive)
-                            .Average(dg => (double?)dg.SoSao) ?? 0.0
+    .Where(dg => dg.MaDichVu == dv.DichVuID && dg.IsActive)
+    .Average(dg => (double?)dg.SoSao) ?? 0.0
                     })
-                    .ToListAsync();
+.ToListAsync();
+
 
                 // Return paginated response
                 var response = new
@@ -127,7 +128,7 @@ namespace API.Controllers
             var result = await _context.DichVus
         .Where(dv => dv.TrangThai == 1)
         .GroupJoin(
-        _context.DanhGias.Where(x => x.DaDuyet && x.IsActive),
+        _context.DanhGias.Where(x => x.IsActive),
         dv => dv.DichVuID,
         dg => dg.MaDichVu,
         (dv, dgs) => new
@@ -221,7 +222,7 @@ namespace API.Controllers
         public async Task<ActionResult<ReviewsDTO>> GetReviews(int id)
         {
             var reviews = await _context.DanhGias.AsNoTracking()
-                .Where(r => r.MaDichVu == id && r.DaDuyet && r.IsActive)
+                .Where(r => r.MaDichVu == id && r.IsActive)
                 .Select(r => new Review
                 {
                     Rate = r.SoSao,

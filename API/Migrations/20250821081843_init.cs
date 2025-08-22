@@ -73,14 +73,14 @@ namespace API.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    SessionId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    SessionId = table.Column<string>(type: "nvarchar(450)", nullable: false),  
                     CustomerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CustomerName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     AdminId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     AdminName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     StartTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Status = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false), 
                     CustomerIP = table.Column<string>(type: "nvarchar(45)", maxLength: 45, nullable: true),
                     UserAgent = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     MetadataJson = table.Column<string>(type: "nvarchar(max)", nullable: true),
