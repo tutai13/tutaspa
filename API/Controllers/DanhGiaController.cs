@@ -39,9 +39,21 @@ namespace API.Controllers
         public async Task<IActionResult> LayDanhGiaTheoDichVu(int maDichVu)
         {
             var danhGias = await _context.DanhGias
-                .Where(d => d.MaDichVu == maDichVu && d.DaDuyet && d.IsActive) // 👈 Bắt buộc thêm IsActive!
+                .Where(d => d.MaDichVu == maDichVu && d.IsActive) // 👈 Bắt buộc thêm IsActive!
                 .Include(d => d.User)
                 .OrderByDescending(d => d.NgayTao)
+                .ToListAsync();
+
+            return Ok(danhGias);
+        }
+
+        // Admin lấy tất cả đánh giá (chưa duyệt / đã duyệt)
+        [HttpGet("adminn")]
+        public async Task<IActionResult> LayTatCaa()
+        {
+            var danhGias = await _context.DanhGias
+                .Include(d => d.DichVu)
+                .Include(d => d.User)
                 .ToListAsync();
 
             return Ok(danhGias);
@@ -54,7 +66,7 @@ namespace API.Controllers
         {
             var danhGias = await _context.DanhGias
                .AsNoTracking()
-               .Where(d => d.DaDuyet && d.IsActive && d.SoSao == 5)
+               .Where(d => d.IsActive && d.SoSao == 5)
                .Select(x => new Review
                {
                    Content = x.NoiDung,
@@ -73,7 +85,7 @@ namespace API.Controllers
         {
             var danhGias = await _context.DanhGias
                 .AsNoTracking()
-                .Where(d => d.DaDuyet && d.IsActive && d.SoSao == 5 )
+                .Where(d => d.IsActive && d.SoSao == 5 )
                 .Select( x => new Review
                 {
                     Content = x.NoiDung,
@@ -87,36 +99,59 @@ namespace API.Controllers
         }
 
 
-        // Duyệt đánh giá
-        [HttpPut("duyet/{id}")]
-        public async Task<IActionResult> Duyet(int id)
+        /// <summary>
+        /// Người dùng chỉnh sửa đánh giá của mình
+        /// </summary>
+        [HttpPut("update/{id}")]
+        public async Task<IActionResult> SuaDanhGia(int id, [FromBody] DanhGia model)
         {
             var dg = await _context.DanhGias.FindAsync(id);
-            if (dg == null) return NotFound();
+            if (dg == null) return NotFound(new { message = "Không tìm thấy đánh giá." });
 
-            dg.DaDuyet = true;
+            // ✅ Chỉ cho phép chủ nhân sửa
+            if (dg.UserId != model.UserId)
+                return Forbid("Bạn không có quyền sửa đánh giá này.");
+
+            // ✅ Cập nhật nội dung & số sao
+            dg.NoiDung = model.NoiDung;
+            dg.SoSao = model.SoSao;
+            dg.NgayTao = DateTime.Now;
+
             await _context.SaveChangesAsync();
-            return Ok("Đã duyệt đánh giá.");
+
+            return Ok(new { message = "Đánh giá đã được cập nhật." });
         }
+
+        // Duyệt đánh giá
+        //[HttpPut("duyet/{id}")]
+        //public async Task<IActionResult> Duyet(int id)
+        //{
+        //    var dg = await _context.DanhGias.FindAsync(id);
+        //    if (dg == null) return NotFound();
+
+        //    dg.DaDuyet = true;
+        //    await _context.SaveChangesAsync();
+        //    return Ok("Đã duyệt đánh giá.");
+        //}
 
         // Xóa đánh giá
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Xoa(int id)
-        {
-            var dg = await _context.DanhGias.FindAsync(id);
-            if (dg == null) return NotFound();
+        //[HttpDelete("{id}")]
+        //public async Task<IActionResult> Xoa(int id)
+        //{
+        //    var dg = await _context.DanhGias.FindAsync(id);
+        //    if (dg == null) return NotFound();
 
-            _context.DanhGias.Remove(dg);  
-            await _context.SaveChangesAsync();
-            return Ok("Đã xoá đánh giá.");
-        }
+        //    _context.DanhGias.Remove(dg);  
+        //    await _context.SaveChangesAsync();
+        //    return Ok("Đã xoá đánh giá.");
+        //}
 
         // LẤY TRUNG BÌNH SỐ SAO CỦA DỊCH VỤ
         [HttpGet("trungbinh/{maDichVu}")]
         public async Task<IActionResult> TinhTrungBinh(int maDichVu)
         {
             var trungBinh = await _context.DanhGias
-                .Where(d => d.MaDichVu == maDichVu && d.DaDuyet)
+                .Where(d => d.MaDichVu == maDichVu )
                 .AverageAsync(d => (double?)d.SoSao) ?? 0;
 
             return Ok(trungBinh);
@@ -141,7 +176,7 @@ namespace API.Controllers
         {
             // Lấy dữ liệu đã duyệt
             var danhGias = await _context.DanhGias
-                .Where(d => d.DaDuyet && d.IsActive)
+                .Where(d => d.IsActive)
                 .ToListAsync();
 
             // Nếu không có đánh giá đã duyệt → fallback sang tất cả đánh giá active
