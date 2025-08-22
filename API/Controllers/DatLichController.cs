@@ -283,7 +283,8 @@ namespace API.Controllers
                 .Where(x => x.ThoiGian.Date == ngay.Date)
                 .ToListAsync();
 
-            var now = DateTime.Now;
+            //var now = DateTime.Now;
+            var now = DateTime.UtcNow.AddHours(7);
 
             foreach (var khung in khungGioList)
             {
