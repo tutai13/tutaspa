@@ -335,31 +335,57 @@ namespace API.Controllers
                 return BadRequest(new { message = "Tên dịch vụ không được để trống." });
             }
 
-            // Kiểm tra có chứa số
             if (dichVu.TenDichVu.Any(char.IsDigit))
             {
                 return BadRequest(new { message = "Tên dịch vụ không được chứa số." });
             }
 
-            // Kiểm tra trùng tên (không phân biệt hoa thường, bỏ khoảng trắng thừa)
             var tenDichVuNormalized = dichVu.TenDichVu.Trim().ToLower();
 
-            var existed = await _context.DichVus
-                .AnyAsync(dv => dv.TenDichVu.Trim().ToLower() == tenDichVuNormalized);
+            var existedDV = await _context.DichVus
+                .FirstOrDefaultAsync(x => x.TenDichVu.Trim().ToLower() == tenDichVuNormalized);
 
-            if (existed)
+            if (existedDV != null)
             {
-                return BadRequest(new { message = "Tên dịch vụ đã tồn tại." });
+                if (existedDV.LoaiDichVuID != dichVu.LoaiDichVuID)
+                {
+                    return BadRequest(new { message = $"Dịch vụ '{dichVu.TenDichVu}' đã tồn tại trong loại khác, vui lòng chọn đúng loại dịch vụ." });
+                }
+                else
+                {
+                    return BadRequest(new { message = "Tên dịch vụ đã tồn tại trong loại này." });
+                }
             }
 
-            // Nếu hợp lệ thì thêm mới
+            if (dichVu.Gia <= 0)
+            {
+                return BadRequest(new { message = "Giá dịch vụ phải lớn hơn 0." });
+            }
+
+            if (dichVu.ThoiGian <= 0)
+            {
+                return BadRequest(new { message = "Thời gian phải lớn hơn 0." });
+            }
+
+            if (string.IsNullOrWhiteSpace(dichVu.HinhAnh))
+            {
+                return BadRequest(new { message = "Hình ảnh không được để trống." });
+            }
+            var loaiDV = await _context.LoaiDichVus.FirstOrDefaultAsync(x => x.LoaiDichVuID == dichVu.LoaiDichVuID);
+            if (loaiDV == null)
+            {
+                return BadRequest(new { message = "Loại dịch vụ không tồn tại." });
+            }
+
+            // ✅ Gán maDichVu = maLoaiDichVu
+            dichVu.maDichVu = loaiDV.maLoaiDichVu;
+
             dichVu.NgayTao = DateTime.Now;
             _context.DichVus.Add(dichVu);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetDichVu", new { id = dichVu.DichVuID }, dichVu);
         }
-
         [HttpGet("name")]
         public async Task<ActionResult<IEnumerable<DichVu>>> SearchByName(string ten)
         {

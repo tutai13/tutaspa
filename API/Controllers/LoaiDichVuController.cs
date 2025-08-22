@@ -89,6 +89,8 @@ namespace API.Controllers
             {
                 return BadRequest(new { message = "Tên loại dịch vụ không được chứa số." });
             }
+            var maxId = await _context.LoaiDichVus.MaxAsync(x => (int?)x.LoaiDichVuID) ?? 0;
+            loaiDichVu.maLoaiDichVu = $"dv{maxId + 1}";
 
             var tenLoaiNormalized = loaiDichVu.TenLoai.Trim().ToLower();
             var existed = await _context.LoaiDichVus
@@ -173,6 +175,10 @@ namespace API.Controllers
             var loaiDVList = new List<LoaiDichVu>();
             var dichVuList = new List<DichVu>();
 
+            // Biến thống kê
+            var skippedLoaiDV = new List<string>();
+            var skippedDV = new List<string>();
+
             using (var stream = new MemoryStream())
             {
                 await file.CopyToAsync(stream);
@@ -183,22 +189,23 @@ namespace API.Controllers
                     if (sheetLoai != null)
                     {
                         var existedLoaiDVNames = await _context.LoaiDichVus
-                        .Select(x => x.TenLoai.ToLower())
-                        .ToListAsync();
+                            .Select(x => x.TenLoai.ToLower())
+                            .ToListAsync();
 
                         foreach (var row in sheetLoai.RowsUsed().Skip(1))
                         {
                             var tenLoai = row.Cell(1).GetString()?.Trim();
                             var maLoai = row.Cell(2).GetString()?.Trim();
 
-
                             if (!string.IsNullOrEmpty(maLoai) && !string.IsNullOrEmpty(tenLoai))
                             {
                                 if (existedLoaiDVNames.Contains(tenLoai.ToLower()) ||
                                    loaiDVList.Any(x => x.TenLoai.Equals(tenLoai, StringComparison.OrdinalIgnoreCase)))
                                 {
-                                    return BadRequest("Loại dịch vụ đã tồn tại.");
+                                    skippedLoaiDV.Add(tenLoai);
+                                    continue; // Bỏ qua dòng trùng
                                 }
+
                                 loaiDVList.Add(new LoaiDichVu
                                 {
                                     maLoaiDichVu = maLoai,
@@ -208,23 +215,24 @@ namespace API.Controllers
                         }
                     }
 
-                    // Lưu loại dịch vụ trước để có ID
                     if (loaiDVList.Any())
                     {
                         _context.LoaiDichVus.AddRange(loaiDVList);
                         await _context.SaveChangesAsync();
                     }
 
-
                     // ===== Sheet DichVu =====
                     var sheetDV = workbook.Worksheets.FirstOrDefault(s => s.Name == "DichVu");
                     if (sheetDV != null)
                     {
+                        var existedDVNames = await _context.DichVus
+                            .Select(x => x.TenDichVu.ToLower())
+                            .ToListAsync();
+
                         foreach (var row in sheetDV.RowsUsed().Skip(1))
                         {
                             try
                             {
-
                                 var tenDichVu = row.Cell(1).GetString()?.Trim();
                                 var gia = row.Cell(2).GetValue<decimal>();
                                 var thoiGian = row.Cell(3).GetValue<int>();
@@ -235,12 +243,19 @@ namespace API.Controllers
                                 var maDichVu = row.Cell(8).GetString()?.Trim();
 
                                 var loaiDV = await _context.LoaiDichVus.FirstOrDefaultAsync(x => x.maLoaiDichVu == maDichVu);
-                                if (loaiDV == null)
-                                    continue;
+                                if (loaiDV == null) continue;
+
                                 int loaiID = loaiDV.LoaiDichVuID;
 
                                 if (string.IsNullOrEmpty(tenDichVu) || gia < 0 || thoiGian <= 0)
                                     continue;
+
+                                if (existedDVNames.Contains(tenDichVu.ToLower()) ||
+                                    dichVuList.Any(x => x.TenDichVu.Equals(tenDichVu, StringComparison.OrdinalIgnoreCase)))
+                                {
+                                    skippedDV.Add(tenDichVu);
+                                    continue;
+                                }
 
                                 dichVuList.Add(new DichVu
                                 {
@@ -257,6 +272,7 @@ namespace API.Controllers
                             }
                             catch
                             {
+                                skippedDV.Add("Dòng lỗi dữ liệu");
                                 continue;
                             }
                         }
@@ -273,8 +289,12 @@ namespace API.Controllers
             return Ok(new
             {
                 success = true,
-                loaiDichVuCount = loaiDVList.Count,
-                dichVuCount = dichVuList.Count
+                loaiDichVuAdded = loaiDVList.Count,
+                loaiDichVuSkipped = skippedLoaiDV.Count,
+                loaiDichVuSkippedList = skippedLoaiDV,   // Danh sách tên bị bỏ qua
+                dichVuAdded = dichVuList.Count,
+                dichVuSkipped = skippedDV.Count,
+                dichVuSkippedList = skippedDV            // Danh sách tên bị bỏ qua
             });
         }
 
