@@ -119,7 +119,7 @@ namespace API.Controllers
                 SoDienThoai = request.SoDienThoai,
                 ThoiGian = request.ThoiGian,
                 ThoiLuong = thoiLuong,
-                TrangThai = "Chưa đến",
+                TrangThai = request.DatTruoc? "Chưa đến": "Đã đến",
                 DaThanhToan = false,
                 GhiChu = request.GhiChu,
                 DatTruoc = request.DatTruoc,
@@ -305,6 +305,30 @@ namespace API.Controllers
 
             return Ok(result);
         }
+        [HttpDelete("{datLichId}")]
+        public async Task<IActionResult> XoaLich(int datLichId)
+        {
+            var datLich = await _context.DatLiches
+                .Include(dl => dl.ChiTietDatLichs)
+                .FirstOrDefaultAsync(dl => dl.DatLichID == datLichId);
+            
+
+            if (datLich == null )
+                return NotFound("Không tìm thấy lịch cần xóa.");
+
+            if (datLich.DaThanhToan == true)
+                return BadRequest("Không xóa được vì đã thanh toán.");
+
+            if (datLich.ChiTietDatLichs.Any())
+                _context.ChiTietDatLiches.RemoveRange(datLich.ChiTietDatLichs);
+
+            _context.DatLiches.Remove(datLich);
+            await _context.SaveChangesAsync();
+
+
+            return Ok($"Đã xóa lịch có ID = {datLichId}");
+        }
+
 
     }
 }
