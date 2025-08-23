@@ -22,7 +22,10 @@ namespace API.Services
 				.FirstOrDefaultAsync(p => p.ProductId == dto.ProductId);
 
 			if (product == null) return false;
-
+			if (dto.ImportPrice >= product.CurrentSellingPrice)
+			{
+				return false;
+			}
 			string productCode = $"SP-{Guid.NewGuid().ToString("N")[..8].ToUpper()}";
 
 			var batch = new ProductBatch
