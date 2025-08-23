@@ -177,17 +177,30 @@ namespace API.Controllers
             return Ok(result);
         }
 
-        [HttpGet("thongKeHoaDon")]
-        public async Task<ActionResult<IEnumerable<HoaDon>>> GetHoaDon()
-        {
-            var result = await _context.HoaDons
-                    .Include(vc => vc.voucher)
-                    .Include(dl => dl.ChiTietHoaDons)
-                    .ThenInclude(ct => ct.DichVu)
-                    .ToListAsync();
+ [HttpGet("thongKeHoaDon")]
+ public async Task<ActionResult<IEnumerable<HoaDon>>> GetHoaDon(
+	DateTime? startDate = null,
+	DateTime? endDate = null)
+ {
+     var query = _context.HoaDons
+         .Include(vc => vc.voucher)
+         .Include(dl => dl.ChiTietHoaDons)
+             .ThenInclude(ct => ct.DichVu)
+         .AsQueryable();
 
-            return Ok(result);
-        }
+     if (startDate.HasValue)
+     {
+         query = query.Where(hd => hd.NgayTao >= startDate.Value);
+     }
+
+     if (endDate.HasValue)
+     {
+         query = query.Where(hd => hd.NgayTao <= endDate.Value);
+     }
+
+     var result = await query.OrderByDescending(hd => hd.NgayTao).ToListAsync();
+     return Ok(result);
+ }
         [HttpGet("lichHenToday")]
         public async Task<IActionResult> GetSoLichHomNay()
         {
