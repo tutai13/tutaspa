@@ -39,6 +39,27 @@ namespace API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(CategoryDTO dto)
         {
+            // Kiểm tra tên loại đã tồn tại (không phân biệt hoa thường, bỏ khoảng trắng)
+            var exists = await _context.Categories
+                .AnyAsync(c => c.CategoryName.ToLower().Trim() == dto.TenLoai.ToLower().Trim());
+
+            if (exists)
+            {
+                return BadRequest(new { message = "Loại sản phẩm đã tồn tại." });
+            }
+
+            // Kiểm tra mã loại (maCategory) đã tồn tại chưa
+            if (!string.IsNullOrEmpty(dto.maCategory))
+            {
+                var codeExists = await _context.Categories
+                    .AnyAsync(c => c.maCategory == dto.maCategory);
+
+                if (codeExists)
+                {
+                    return BadRequest(new { message = "Mã loại sản phẩm đã tồn tại." });
+                }
+            }
+
             var result = await _categoryService.CreateAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = result.LoaiSanPhamId }, result);
         }
