@@ -1,6 +1,8 @@
 
 ﻿using API.DTOs.Auth;
+using API.Extensions;
 using API.IService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 
 using Microsoft.AspNetCore.Mvc;
@@ -108,5 +110,92 @@ namespace API.Controllers
             }
         }
 
+
+        [HttpGet("phone/check")]
+        public async Task<IActionResult> CheckPhoneNumber([FromQuery] string phoneNumber)
+        {
+            if (string.IsNullOrEmpty(phoneNumber))
+            {
+                return BadRequest(new { message = "Số điện thoại không được để trống." });
+            }
+            var isExist = await _authService.CheckPhoneNumberExists(phoneNumber);
+            return Ok(new { exists = isExist });
+        }
+
+
+
+        [HttpPost("reset-password")]
+        [Authorize(AuthenticationSchemes = "Bearer", Policy = "ChangePasswordOnly")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPassDTO request)
+        {
+            try
+            {
+                request.UserID = User.GetUserId();
+                var changePassResult = await _authService.ChangePassword(request);
+
+                if (changePassResult)
+                    return Ok();
+
+                return BadRequest(new { message = "Đổi mật khẩu thất bài ,  vui lòng thử lại sau" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+
+        [HttpPost("forgot-password-otp/send/{phoneNumber}")]
+        public async Task<IActionResult> ForgotPasswordOTP([FromRoute] string phoneNumber)
+        {
+
+            try
+            {
+                await _authService.SendForgetPasswordOTP(phoneNumber, IAuthService.OTPType.Phone);
+                return Ok();
+
+            }
+
+            catch (Exception ex)
+            {
+                _logger.LogError($"Lỗi khi gửi OTP: {ex.Message}");
+                return BadRequest(new { message = "Lỗi khi gửi OTP: " + ex.Message });
+            }
+        }
+
+
+        [HttpPost("forgot-password-otp/verifi")]
+        public async Task<IActionResult> VerifiForgotPasswordOTP([FromBody] VerifiOtp verifi)
+        {
+            try
+            {
+                var token = await _authService.VerifiOtp(verifi.Email, verifi.Otp, IAuthService.OTPType.Phone);
+                return Ok(new { token = token });
+
+            }
+
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "Xác thực thất bại :" + ex.InnerException?.Message });
+            }
+        }
+
+
+        [HttpPost("set-new-pass")]
+        [Authorize(AuthenticationSchemes = "Bearer", Policy = "ChangePasswordOnly")]
+        public async Task<IActionResult> SetPass([FromBody] ForgetPassDTO request)
+        {
+            try
+            {
+                request.UserId = User.GetUserId();
+                await _authService.ResetPassword(request);
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "Đặt lại mật khẩu thất bại ,  vui lòng thử lại sau" });
+            }
+        }
     }
 }

@@ -17,13 +17,23 @@ namespace API.IService
 
         public Task ResetPassword(ForgetPassDTO reset); 
 
-        public Task SendForgetPasswordOTP(string email);
+        public Task  SendForgetPasswordOTP(string email , OTPType type);
 
-        public Task<string> VerifiOtp(string email, string otp);
+        public Task<string> VerifiOtp(string email, string otp , OTPType type);
 
         public Task add(string email, string pass); 
 
         public Task<bool> ChangePassword(ResetPassDTO resetPassDTO);
         public Task Logout(string refreshToken);
+
+        public Task<bool> CheckPhoneNumberExists(string phone);
+
+
+
+        public enum OTPType
+        {
+            Email ,
+            Phone
+        }
     }
 }

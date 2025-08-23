@@ -18,6 +18,8 @@ using Humanizer;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.AspNetCore.Identity.Data;
+using static API.IService.IAuthService;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 
 namespace API.Services
 {
@@ -34,9 +36,10 @@ namespace API.Services
         private readonly IUserRepository _userRepository;
         private readonly IMemoryCache _cache;
         private readonly IGmailService emailService;
+        private readonly IOTPService _otpService;
 
 
-        public AuthService(IConfiguration configuration, UserManager<User> userManager, SignInManager<User> signInManager, ITokenService tokenService, ILogger<AuthService> logger, IValidator<RegisterDTO> v, IUserRepository userRepository, RoleManager<IdentityRole> roleManager, IValidator<ResetPassDTO> _reSetPassvalidator, IGmailService email, IMemoryCache cache)
+        public AuthService(IConfiguration configuration, UserManager<User> userManager, SignInManager<User> signInManager, ITokenService tokenService, ILogger<AuthService> logger, IValidator<RegisterDTO> v, IUserRepository userRepository, RoleManager<IdentityRole> roleManager, IValidator<ResetPassDTO> _reSetPassvalidator, IGmailService email, IMemoryCache cache, IOTPService otpService )
         {
             _configuration = configuration;
             _userManager = userManager;
@@ -49,6 +52,7 @@ namespace API.Services
             this._reSetPassvalidator = _reSetPassvalidator;
             emailService = email;
             _cache = cache;
+            _otpService = otpService;
         }
 
         public async Task<bool> ChangePassword(ResetPassDTO resetPassDTO)
@@ -308,39 +312,71 @@ namespace API.Services
             }
         }
 
-        public async Task SendForgetPasswordOTP(string email)
+        public async Task SendForgetPasswordOTP(string email ,OTPType type)
         {
-            var user = await _userManager.FindByEmailAsync(email);
+            var user = type == OTPType.Email ?  await _userManager.FindByEmailAsync(email) : await _userManager.Users.FirstOrDefaultAsync(x => x.UserName == email);
             CheckUserNull(user);
 
-            var userRole = await GetRoles(user); 
-            if ( !userRole.Any() ||  userRole.Contains("User"))
-                throw new UnauthorizedAccessException("Tài khoản không có quyền truy cập");
-
-            var randPass = RandomNumberGenerator.GetInt32(111111, 999999).ToString();
-
-            _cache.Set($"otp_{email}", randPass , DateTimeOffset.Now.AddMinutes(5)); 
-            await emailService.SendEmailAsync(email ,  "Đây là mã xác nhận đổi mật khẩu của bạn :", $"<h1>Mã xác nhận có hiệu lực trong 5 phút</h1><p>Vui lòng không cung cấp cho bất kỳ ai</p><p>Mã xác nhận là: <strong>{randPass}</strong></p>")    ;
+            switch (type)
+            {
+                case OTPType.Email:
+                    await SendOTPViaEmail(user.Email);
+                    break;
+                case OTPType.Phone:
+                    await SendOTPViaPhone(user.PhoneNumber);
+                    break;
+                default:
+                    throw new Exception("Yêu cầu không hợp lệ");
+            }
         }
 
-        public async Task<string> VerifiOtp(string email, string otp)
+        private async Task SendOTPViaEmail(string email)
+        {
+            var randPass = RandomNumberGenerator.GetInt32(111111, 999999).ToString();
+
+            _cache.Set($"otp_{email}", randPass, DateTimeOffset.Now.AddMinutes(5));
+            await emailService.SendEmailAsync(email, "Đây là mã xác nhận đổi mật khẩu của bạn :", $"<h1>Mã xác nhận có hiệu lực trong 5 phút</h1><p>Vui lòng không cung cấp cho bất kỳ ai</p><p>Mã xác nhận là: <strong>{randPass}</strong></p>");
+        }
+        
+
+        private async Task SendOTPViaPhone(string phoneNumber)
+        {
+            await _otpService.SendOtpAsync(phoneNumber);
+        }
+
+
+        public async Task<string> VerifiOtp(string email, string otp , OTPType type)
+        {
+            var result = type == OTPType.Email ? VerifiEmailOTP(email, otp) : VerifiPhoneOTP(email, otp);
+
+            if (!result)
+                throw new Exception("Mã OTP không hợp lệ hoặc đã hết hạn");
+
+            var user = type == OTPType.Email ? await _userManager.FindByEmailAsync(email) : await _userManager.Users.FirstOrDefaultAsync(x => x.UserName == email);
+
+            var token = _tokenService.GenerateChangePasswordToken(user);
+            return token.Accesstoken ;        
+        }
+
+        private  bool VerifiEmailOTP(string email, string otp)
         {
             var inMemoryOtp = _cache.Get<string>($"otp_{email}");
 
-            if(string.IsNullOrEmpty(inMemoryOtp))
-                throw new Exception("Mã OTP không hợp lệ hoặc đã hết hạn");
-
-            var user = await _userManager.FindByEmailAsync(email);
+            if (string.IsNullOrEmpty(inMemoryOtp))
+                return false;
 
             if (inMemoryOtp != otp)
-                throw new Exception("Mã OTP không chính xác");
-
-            _cache.Remove($"otp_{email}"); 
-
-            var token = _tokenService.GenerateChangePasswordToken(user);
-
-            return token.Accesstoken ;        
+                return false;
+            _cache.Remove($"otp_{email}");
+            return true;
         }
+
+        private  bool VerifiPhoneOTP(string phone, string otp)
+        {
+            return  _otpService.VerifyOtp(phone, otp);
+
+        }
+
 
         public async Task ResetPassword(ForgetPassDTO reset)
         {
@@ -349,6 +385,11 @@ namespace API.Services
             await _userManager.RemovePasswordAsync(user); 
             await _userManager.AddPasswordAsync(user, reset.NewPassword);
 
+        }
+
+        public async Task<bool> CheckPhoneNumberExists(string phone)
+        {
+            return await _userManager.Users.AnyAsync(u => u.PhoneNumber == phone);
         }
     }
 }

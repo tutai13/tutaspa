@@ -6,6 +6,7 @@ using System.Net.Security;
 using API.Extensions;
 using API.DTOs.Auth;
 using API.IService;
+using static API.IService.IAuthService;
 
 namespace API.Controllers
 {
@@ -143,7 +144,7 @@ namespace API.Controllers
 
             try
             {
-                await _authService.SendForgetPasswordOTP(Email);
+                await _authService.SendForgetPasswordOTP(Email , OTPType.Email);
                 return Ok(); 
 
             }
@@ -161,7 +162,7 @@ namespace API.Controllers
         {
             try
             {
-                 var token =  await _authService.VerifiOtp(verifi.Email,verifi.Otp);
+                 var token =  await _authService.VerifiOtp(verifi.Email,verifi.Otp,OTPType.Email);
                 return Ok(new {token = token});
 
             }
@@ -189,10 +190,6 @@ namespace API.Controllers
                 return BadRequest(new { message = "Đặt lại mật khẩu thất bại ,  vui lòng thử lại sau" });
             }
         }
-
-
-
-
 
         [HttpPost("add")]
         public async Task<IActionResult> Add(string Email, string Pass)
