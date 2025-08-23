@@ -136,13 +136,15 @@ namespace API.Controllers
             return Ok(new { tongTien });
         }
 
-        [HttpGet("DoanhThuThangHienTai")]
-        public IActionResult GetDoanhThuTungNgayTrongThang()
+        [HttpGet("DoanhThuTheoThang")]
+        public IActionResult GetDoanhThuTungNgayTrongThang([FromQuery]int month = 0 , [FromQuery] int year =0 )
         {
             var now = DateTime.Now;
+            var m = month == 0 ? now.Month : month;
+            var y = year == 0 ?  now.Year : year;
 
             var result = _context.HoaDons
-                .Where(h => h.NgayTao.Month == now.Month && h.NgayTao.Year == now.Year)
+                .Where(h => h.NgayTao.Month == m && h.NgayTao.Year == y)
                 .GroupBy(h => h.NgayTao.Date)
                 .Select(g => new
                 {
@@ -154,13 +156,15 @@ namespace API.Controllers
 
             return Ok(result);
         }
+
         [HttpGet("DoanhThuNamHienTai")]
-        public IActionResult GetDoanhThuTungThangTrongNam()
+        public IActionResult GetDoanhThuTungThangTrongNam([FromQuery]int year = 0)
         {
             var now = DateTime.Now;
+			var y = year == 0 ? now.Year : year;
 
             var result = _context.HoaDons
-                .Where(h => h.NgayTao.Year == now.Year)
+                .Where(h => h.NgayTao.Year == y)
                 .GroupBy(h => h.NgayTao.Month)
                 .Select(g => new
                 {
