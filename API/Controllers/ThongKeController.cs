@@ -289,7 +289,7 @@ namespace API.Controllers
 				TongThu = tongThu,
 				TongChi = tongChi
 			};
-			return GetThuChiByMonth(DateTime.Now.Month, DateTime.Now.Year);
+			
 
 			return Ok(result);
 		}
