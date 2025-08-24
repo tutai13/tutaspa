@@ -145,7 +145,7 @@ namespace API.Controllers
             dv.maDichVu,
             MucDanhGia = dgs.Any() ? dgs.Average(x => x.SoSao) : 0
         }
-    ).Take(12)
+    )
     .ToListAsync();
             return Ok(result);
         }
