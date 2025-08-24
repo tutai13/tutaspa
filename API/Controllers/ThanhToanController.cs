@@ -17,6 +17,8 @@ using DinkToPdf;
 using Microsoft.AspNetCore.Identity;
 using DocumentFormat.OpenXml.InkML;
 using SelectPdf;
+using API.DTOs.Product;
+using API.IService;
 
 namespace API.Controllers
 {
@@ -29,8 +31,9 @@ namespace API.Controllers
         private readonly IConverter _converter;
         private readonly IWebHostEnvironment _env;
         private readonly UserManager<User> _userManager;
+        private readonly IInventoryService _inventoryService;
 
-        public ThanhToanController(ApplicationDbContext context, IConfiguration configuration, IConverter converter, IWebHostEnvironment env, UserManager<User> userManager)
+        public ThanhToanController(ApplicationDbContext context, IConfiguration configuration, IConverter converter, IWebHostEnvironment env, UserManager<User> userManager, IInventoryService inventoryService)
         {
             _context = context;
             string clientId = configuration["PayOSConfig:ClientId"] ?? throw new ArgumentNullException("ClientId");
@@ -41,6 +44,7 @@ namespace API.Controllers
             _converter = converter;
             _env = env;
             _userManager = userManager;
+            _inventoryService = inventoryService;
         }
         
 
@@ -148,6 +152,21 @@ namespace API.Controllers
                         ThanhTien = item.ThanhTien
                     };
                     _context.ChiTietHoaDons.Add(chiTiet);
+                    if (item.SanPhamID.HasValue)
+                    {
+                        var result = await _inventoryService.ExportWithBatchAsync(new ExportProductRequest
+                        {
+                            ProductId = item.SanPhamID.Value,
+                            Quantity = item.SoLuongSP,
+                            Note = "Xuất khi tạo hóa đơn #" + hoaDon.HoaDonID
+                        });
+
+                        if (!result)
+                        {
+                            await transaction.RollbackAsync();
+                            return BadRequest(new { message = $"Sản phẩm ID {item.SanPhamID} không đủ tồn kho." });
+                        }
+                    }
                 }
 
                 await _context.SaveChangesAsync();
