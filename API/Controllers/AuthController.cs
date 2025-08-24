@@ -129,7 +129,7 @@ namespace API.Controllers
                 if (changePassResult)
                     return Ok();
 
-                return BadRequest(new { message = "Đổi mật khẩu thất bài ,  vui lòng thử lại sau" });
+                return BadRequest(new { message = "Đổi mật khẩu thất bại ,  vui lòng thử lại sau" });
             }
             catch (Exception ex)
             {

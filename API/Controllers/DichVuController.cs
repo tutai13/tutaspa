@@ -352,10 +352,6 @@ namespace API.Controllers
                 {
                     return BadRequest(new { message = $"Dịch vụ '{dichVu.TenDichVu}' đã tồn tại trong loại khác, vui lòng chọn đúng loại dịch vụ." });
                 }
-                else
-                {
-                    return BadRequest(new { message = "Tên dịch vụ đã tồn tại trong loại này." });
-                }
             }
 
             if (dichVu.Gia <= 0)
