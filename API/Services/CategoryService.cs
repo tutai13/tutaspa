@@ -84,6 +84,42 @@ namespace API.Services
                     TenLoai = c.CategoryName
                 }).ToListAsync();
         }
+        public async Task<object> GetPagedAsync(int page, int pageSize, string keyword = "")
+        {
+            if (page <= 0 || pageSize <= 0)
+                throw new ArgumentException("Page và PageSize phải lớn hơn 0");
+
+            var query = _context.Categories.AsQueryable();
+
+            // Tìm kiếm theo tên loại sản phẩm
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                var lowerKeyword = keyword.Trim().ToLower();
+                query = query.Where(c => c.CategoryName.ToLower().Contains(lowerKeyword));
+            }
+
+            var totalItems = await query.CountAsync();
+
+            var items = await query
+                .Select(c => new CategoryDTO
+                {
+                    LoaiSanPhamId = c.CategoryId,
+                    TenLoai = c.CategoryName,
+                    maCategory = c.maCategory
+                })
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new
+            {
+                TotalItems = totalItems,
+                Page = page,
+                PageSize = pageSize,
+                Items = items
+            };
+        }
+
 
 
 

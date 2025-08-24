@@ -27,6 +27,16 @@ namespace API.Controllers
             var result = await _categoryService.GetAllAsync();
             return Ok(result);
         }
+        [HttpGet("paged")]
+        public async Task<IActionResult> GetPaged(
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 10,
+    [FromQuery] string keyword = "")
+        {
+            var result = await _categoryService.GetPagedAsync(page, pageSize, keyword);
+            return Ok(result);
+        }
+
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)

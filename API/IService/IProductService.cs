@@ -11,8 +11,13 @@ namespace API.IService
         Task<bool> DeleteAsync(int id);
         Task<IEnumerable<ProductDTO>> SearchByNameAsync(string name);
         Task<IEnumerable<ProductDTO>> FilterByPriceAsync(decimal min, decimal max);
-
-
+        Task<object> GetPagedAsync(int page,
+     int pageSize,
+     string keyword = null,
+     decimal? minPrice = null,
+     decimal? maxPrice = null,
+      int? categoryId = null);
+    
 
     }
 }
