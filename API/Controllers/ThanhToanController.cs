@@ -15,6 +15,8 @@ using DinkToPdf.Contracts;
 using API.Extensions;
 using DinkToPdf;
 using Microsoft.AspNetCore.Identity;
+using DocumentFormat.OpenXml.InkML;
+using SelectPdf;
 
 namespace API.Controllers
 {
@@ -160,51 +162,10 @@ namespace API.Controllers
             }
         }
 
-        [HttpGet("xuat-hoa-don")]
-        public IActionResult XuatHoaDon()
-        {
-            // Tạo nội dung HTML hóa đơn
-            var htmlContent = @"
-            <html>
-                <!DOCTYPE html><html><head><meta charset='UTF-8'>
-                <head>
-                    <style> body { font-family: Arial; } </style>
-                </head>
-                <body>
-                    <h1 style='text-align:center'>TUTA SPA - HÓA ĐƠN</h1>
-                    <p>Khách hàng: Nguyễn Văn A</p>
-                    <p>Ngày: 25/07/2025</p>
-                    <p>Dịch vụ: Massage Thư Giãn</p>
-                    <p>Tổng tiền: 500,000đ</p>
-                </body>
-            </html>";
+       
 
-            // Trỏ đến wwwroot/libwkhtmltox/libwkhtmltox.dll
-            var context = new CustomAssemblyLoadContext();
-            var pathToLib = Path.Combine(_env.WebRootPath, "libs", "libwkhtmltox.dll");
-            context.LoadUnmanagedLibrary(pathToLib);
-
-            var doc = new HtmlToPdfDocument()
-            {
-                GlobalSettings = {
-                PaperSize = PaperKind.A4,
-                Orientation = Orientation.Portrait
-            },
-                Objects = {
-                new ObjectSettings() {
-                    HtmlContent = htmlContent
-                }
-            }
-            };
-
-            var pdf = _converter.Convert(doc);
-
-            return File(pdf, "application/pdf", "HoaDon.pdf");
-        }
-
-
-        [HttpGet("xuat-hoadon/{hoaDonId}")]
-        public IActionResult XuatHoaDon(int hoaDonId)
+    [HttpGet("xuat-hoadon/{hoaDonId}")]
+        public IActionResult XuatHoaDon1(int hoaDonId)
         {
             var hoaDon = _context.HoaDons
                 .Include(vc => vc.voucher)
@@ -220,103 +181,87 @@ namespace API.Controllers
             var html = new StringBuilder();
 
             html.Append(@"
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset='UTF-8'>
-                <style>
-                    * { font-family: Arial, sans-serif; font-size: 12px; }
-                    h2 { text-align: center; margin-bottom: 5px; }
-                    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-                    td { padding: 4px 0; }
-                    .right { text-align: right; }
-                    .center { text-align: center; }
-                    .bold { font-weight: bold; }
-                    .line { border-top: 1px dashed #000; margin: 5px 0; }
-                </style>
-            </head>
-            <body>
-            ");
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset='UTF-8'>
+            <style>
+                * { font-family: Arial, sans-serif; font-size: 12px; }
+                h2 { text-align: center; margin-bottom: 5px; font-size: 16px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                th, td { padding: 4px; border: 1px solid #000; }
+                .right { text-align: right; }
+                .center { text-align: center; }
+                .bold { font-weight: bold; }
+                .line { border-top: 1px dashed #000; margin: 5px 0; }
+            </style>
+        </head>
+        <body>
+        ");
 
             html.Append("<h2>TUTA SPA</h2>");
             html.Append("<div class='center'>--- HÓA ĐƠN ---</div>");
             html.Append($"<p><strong>Mã hóa đơn:</strong> {hoaDon.HoaDonID}<br>");
             html.Append($"<strong>Ngày:</strong> {hoaDon.NgayTao:dd/MM/yyyy HH:mm}<br>");
-            html.Append($"<strong>NV:</strong> {hoaDon.NhanVienID}<br>");
-            html.Append($"<strong>Khách:</strong> {hoaDon.UserID}</p>");
+            html.Append($"<strong>NV:</strong> {hoaDon.NhanVienID ?? "Không rõ"}<br>");
+            html.Append($"<strong>Khách:</strong> {hoaDon.UserID ?? "Không rõ"}</p>");
             html.Append("<div class='line'></div>");
 
             html.Append("<table>");
+            html.Append("<thead><tr><th>#</th><th>Tên</th><th>Giá</th><th>Số lượng</th><th>Thành tiền</th></tr></thead>");
             html.Append("<tbody>");
 
             int stt = 1;
             foreach (var item in hoaDon.ChiTietHoaDons)
             {
-                var ten = item.DichVu?.TenDichVu  ?? "Không rõ";
-                var gia = item.DichVu?.Gia ?? 0;
-                var soLuong = item.SoLuongSP;
+                var ten = item.DichVu?.TenDichVu ?? item.SanPham?.ProductName ?? "Không rõ";
+                var gia = item.DichVu?.Gia ?? item.SanPham?.CurrentSellingPrice?? 0;
+                var soLuong = item.SoLuongSP ;
                 var thanhTien = item.ThanhTien;
 
                 html.Append($@"
-                <tr>
-                    <td colspan='2'>{stt++}. {ten}</td>
-                </tr>
-                <tr>
-                    <td class='right'>{gia:N0}đ x {soLuong}</td>
-                    <td class='right'>{thanhTien:N0}đ</td>
-                </tr>");
+            <tr>
+                <td class='center'>{stt++}</td>
+                <td>{ten}</td>
+                <td class='right'>{gia:N0}đ</td>
+                <td class='center'>{soLuong}</td>
+                <td class='right'>{thanhTien:N0}đ</td>
+            </tr>");
             }
 
             html.Append("</tbody></table>");
             html.Append("<div class='line'></div>");
 
-            html.Append($@"
-                <p class='right'>
-                    <strong>Tổng: </strong> {hoaDon.TongTien:N0}đ<br>");
-
-                        if (hoaDon.GiaTriGiam != 0)
-                        {
-                            html.Append($@"<strong>Giảm giá: </strong> {hoaDon.GiaTriGiam:N0}đ<br>");
-                        }
-
-                        html.Append($@"
-                    <strong>Khách đưa: </strong> {hoaDon.TienKhachDua:N0}đ<br>
-                    <strong>Thối lại: </strong> {hoaDon.TienThoiLai:N0}đ
-                </p>
-            ");
+            html.Append("<p class='right'>");
+            html.Append($"<strong>Tổng: </strong> {hoaDon.TongTien:N0}đ<br>");
+            if (hoaDon.GiaTriGiam != null && hoaDon.GiaTriGiam != 0)
+            {
+                html.Append($"<strong>Giảm giá: </strong> {hoaDon.GiaTriGiam:N0}đ<br>");
+            }
+            html.Append($"<strong>Khách đưa: </strong> {hoaDon.TienKhachDua:N0}đ<br>");
+            html.Append($"<strong>Thối lại: </strong> {hoaDon.TienThoiLai:N0}đ");
+            html.Append("</p>");
 
             html.Append("<div style='margin-top:15px;text-align:center;'>Cảm ơn quý khách!</div>");
             html.Append("</body></html>");
 
-            // Load native lib
-            var context = new CustomAssemblyLoadContext();
-            var dllPath = Path.Combine(_env.WebRootPath, "libs", "libwkhtmltox.dll");
-            context.LoadUnmanagedLibrary(dllPath);
+            // Tạo PDF bằng Select.HtmlToPdf.NetCore
+            var converter = new HtmlToPdf();
+            converter.Options.PdfPageSize = PdfPageSize.Custom;
+            converter.Options.PdfPageCustomSize = new System.Drawing.SizeF(80, 297); // Khổ 80mm x 297mm
+            converter.Options.PdfPageOrientation = PdfPageOrientation.Portrait;
+            converter.Options.MarginTop = 3;
+            converter.Options.MarginBottom = 3;
+            converter.Options.MarginLeft = 2;
+            converter.Options.MarginRight = 2;
+            converter.Options.WebPageWidth = 80;
 
-            // Generate PDF
-            var doc = new HtmlToPdfDocument()
-            {
-                GlobalSettings = new GlobalSettings
-                {
-                    ColorMode = ColorMode.Color,
-                    Orientation = Orientation.Portrait,
-                    PaperSize = new PechkinPaperSize("80mm", "297mm"),
-                    Margins = new MarginSettings { Top = 3, Bottom = 3, Left = 2, Right = 2 }
-                },
-                Objects = {
-            new ObjectSettings
-            {
-                HtmlContent = html.ToString(),
-                WebSettings = { DefaultEncoding = "utf-8" },
-                LoadSettings = new LoadSettings { BlockLocalFileAccess = false }
-            }
+            var pdf = converter.ConvertHtmlString(html.ToString());
+            var pdfBytes = pdf.Save();
+            pdf.Close();
+
+            return File(pdfBytes, "application/pdf", $"HoaDon_{hoaDonId}.pdf");
         }
-            };
-
-            var pdf = _converter.Convert(doc);
-            return File(pdf, "application/pdf", $"HoaDon_{hoaDonId}.pdf");
-        }
-
 
     }
 }

@@ -177,30 +177,69 @@ namespace API.Controllers
             return Ok(result);
         }
 
- [HttpGet("thongKeHoaDon")]
- public async Task<ActionResult<IEnumerable<HoaDon>>> GetHoaDon(
-	DateTime? startDate = null,
-	DateTime? endDate = null)
- {
-     var query = _context.HoaDons
-         .Include(vc => vc.voucher)
-         .Include(dl => dl.ChiTietHoaDons)
-             .ThenInclude(ct => ct.DichVu)
-         .AsQueryable();
+		 [HttpGet("thongKeHoaDon")]
+		 public async Task<ActionResult<IEnumerable<HoaDon>>> GetHoaDon(
+			DateTime? startDate = null,
+			DateTime? endDate = null,
+			 string? sodienthoai = null
+			 )
+		 {
+            var query = _context.HoaDons
+			   .Include(vc => vc.voucher)
+			   .Include(hd => hd.ChiTietHoaDons)
+				   .ThenInclude(ct => ct.DichVu)
+			   .Include(hd => hd.ChiTietHoaDons)
+				   .ThenInclude(ct => ct.SanPham)
+			   .AsQueryable();
 
-     if (startDate.HasValue)
-     {
-         query = query.Where(hd => hd.NgayTao >= startDate.Value);
-     }
+            if (startDate.HasValue)
+			 {
+				 query = query.Where(hd => hd.NgayTao >= startDate.Value);
+			 }
 
-     if (endDate.HasValue)
-     {
-         query = query.Where(hd => hd.NgayTao <= endDate.Value);
-     }
+			 if (endDate.HasValue)
+			 {
+				 query = query.Where(hd => hd.NgayTao <= endDate.Value);
+			 }
+            if (!string.IsNullOrWhiteSpace(sodienthoai))
+            {
+                query = query.Where(hd => hd.UserID != null && hd.UserID.StartsWith(sodienthoai.Trim()));
+            }
 
-     var result = await query.OrderByDescending(hd => hd.NgayTao).ToListAsync();
-     return Ok(result);
- }
+            var result = await query.OrderByDescending(hd => hd.NgayTao).ToListAsync();
+			 return Ok(result);
+		 }
+        [HttpGet("thongKeDatLich")]
+        public async Task<ActionResult<IEnumerable<DatLich>>> GetDatLich(
+    DateTime? startDate = null,
+    DateTime? endDate = null, string? sodienthoai = null)
+        {
+            var query = _context.DatLiches
+                .Include(dl => dl.ChiTietDatLichs)
+                    .ThenInclude(ct => ct.DichVu)
+                .AsQueryable();
+
+            if (startDate.HasValue)
+            {
+                query = query.Where(dl => dl.ThoiGian >= startDate.Value);
+            }
+
+            if (endDate.HasValue)
+            {
+                query = query.Where(dl => dl.ThoiGian <= endDate.Value);
+            }
+            if (!string.IsNullOrWhiteSpace(sodienthoai))
+            {
+                query = query.Where(dl => dl.SoDienThoai != null && dl.SoDienThoai.StartsWith(sodienthoai.Trim()));
+            }
+
+            var result = await query
+                .OrderByDescending(dl => dl.ThoiGian)
+                .ToListAsync();
+
+            return Ok(result);
+        }
+
         [HttpGet("lichHenToday")]
         public async Task<IActionResult> GetSoLichHomNay()
         {
