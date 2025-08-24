@@ -81,7 +81,7 @@ namespace API.Controllers
         {
             // Viết hoa mã code
             voucher.MaCode = voucher.MaCode?.ToUpper() ?? string.Empty;
-
+            voucher.NgayKetThuc = voucher.NgayKetThuc.AddDays(1);
             _context.Vouchers.Add(voucher);
             await _context.SaveChangesAsync();
 

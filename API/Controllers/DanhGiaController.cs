@@ -24,6 +24,15 @@ namespace API.Controllers
         {
             try
             {
+                var existing = await _context.DanhGias
+                .Where(dl => dl.DichVu == model.DichVu && dl.UserId == model.UserId)
+                .ToListAsync();
+
+                if (existing.Count > 0)
+                {
+                    return BadRequest(new { message = "Bạn đã đánh giá dịch vụ này rồi." });
+                }
+
                 _context.DanhGias.Add(model);
                 await _context.SaveChangesAsync();
                 return Ok(new { message = "Đánh giá đã được gửi chờ duyệt." });
@@ -32,6 +41,18 @@ namespace API.Controllers
             {
                 return StatusCode(500, new { message = "Lỗi nội bộ", error = ex.Message });
             }
+        }
+
+        // Xóa đánh giá
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Xoa(int id)
+        {
+            var dg = await _context.DanhGias.FindAsync(id);
+            if (dg == null) return NotFound();
+
+            _context.DanhGias.Remove(dg);
+            await _context.SaveChangesAsync();
+            return Ok("Đã xoá đánh giá.");
         }
 
 
@@ -46,8 +67,16 @@ namespace API.Controllers
 
             return Ok(danhGias);
         }
+        [HttpGet("dichvu/{maDichVu}/{userID}")]
+        public async Task<IActionResult> LayDanhGiaTheoDichVu(int maDichVu, string userID)
+        {
+            var exists = await _context.DanhGias
+                .AnyAsync(d => d.MaDichVu == maDichVu && d.IsActive && d.UserId == userID);
 
-        
+            return Ok(new { hasReview = exists });
+        }
+
+
         // Admin: lấy tất cả review (bao gồm cả ẩn/hiện)
         [HttpGet("admin/all")]
         public async Task<IActionResult> LayTatCa()
@@ -72,10 +101,9 @@ namespace API.Controllers
                    Content = x.NoiDung,
                    Rate = x.SoSao,
                    CreatedDate = x.NgayTao,
-                   Name = x.User.Name ?? "Ẩn danh"
-               })
-               .OrderByDescending(x => x.CreatedDate)
-               .Take(9)
+                   //Name = x.User.Name ?? "Ẩn danh"
+                   Name = x.AnDanh? "Ẩn danh": x.User.Name,
+               }).OrderByDescending(x => x.CreatedDate).Take(9)
                .ToListAsync();
 
             return Ok(danhGias);
@@ -118,6 +146,7 @@ namespace API.Controllers
             dg.NoiDung = model.NoiDung;
             dg.SoSao = model.SoSao;
             dg.NgayTao = DateTime.Now;
+            dg.AnDanh = model.AnDanh;
 
             await _context.SaveChangesAsync();
 
