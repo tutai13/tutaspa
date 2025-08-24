@@ -195,5 +195,69 @@ namespace API.Services
 				})
 				.ToListAsync();
 		}
-	}
+        public async Task<object> GetPagedAsync(
+     int page,
+     int pageSize,
+     string keyword = null,
+     decimal? minPrice = null,
+     decimal? maxPrice = null,
+	 int? categoryId = null)
+        {
+            if (page <= 0 || pageSize <= 0)
+                throw new ArgumentException("Page và PageSize phải lớn hơn 0");
+
+            var baseUrl = "https://localhost:7183/images/";
+
+            // Bắt đầu query
+            var query = _context.Products
+                .Include(p => p.ProductBatches)
+                .AsQueryable();
+
+            // Filter theo tên sản phẩm
+            if (!string.IsNullOrEmpty(keyword))
+                query = query.Where(p => p.ProductName.Contains(keyword));
+            // 🔥 Filter theo loại sản phẩm
+            if (categoryId.HasValue)
+                query = query.Where(p => p.CategoryId == categoryId.Value);
+
+            // Filter theo giá
+            if (minPrice.HasValue)
+                query = query.Where(p => p.CurrentSellingPrice >= minPrice.Value);
+            if (maxPrice.HasValue)
+                query = query.Where(p => p.CurrentSellingPrice <= maxPrice.Value);
+
+            // Chọn DTO
+            var queryDto = query.Select(p => new ProductDTO
+            {
+                SanPhamId = p.ProductId,
+                TenSP = p.ProductName,
+                MoTa = p.Description,
+                Gia = p.CurrentSellingPrice,
+                SoLuong = p.ProductBatches
+                            .Where(b => b.ExpiryDate > DateTime.Now)
+                            .Sum(b => b.Quantity),
+                LoaiSanPhamId = p.CategoryId,
+                HinhAnh = string.IsNullOrEmpty(p.Images) ? null : baseUrl + p.Images
+            });
+
+            // Tổng số item sau filter
+            var totalItems = await queryDto.CountAsync();
+
+            // Phân trang
+            var items = await queryDto
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new
+            {
+                TotalItems = totalItems,
+                Page = page,
+                PageSize = pageSize,
+                Items = items
+            };
+        }
+
+
+    }
 }

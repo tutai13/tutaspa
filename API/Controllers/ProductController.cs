@@ -22,6 +22,18 @@ namespace API.Controllers
             var result = await _productService.GetAllAsync();
             return Ok(result);
         }
+        [HttpGet("paged")]
+        public async Task<IActionResult> GetPaged(
+     [FromQuery] int page = 1,
+     [FromQuery] int pageSize = 10,
+     [FromQuery] string keyword = null,
+      [FromQuery] int? categoryId = null,
+     [FromQuery] decimal? minPrice = null,
+     [FromQuery] decimal? maxPrice = null)
+        {
+            var result = await _productService.GetPagedAsync(page, pageSize, keyword, minPrice, maxPrice, categoryId);
+            return Ok(result);
+        }
 
         // GET: api/Product/{id}
         [HttpGet("{id}")]
