@@ -47,22 +47,22 @@ namespace API.Controllers
             return Ok(danhGias);
         }
 
-        // Admin lấy tất cả đánh giá (chưa duyệt / đã duyệt)
-        [HttpGet("adminn")]
-        public async Task<IActionResult> LayTatCaa()
+        
+        // Admin: lấy tất cả review (bao gồm cả ẩn/hiện)
+        [HttpGet("admin/all")]
+        public async Task<IActionResult> LayTatCa()
         {
             var danhGias = await _context.DanhGias
                 .Include(d => d.DichVu)
                 .Include(d => d.User)
+                .OrderByDescending(d => d.NgayTao)
                 .ToListAsync();
 
             return Ok(danhGias);
         }
 
-
-        // Admin lấy tất cả đánh giá (chưa duyệt / đã duyệt)
-        [HttpGet("admin")]
-        public async Task<IActionResult> LayTatCa()
+        [HttpGet("admin/highlights")]
+        public async Task<IActionResult> LayDanhGiaNoiBat()
         {
             var danhGias = await _context.DanhGias
                .AsNoTracking()
@@ -73,13 +73,15 @@ namespace API.Controllers
                    Rate = x.SoSao,
                    CreatedDate = x.NgayTao,
                    Name = x.User.Name ?? "Ẩn danh"
-               }).OrderByDescending(x => x.CreatedDate).Take(9)
+               })
+               .OrderByDescending(x => x.CreatedDate)
+               .Take(9)
                .ToListAsync();
 
             return Ok(danhGias);
         }
 
-        
+
         [HttpGet("approved")]
         public async Task<IActionResult> GetReviews()
         {
@@ -99,9 +101,9 @@ namespace API.Controllers
         }
 
 
-        /// <summary>
+       
         /// Người dùng chỉnh sửa đánh giá của mình
-        /// </summary>
+      
         [HttpPut("update/{id}")]
         public async Task<IActionResult> SuaDanhGia(int id, [FromBody] DanhGia model)
         {
@@ -122,29 +124,7 @@ namespace API.Controllers
             return Ok(new { message = "Đánh giá đã được cập nhật." });
         }
 
-        // Duyệt đánh giá
-        //[HttpPut("duyet/{id}")]
-        //public async Task<IActionResult> Duyet(int id)
-        //{
-        //    var dg = await _context.DanhGias.FindAsync(id);
-        //    if (dg == null) return NotFound();
-
-        //    dg.DaDuyet = true;
-        //    await _context.SaveChangesAsync();
-        //    return Ok("Đã duyệt đánh giá.");
-        //}
-
-        // Xóa đánh giá
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> Xoa(int id)
-        //{
-        //    var dg = await _context.DanhGias.FindAsync(id);
-        //    if (dg == null) return NotFound();
-
-        //    _context.DanhGias.Remove(dg);  
-        //    await _context.SaveChangesAsync();
-        //    return Ok("Đã xoá đánh giá.");
-        //}
+        
 
         // LẤY TRUNG BÌNH SỐ SAO CỦA DỊCH VỤ
         [HttpGet("trungbinh/{maDichVu}")]
@@ -211,11 +191,6 @@ namespace API.Controllers
 
             return Ok(trungBinhTrongSo);
         }
-
-
-
-
-
 
     }
 
