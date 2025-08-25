@@ -281,21 +281,32 @@ namespace API.Controllers
             }
 
             if (dichVuList.Any())
-            {
-                _context.DichVus.AddRange(dichVuList);
-                await _context.SaveChangesAsync();
-            }
+   {
+       _context.DichVus.AddRange(dichVuList);
+       await _context.SaveChangesAsync();
 
-            return Ok(new
-            {
-                success = true,
-                loaiDichVuAdded = loaiDVList.Count,
-                loaiDichVuSkipped = skippedLoaiDV.Count,
-                loaiDichVuSkippedList = skippedLoaiDV,   // Danh sách tên bị bỏ qua
-                dichVuAdded = dichVuList.Count,
-                dichVuSkipped = skippedDV.Count,
-                dichVuSkippedList = skippedDV            // Danh sách tên bị bỏ qua
-            });
+       return Ok(new
+       {
+           success = true,
+           loaiDichVuAdded = loaiDVList.Count,
+           loaiDichVuSkipped = skippedLoaiDV.Count,
+           loaiDichVuSkippedList = skippedLoaiDV,   // Danh sách tên bị bỏ qua
+           dichVuAdded = dichVuList.Count,
+           dichVuSkipped = skippedDV.Count,
+           dichVuSkippedList = skippedDV            // Danh sách tên bị bỏ qua
+       });
+   }
+
+   return BadRequest(new
+   {
+       success = false,
+       loaiDichVuAdded = loaiDVList.Count,
+       loaiDichVuSkipped = skippedLoaiDV.Count,
+       loaiDichVuSkippedList = skippedLoaiDV,   // Danh sách tên bị bỏ qua
+       dichVuAdded = dichVuList.Count,
+       dichVuSkipped = skippedDV.Count,
+       dichVuSkippedList = skippedDV            // Danh sách tên bị bỏ qua
+   });     
         }
 
     }
