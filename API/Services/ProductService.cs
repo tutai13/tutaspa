@@ -39,7 +39,7 @@ namespace API.Services
 
 		public async Task<ProductDTO> GetByIdAsync(int id)
 		{
-			var baseUrl = "https://localhost:7183/images/";
+			var baseUrl = "https://tutaspa-api.onrender.com/images/";
 
 			var product = await _context.Products
 				.Include(p => p.ProductBatches)
@@ -63,7 +63,7 @@ namespace API.Services
 
 		public async Task<ProductDTO> CreateAsync(ProductCreateDTO dto)
 		{
-			var baseUrl = "https://localhost:7183/images/";
+			var baseUrl = "https://tutaspa-api.onrender.com/images/";
 			var imageName = await SaveImageAsync(dto.Image);
 
 			var product = new Product
@@ -156,7 +156,7 @@ namespace API.Services
 
 		public async Task<IEnumerable<ProductDTO>> SearchByNameAsync(string name)
 		{
-			var baseUrl = "https://localhost:7183/images/";
+			var baseUrl = "https://tutaspa-api.onrender.com/images/";
 			return await _context.Products
 				.Include(p => p.ProductBatches)
 				.Where(p => p.ProductName.Contains(name))
@@ -206,7 +206,7 @@ namespace API.Services
             if (page <= 0 || pageSize <= 0)
                 throw new ArgumentException("Page và PageSize phải lớn hơn 0");
 
-            var baseUrl = "https://localhost:7183/images/";
+            var baseUrl = "https://tutaspa-api.onrender.com/images/";
 
             // Bắt đầu query
             var query = _context.Products
