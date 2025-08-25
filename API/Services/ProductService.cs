@@ -177,7 +177,7 @@ namespace API.Services
 
 		public async Task<IEnumerable<ProductDTO>> FilterByPriceAsync(decimal min, decimal max)
 		{
-			var baseUrl = "https://localhost:7183/images/";
+			var baseUrl = "https://tutaspa-api.onrender.com/images/";
 			return await _context.Products
 				.Include(p => p.ProductBatches)
 				.Where(p => p.CurrentSellingPrice >= min && p.CurrentSellingPrice <= max)
