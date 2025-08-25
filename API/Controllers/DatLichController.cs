@@ -268,8 +268,8 @@ namespace API.Controllers
         [HttpGet("slots")]
         public async Task<IActionResult> GetSlotInfo(DateTime ngay)
         {
-            var startHour = 9;
-            var endHour = 23;
+            var startHour = 8;
+            var endHour = 18;
             var result = new List<object>();
 
             var khungGioList = new List<DateTime>();
