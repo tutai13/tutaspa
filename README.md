@@ -66,7 +66,9 @@ Vì file này được .gitignore, bạn cần tự tạo file appsettings.json 
   },
   "AllowedHosts": "*"
 }
+```` ``` ````
 👉 Nhớ thay your_xxx bằng thông tin thật trong môi trường của bạn.
+
 ### 2.Frontend Setup (Vue.js)
 cd frontend
 npm install
