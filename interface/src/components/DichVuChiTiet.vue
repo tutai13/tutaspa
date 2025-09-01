@@ -89,7 +89,7 @@ import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import axiosClient from "../utils/axiosClient";
 
-var base_url = import.meta.env.VITE_BASE_URL;
+var base_url = import.meta.env.VITE_BASE_URL.replace("/api", "/images/");
 base_url = base_url.replace("/api", "");
 const route = useRoute();
 const id = route.params.id;
@@ -117,7 +117,7 @@ onMounted(async () => {
   }
 });
 
-const getImageUrl = (path) => `${base_url}/images/${path}`;
+const getImageUrl = (path) => `${base_url}${path}`;
 const formatCurrency = (num) =>
   new Intl.NumberFormat("vi-VN", {
     style: "currency",

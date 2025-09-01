@@ -96,7 +96,7 @@
           </div>
           
           <div class="customer-meta">
-            <div class="time">{{ formatTime(customer.lastMessageTime || customer.startTime) }}</div>
+            <div class="time">{{ formatTime(customer.lastMessageTime || customer.startTime, true, false) }}</div>
             <div v-if="customer.unreadCount > 0" class="unread-count">
               {{ customer.unreadCount }}
             </div>
@@ -187,18 +187,6 @@
         <!-- Input Area -->
         <div class="input-area" v-else>
           <div class="input-container">
-            <button class="btn btn-outline-primary btn-sm">
-              <i class="fas fa-plus"></i>
-            </button>
-            <button class="btn btn-outline-primary btn-sm">
-              <i class="fas fa-image"></i>
-            </button>
-            <button class="btn btn-outline-primary btn-sm">
-              <i class="fas fa-microphone"></i>
-            </button>
-            <button class="btn btn-outline-primary btn-sm">
-              <i class="fas fa-gift"></i>
-            </button>
             <div class="message-input">
               <input 
                 type="text" 
@@ -209,9 +197,6 @@
                 :disabled="selectedCustomer.status === 'Closed'"
                 class="form-control"
               />
-              <button class="btn btn-outline-primary btn-sm">
-                <i class="fas fa-smile"></i>
-              </button>
             </div>
             <button 
               class="btn btn-success btn-sm send-btn" 
@@ -403,10 +388,10 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
-  const conn = getSignalRConnection()
-  if (conn) {
-    conn.stop()
-  }
+  // const conn = getSignalRConnection()
+  // if (conn) {
+  //   conn.stop()
+  // }
 })
 
 // Watch for filter changes
@@ -830,18 +815,18 @@ function scrollToBottom() {
     }
   })
 }
-
-function formatTime(timestamp) {
-  const date = new Date(timestamp)
+function formatTime(timestamp, isLastMessage = false, allowJustNow = true) {
+  let date = new Date(timestamp)
+  
   const now = new Date()
-  const diff = now - date
-  if (diff < 60000) return 'Vừa xong'
+  const diff = now.getTime() - date.getTime() // Luôn là số dương
+
+  if (allowJustNow && diff < 60000) return 'Vừa xong'
   if (diff < 3600000) return `${Math.floor(diff / 60000)} phút`
   if (diff < 86400000) return `${Math.floor(diff / 3600000)} giờ`
   if (diff < 604800000) return `${Math.floor(diff / 86400000)} ngày`
   return date.toLocaleDateString('vi-VN')
 }
-
 function getStatusText(status) {
   const statusMap = {
     'Active': 'Đang hoạt động',

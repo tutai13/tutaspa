@@ -1,4 +1,3 @@
-```vue
 <template>
   <div class="category-management">
     <!-- Header -->
@@ -61,6 +60,35 @@
             </button>
           </div>
         </form>
+
+        <!-- Import Section (Thêm mới dựa trên LoaiDichVu.vue) -->
+        <div class="import-section">
+          <div class="import-card">
+            <div class="import-header">
+              <i class="fas fa-file-import"></i>
+              <span>Import từ Excel</span>
+            </div>
+            <div class="import-actions">
+              <label class="file-upload-btn">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <span>Chọn file</span>
+                <input type="file" ref="fileInput" accept=".xlsx,.xls" @change="handleFileChange" />
+              </label>
+              <div class="file-info" v-if="selectedFile">
+                <i class="fas fa-file-excel"></i>
+                <span>{{ selectedFile.name }}</span>
+              </div>
+              <button type="button" class="btn-upload" @click="importCategory" :disabled="!selectedFile">
+                <i class="fas fa-upload"></i>
+                <span>Tải lên</span>
+              </button>
+              <button class="btn btn-outline-light btn-sm" @click="downloadTemplate">
+                <i class="fas fa-download me-1"></i>
+                Tải file mẫu
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -90,7 +118,7 @@
             </button>
             <i class="fas fa-search search-icon"></i>
           </div>
-          <button @click="fetchCategories" class="btn btn-outline-primary">
+          <button @click="refreshCategories" class="btn btn-outline-primary">
             <i class="fas fa-sync-alt"></i>
             Làm mới
           </button>
@@ -115,16 +143,15 @@
           <table class="categories-table">
             <thead>
               <tr>
-                <th>ID</th>
                 <th>Tên loại sản phẩm</th>
                 <th>Thao tác</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="c in filteredCategories" :key="c.loaiSanPhamId" class="category-row">
-                <td class="category-id">
+                <!-- <td class="category-id">
                   <span class="id-badge">{{ c.loaiSanPhamId }}</span>
-                </td>
+                </td> -->
                 <td class="category-name">
                   <div class="name-container">
                     <i class="fas fa-tag"></i>
@@ -152,6 +179,38 @@
               </tr>
             </tbody>
           </table>
+        <!-- Phân trang -->
+    <div class="pagination">
+      <button
+        class="btn btn-outline-primary"
+        :disabled="currentPage === 1"
+        @click="changePage(currentPage - 1)"
+      >
+        <i class="fas fa-angle-left"></i> Trước
+      </button>
+
+      <span class="page-info">Trang {{ currentPage }} / {{ totalPages }}</span>
+
+      <div class="page-numbers">
+        <button
+          v-for="page in totalPages"
+          :key="page"
+          class="btn btn-sm page-btn"
+          :class="page === currentPage ? 'btn-primary' : 'btn-outline-secondary'"
+          @click="changePage(page)"
+        >
+          {{ page }}
+        </button>
+      </div>
+
+      <button
+        class="btn btn-outline-primary"
+        :disabled="currentPage === totalPages"
+        @click="changePage(currentPage + 1)"
+      >
+        Sau <i class="fas fa-angle-right"></i>
+      </button>
+    </div>
         </div>
       </div>
     </div>
@@ -168,6 +227,39 @@
         {{ toast.message }}
       </div>
     </div>
+      <div v-if="showConfirmDelete" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Xác nhận xóa</h5>
+              <button
+                type="button"
+                class="btn-close"
+                @click="cancelDelete"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <p>Bạn có muốn xóa loại sản phẩm này không?</p>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                @click="cancelDelete"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                class="btn btn-danger"
+                @click="confirmDelete"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
   </div>
 </template>
 
@@ -185,7 +277,10 @@ const loading = ref(false);
 const showAddForm = ref(false);
 const searchKeyword = ref("");
 const toasts = ref([]);
-
+const fileInput = ref(null);
+const selectedFile = ref(null);
+const showConfirmDelete = ref(false);
+const categoryToDelete = ref(null);
 // Computed filtered categories
 const filteredCategories = computed(() => {
   if (!searchKeyword.value.trim()) return categories.value;
@@ -224,23 +319,47 @@ const toggleAddForm = () => {
   }
 }
 
-const fetchCategories = async () => {
+const currentPage = ref(1);
+const pageSize = ref(5); // số loại sản phẩm / trang
+const totalItems = ref(0);
+
+const totalPages = computed(() => {
+  return Math.ceil(totalItems.value / pageSize.value);
+});
+
+const changePage = (page) => {
+  if (page >= 1 && page <= totalPages.value) {
+    fetchCategories(page);
+  }
+};
+
+const fetchCategories = async (page = 1) => {
   try {
     loading.value = true;
-    const res = await apiClient.get("/Category");
-    categories.value = res; // Sử dụng trực tiếp res vì phản hồi là mảng
-    searchKeyword.value = "";
+    const res = await apiClient.get("Category/paged", {
+      params: {
+        page: page,
+        pageSize: pageSize.value,
+        keyword: searchKeyword.value // 🔥 thêm keyword
+      }
+    });
+
+    categories.value = res.items; // danh sách loại sản phẩm trả về từ API
+    totalItems.value = res.totalItems;
+    currentPage.value = res.page;
   } catch (err) {
     console.error("Lỗi tải loại sản phẩm:", err);
-    showToast('Lỗi khi tải danh sách loại sản phẩm', 'error');
+    categories.value = [];
   } finally {
     loading.value = false;
   }
 };
 
+
 const saveCategory = async () => {
   try {
     loading.value = true;
+
     if (isEditing.value) {
       await apiClient.put(`Category/${category.value.loaiSanPhamId}`, category.value);
       showToast('Cập nhật loại sản phẩm thành công!', 'success');
@@ -248,12 +367,21 @@ const saveCategory = async () => {
       await apiClient.post("Category", category.value);
       showToast('Thêm loại sản phẩm thành công!', 'success');
     }
+
     resetForm();
     showAddForm.value = false;
     fetchCategories();
+
   } catch (err) {
     console.error("Lỗi lưu loại sản phẩm:", err);
-    showToast('Lỗi khi lưu loại sản phẩm', 'error');
+
+    // ✅ Bắt lỗi từ backend
+    if (err.response && err.response.data?.message) {
+      showToast(err.response.data.message, "warning");
+    } else {
+      showToast("Loại sản phẩm đã tồn tại!", "error");
+    }
+
   } finally {
     loading.value = false;
   }
@@ -265,19 +393,30 @@ const editCategory = (c) => {
   showAddForm.value = true;
 };
 
-const deleteCategory = async (id) => {
-  if (!confirm("Bạn có chắc muốn xóa loại sản phẩm này?")) return;
+const deleteCategory = (id) => {
+  showConfirmDelete.value = true;
+  categoryToDelete.value = id;
+};
+
+const confirmDelete = async () => {
   try {
     loading.value = true;
-    await apiClient.delete(`Category/${id}`);
-    showToast('Xóa loại sản phẩm thành công!', 'success');
-    fetchCategories();
+    await apiClient.delete(`Category/${categoryToDelete.value}`);
+    showToast("Xóa loại sản phẩm thành công!", "success");
+    await fetchCategories(); // gọi đúng hàm load danh sách loại sản phẩm
   } catch (err) {
-    console.error("Lỗi xóa loại sản phẩm:", err);
-    showToast('Lỗi khi xóa loại sản phẩm', 'error');
+    console.error("Lỗi xóa:", err);
+    showToast("Lỗi khi xóa loại sản phẩm: " + (err.message || "Không xác định"), "error");
   } finally {
     loading.value = false;
+    showConfirmDelete.value = false;
+    categoryToDelete.value = null;
   }
+};
+
+const cancelDelete = () => {
+  showConfirmDelete.value = false;
+  categoryToDelete.value = null;
 };
 
 const resetForm = () => {
@@ -286,14 +425,93 @@ const resetForm = () => {
     loaiSanPhamId: 0,
     tenLoai: '',
   };
+  selectedFile.value = null;
+  if (fileInput.value) fileInput.value.value = "";
 };
 
 const searchCategories = () => {
-  // Lọc cục bộ, không gọi API
+  currentPage.value = 1; // khi tìm kiếm thì quay về trang đầu
+  fetchCategories();
+};
+
+const refreshCategories = () => {
+  searchKeyword.value = "";   // Xóa ô tìm kiếm
+  currentPage.value = 1;      // Quay về trang 1
+  fetchCategories(1);         // Tải lại dữ liệu
 };
 
 const clearSearch = () => {
   searchKeyword.value = "";
+  
+};
+
+
+// Thêm methods cho import Excel
+const handleFileChange = (event) => {
+  const file = event.target.files[0];
+  selectedFile.value = file || null;
+};
+
+const importCategory = async () => {
+  if (!selectedFile.value) {
+    showToast("Vui lòng chọn file Excel để import", "warning");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", selectedFile.value);
+
+  try {
+    // ⭐ Lưu tổng số loại sản phẩm trước khi import
+    const oldTotal = totalItems.value;
+
+    const res = await apiClient.post("/Category/import-productss", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    const categoryCount = res?.data?.categoryCount || 0;
+
+    // ⭐ Gọi lại fetchCategories để cập nhật tổng số mới (tạm ở trang hiện tại)
+    await fetchCategories(currentPage.value);
+
+    // ⭐ Lấy tổng mới và tính số trang cuối
+    const newTotal = totalItems.value;
+    const lastPage = Math.ceil(newTotal / pageSize.value);
+
+    // ⭐ Nhảy tới trang cuối để thấy category mới
+    await fetchCategories(lastPage);
+
+    // ⭐ Tính số loại sản phẩm mới thêm
+    const diff = newTotal - oldTotal;
+    const finalNewCount = categoryCount > 0 ? categoryCount : diff;
+
+    // Thông báo
+    let message = "";
+    if (finalNewCount > 0) {
+      message = `Thêm thành công ${finalNewCount} loại sản phẩm mới từ Excel. Các loại sản phẩm đã tồn tại được bỏ qua.`;
+    } else {
+      message = "Không có loại sản phẩm mới được thêm từ Excel. Các loại sản phẩm đã tồn tại được bỏ qua.";
+    }
+
+    showToast(message, "success");
+
+    // Reset file input
+    selectedFile.value = null;
+    if (fileInput.value) fileInput.value.value = "";
+  } catch (error) {
+    console.error("Lỗi khi import loại sản phẩm:", error.response ? error.response.data : error.message);
+    const errorMessage = error.response?.data?.message || "Lỗi không xác định khi import loại sản phẩm";
+    showToast(errorMessage, "error");
+  }
+};
+
+const downloadTemplate = () => {
+  const link = document.createElement("a");
+  link.href = "https://docs.google.com/spreadsheets/d/1DvCbF-6Dx9JHg96fdQMRynL5WfYBUhJI/export?format=xlsx";
+  link.download = "LDV_DV_LSP_SP.xlsx";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 };
 
 onMounted(fetchCategories);
@@ -676,6 +894,103 @@ onMounted(fetchCategories);
   }
 }
 
+/* Import Section (Thêm mới từ LoaiDichVu.vue) */
+.import-section {
+  margin-top: 30px;
+  padding-top: 30px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.import-card {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  border-radius: 16px;
+  padding: 20px;
+  color: white;
+}
+
+.import-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.import-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.file-upload-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px dashed rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+  padding: 12px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.file-upload-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+.file-upload-btn input {
+  display: none;
+}
+
+.file-info {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 8px 15px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.btn-upload {
+  background: rgba(255, 255, 255, 0.9);
+  color: #f5576c;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn-upload:hover:not(:disabled) {
+  background: white;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-upload:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-outline-light {
+  border-color: rgba(255, 255, 255, 0.5);
+  color: white;
+}
+
+.btn-outline-light:hover {
+  background: white;
+  color: #f5576c;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .category-management {
@@ -718,26 +1033,92 @@ onMounted(fetchCategories);
   .toast {
     min-width: auto;
   }
+
+  .import-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .file-upload-btn,
+  .btn-upload,
+  .btn-outline-light {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
-@media (max-width: 480px) {
-  .table-responsive {
-    font-size: 0.8rem;
-  }
-  
-  .categories-table th,
-  .categories-table td {
-    padding: 8px 6px;
-  }
-  
-  .btn {
-    padding: 10px 16px;
-    font-size: 0.9rem;
-  }
-  
-  .btn-sm {
-    padding: 6px 10px;
-    font-size: 0.8rem;
-  }
+/* Modal luôn hiển thị ở mọi màn hình */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
 }
+
+.modal-dialog {
+  background: white;
+  border-radius: 8px;
+  width: 400px;
+  max-width: 90%;
+}
+
+.modal-content {
+  padding: 20px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e1e8ed;
+  padding-bottom: 10px;
+}
+
+.modal-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+.pagination {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px; /* khoảng cách giữa nhóm nút Prev/Next, info và số trang */
+  font-size: 1rem;
+  flex-wrap: wrap; /* nếu nhiều nút thì tự xuống dòng */
+}
+
+.pagination button {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #3498db;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin: 0 4px; /* tạo khoảng cách ngang giữa các nút */
+}
+
+.pagination button:hover:not(:disabled) {
+  background: #2980b9;
+}
+
+.pagination button:disabled {
+  background: #bdc3c7;
+  cursor: not-allowed;
+}
+
+.pagination span {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+
 </style>

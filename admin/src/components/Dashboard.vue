@@ -1,9 +1,12 @@
 <template>
   <div class="container-fluid">
     <!-- Stat Cards -->
-    <div class="row g-3 mb-4">
+    <div
+      class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3"
+      style="margin-bottom: 15px"
+    >
       <!-- Dịch vụ hoàn thành -->
-      <div class="col-xl-3 col-lg-6 col-md-6">
+      <div class="col">
         <div
           class="card h-100 border-0 shadow-lg stat-card"
           style="
@@ -18,7 +21,9 @@
         >
           <div class="progress-bar"></div>
           <div class="card-body d-flex align-items-center p-4">
-            <div class="stat-icon me-3">✅</div>
+            <div class="stat-icon me-3">
+              <i class="fas fa-check-circle fa-1x text-white"></i>
+            </div>
             <div class="stat-info text-white">
               <div class="stat-number fs-2 fw-bold mb-1">
                 {{ dvHoanThanh.toLocaleString() }}
@@ -30,7 +35,7 @@
       </div>
 
       <!-- Lịch hẹn hôm nay -->
-      <div class="col-xl-3 col-lg-6 col-md-6">
+      <div class="col">
         <div
           class="card h-100 border-0 shadow-lg stat-card"
           style="
@@ -45,7 +50,9 @@
         >
           <div class="progress-bar"></div>
           <div class="card-body d-flex align-items-center p-4">
-            <div class="stat-icon me-3">📅</div>
+            <div class="stat-icon me-3">
+              <i class="fas fa-calendar-day fa-1x text-white"></i>
+            </div>
             <div class="stat-info text-white">
               <div class="stat-number fs-2 fw-bold mb-1">
                 {{ lichHen.toLocaleString() }}
@@ -57,7 +64,7 @@
       </div>
 
       <!-- Đánh giá trung bình -->
-      <div class="col-xl-3 col-lg-6 col-md-6">
+      <div class="col">
         <div
           class="card h-100 border-0 shadow-lg stat-card"
           style="
@@ -72,11 +79,11 @@
         >
           <div class="progress-bar"></div>
           <div class="card-body d-flex align-items-center p-4">
-            <div class="stat-icon me-3">⭐</div>
+            <div class="stat-icon me-3">
+              <i class="fas fa-star fa-1x text-white"></i>
+            </div>
             <div class="stat-info text-white">
-              <div class="stat-number fs-2 fw-bold mb-1">
-                {{ danhGia }}
-              </div>
+              <div class="stat-number fs-2 fw-bold mb-1">{{ danhGia }}/5</div>
               <div class="stat-label fs-6 fw-medium">Đánh giá trung bình</div>
             </div>
           </div>
@@ -84,7 +91,7 @@
       </div>
 
       <!-- Doanh thu hôm nay -->
-      <div class="col-xl-3 col-lg-6 col-md-6">
+      <div class="col">
         <div
           class="card h-100 border-0 shadow-lg stat-card"
           style="
@@ -99,7 +106,9 @@
         >
           <div class="progress-bar"></div>
           <div class="card-body d-flex align-items-center p-4">
-            <div class="stat-icon me-3">💵</div>
+            <div class="stat-icon me-3">
+              <i class="fas fa-hand-holding-usd fa-1x text-white"></i>
+            </div>
             <div class="stat-info text-white">
               <div class="stat-number fs-2 fw-bold mb-1">
                 {{ doanhThu.toLocaleString() }} đ
@@ -111,7 +120,7 @@
       </div>
     </div>
 
-    <!-- Revenue Chart -->
+    <!-- Revenue Chart and Appointment List -->
     <div class="row">
       <div class="col-9">
         <div
@@ -119,27 +128,66 @@
           style="border-radius: 20px; overflow: hidden"
         >
           <div class="card-header bg-white border-0 p-4">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
               <h4 class="mb-0 fw-bold text-primary">📊 Biểu đồ Doanh thu</h4>
-              <div class="btn-group" role="group">
-                <button
-                  type="button"
-                  class="btn btn-outline-primary"
-                  :class="{ active: selectedTimeRange === 'thang' }"
-                  @click="changeTimeRange('thang')"
-                  style="border-radius: 25px 0 0 25px"
-                >
-                  Tháng
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-outline-primary"
-                  :class="{ active: selectedTimeRange === 'nam' }"
-                  @click="changeTimeRange('nam')"
-                  style="border-radius: 0 25px 25px 0"
-                >
-                  Năm
-                </button>
+              <div class="d-flex align-items-center gap-3 flex-wrap">
+                <!-- Dropdown chọn tháng/năm -->
+                <div v-if="selectedTimeRange === 'thang'" class="d-flex gap-2">
+                  <select 
+                    v-model="selectedMonth" 
+                    @change="onMonthYearChange"
+                    class="form-select form-select-sm"
+                    style="width: 100px;"
+                  >
+                    <option v-for="month in months" :key="month.value" :value="month.value">
+                      {{ month.label }}
+                    </option>
+                  </select>
+                  <select 
+                    v-model="selectedYear" 
+                    @change="onMonthYearChange"
+                    class="form-select form-select-sm"
+                    style="width: 100px;"
+                  >
+                    <option v-for="year in years" :key="year" :value="year">
+                      {{ year }}
+                    </option>
+                  </select>
+                </div>
+                <div v-else class="d-flex gap-2">
+                  <select 
+                    v-model="selectedYear" 
+                    @change="onYearChange"
+                    class="form-select form-select-sm"
+                    style="width: 100px;"
+                  >
+                    <option v-for="year in years" :key="year" :value="year">
+                      {{ year }}
+                    </option>
+                  </select>
+                </div>
+                
+                <!-- Toggle buttons -->
+                <div class="btn-group" role="group">
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary"
+                    :class="{ active: selectedTimeRange === 'thang' }"
+                    @click="changeTimeRange('thang')"
+                    style="border-radius: 25px 0 0 25px"
+                  >
+                    Tháng
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary"
+                    :class="{ active: selectedTimeRange === 'nam' }"
+                    @click="changeTimeRange('nam')"
+                    style="border-radius: 0 25px 25px 0"
+                  >
+                    Năm
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -151,7 +199,7 @@
               <p class="mt-2 text-muted">Đang tải dữ liệu...</p>
             </div>
             <div
-              v-else-if="chartData.length > 0"
+              v-else-if=" chartData.length > 0"
               ref="chartContainer"
               id="revenueChart"
               style="min-height: 300px; width: 100%"
@@ -159,38 +207,71 @@
             <div v-else class="text-center p-5 text-muted">
               <i class="fas fa-chart-bar fa-3x mb-3"></i>
               <p>Không có dữ liệu để hiển thị</p>
-              <p class="small">Debug: {{ debugInfo }}</p>
             </div>
           </div>
         </div>
       </div>
-      <div class="col-3">
+      <div class="col-lg-3 col-md-6 col-sm-12">
         <div
-          class="card border-0 shadow-lg"
-          style="border-radius: 20px; overflow: hidden"
+          class="card border-0 shadow-lg h-100"
+          style="border-radius: 20px; overflow: hidden; font-size: 1.1em"
         >
-          <div class="lich-hen-hom-nay p-4">
-            <h4>📅 Lịch Hẹn Hôm Nay</h4>
+          <!-- Header -->
+          <div
+            class="card-header bg-light border-0 py-3 px-4 d-flex align-items-center"
+          >
+            <h5 class="mb-0 fw-bold text-primary">
+              <span class="me-2">📅</span> Lịch Hẹn Hôm Nay
+            </h5>
+          </div>
+
+          <!-- Body -->
+          <div
+            class="card-body p-4"
+            style="overflow-y: auto; overflow-x: hidden; max-height: 430px"
+          >
+            <!-- Nếu không có lịch -->
             <div
-              v-for="lich in lichHenHienThi"
-              :key="lich.datLichID"
-              class="lich-item"
+              v-if="lichHenHienThi.length === 0"
+              class="text-center text-muted py-5"
             >
-              <div
-                class="lich-icon"
-                :style="{ backgroundColor: getColor(lich) }"
-              ></div>
-              <div class="lich-info">
-                <div class="lich-ten">
-                  {{ lich.soDienThoai }}
+              <i class="fas fa-calendar-times fa-3x mb-3"></i>
+              <p class="mb-0">Không có lịch hẹn hôm nay</p>
+            </div>
+
+            <!-- Danh sách lịch hẹn -->
+            <div v-else class="list-group list-group-flush">
+              <a
+                v-for="lich in lichHenHienThi"
+                :key="lich.datLichID"
+                href="#"
+                class="list-group-item list-group-item-action rounded-3 mb-3 shadow-sm"
+                style="border-left: 5px solid transparent; transition: all 0.3s"
+                :style="{ borderLeftColor: getColor(lich) }"
+              >
+                <div class="d-flex justify-content-between align-items-start">
+                  <div class="flex-grow-1">
+                    <!-- Giờ + SĐT trên cùng 1 hàng -->
+                    <div
+                      class="d-flex justify-content-between fw-bold text-dark flex-wrap"
+                    >
+                      <span>
+                        <i class="far fa-clock me-1 text-primary"></i>
+                        {{ formatGio(lich.thoiGian) }} -
+                        {{ tinhGioKetThuc(lich) }}
+                      </span>
+                      <span>
+                        <i class="fas fa-phone-alt me-1 text-success"></i>
+                        {{ lich.soDienThoai }}
+                      </span>
+                    </div>
+                    <!-- Tên dịch vụ -->
+                    <div class="small text-secondary mt-1">
+                      {{ getTenDichVu(lich) }}
+                    </div>
+                  </div>
                 </div>
-                <div class="lich-dichvu">
-                  {{ getTenDichVu(lich) }}
-                </div>
-                <div class="lich-thoigian">
-                  {{ formatGio(lich.thoiGian) }} - {{ tinhGioKetThuc(lich) }}
-                </div>
-              </div>
+              </a>
             </div>
           </div>
         </div>
@@ -272,13 +353,15 @@ import Chart from "chart.js/auto";
 
 // Stats
 const lichHen = ref(0);
-const danhGia = ref("4.7 / 5");
+const danhGia = ref(0);
 const dvHoanThanh = ref(0);
 const doanhThu = ref(0);
 
 // Chart variables
 const chartContainer = ref(null);
 const selectedTimeRange = ref("thang");
+const selectedMonth = ref(new Date().getMonth() + 1);
+const selectedYear = ref(new Date().getFullYear());
 const isLoading = ref(false);
 const isLoadingService = ref(false);
 const chartData = ref([]);
@@ -290,12 +373,36 @@ const serviceData = ref([]);
 let chartInstance = null;
 let pieChartInstance = null;
 
-// Missing functions that seem to be used in template
+// Appointment list
 const lichHenHienThi = ref([]);
-const getColor = (lich) => "#4285f4";
-const getTenDichVu = (lich) => lich.tenDichVu || "";
-const formatGio = (time) => time || "";
-const tinhGioKetThuc = (lich) => "";
+
+// Dropdown data
+const months = ref([
+  { value: 1, label: "Tháng 1" },
+  { value: 2, label: "Tháng 2" },
+  { value: 3, label: "Tháng 3" },
+  { value: 4, label: "Tháng 4" },
+  { value: 5, label: "Tháng 5" },
+  { value: 6, label: "Tháng 6" },
+  { value: 7, label: "Tháng 7" },
+  { value: 8, label: "Tháng 8" },
+  { value: 9, label: "Tháng 9" },
+  { value: 10, label: "Tháng 10" },
+  { value: 11, label: "Tháng 11" },
+  { value: 12, label: "Tháng 12" },
+]);
+
+const years = ref([]);
+
+// Initialize years array
+const initializeYears = () => {
+  const currentYear = new Date().getFullYear();
+  const yearList = [];
+  for (let i = currentYear - 5; i <= currentYear + 1; i++) {
+    yearList.push(i);
+  }
+  years.value = yearList;
+};
 
 // Handle hover effect for stat cards
 const handleHover = (event, isHover) => {
@@ -324,7 +431,6 @@ const formatDataForChart = (data) => {
       value: Number(item.value || item.amount || item.total || 0),
     }));
   } else if (typeof data === "object") {
-    // If data is an object, convert to array
     formattedData = Object.keys(data).map((key) => ({
       x: key,
       value: Number(data[key] || 0),
@@ -336,56 +442,78 @@ const formatDataForChart = (data) => {
   return formattedData;
 };
 
+// Get full chart data with all time periods
+const getFullChartData = (rawData, timeRange) => {
+  // Xác định các mốc thời gian cần hiển thị
+  let labels = [];
+  let now = new Date();
+  if (timeRange === "thang") {
+    // Hiển thị đủ ngày trong tháng hiện tại
+    const year = selectedYear.value;
+    const month = selectedMonth.value - 1; // JavaScript month is 0-based
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    for (let d = 1; d <= daysInMonth; d++) {
+      labels.push(d.toString());
+    }
+  } else {
+    // Hiển thị đủ 12 tháng
+    labels = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
+  }
+
+  // Chuyển rawData thành map để tra cứu nhanh
+  const dataMap = {};
+  rawData.forEach((item) => {
+    // item.x có thể là ngày/tháng, chuyển về string để so sánh
+    dataMap[item.x.toString()] = item.value;
+  });
+
+  // Tạo mảng dữ liệu đủ các mốc, nếu không có thì gán 0
+  return labels.map((label) => ({
+    x: label,
+    value: dataMap[label] ?? 0,
+  }));
+};
+
+// Handle bar click for yearly view
+const handleBarClick = (monthIndex) => {
+  if (selectedTimeRange.value === 'nam') {
+    // Chuyển sang view tháng và set tháng được chọn
+    selectedTimeRange.value = 'thang';
+    selectedMonth.value = monthIndex + 1; // monthIndex bắt đầu từ 0
+    loadChartData('thang', selectedMonth.value, selectedYear.value);
+  }
+};
+
 // Create custom bar chart
 const createChart = (data) => {
-  console.log("Creating chart with data:", data);
+  if (!chartContainer.value) return;
+  if (!data || data.length === 0) return;
 
-  if (!chartContainer.value) {
-    console.error("Chart container not found");
-    debugInfo.value = "Chart container not found";
-    return;
-  }
-
-  if (!data || data.length === 0) {
-    console.log("No data available for chart");
-    debugInfo.value = "No data available for chart";
-    return;
-  }
-
-  // Clear previous chart
   chartContainer.value.innerHTML = "";
 
   const maxValue = Math.max(...data.map((d) => d.value));
   const dataLength = data.length;
 
-  const { barWidth, minChartWidth, spacing } =
-    dataLength <= 12
-      ? { barWidth: "60px", minChartWidth: "100%", spacing: "8px" }
-      : {
-          barWidth: "35px",
-          minChartWidth: `${dataLength * 50}px`,
-          spacing: "5px",
-        };
-
-  const scrollContainer = document.createElement("div");
-  scrollContainer.style.cssText = `
-    width: 100%;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding-bottom: 10px;
-  `;
+  // TÍNH barWidth động theo số cột và chiều rộng khung
+  const containerWidth = chartContainer.value.offsetWidth || 900;
+  const spacing = 8;
+  const totalSpacing = spacing * (dataLength - 1);
+  const barWidth = Math.max(
+    24,
+    Math.floor((containerWidth - totalSpacing) / dataLength)
+  );
 
   const chartDiv = document.createElement("div");
   chartDiv.style.cssText = `
     display: flex;
     align-items: end;
-    justify-content: ${dataLength <= 12 ? "space-around" : "flex-start"};
+    justify-content: center;
     height: 350px;
     padding: 20px;
     background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
     border-radius: 15px;
-    min-width: ${minChartWidth};
-    gap: ${spacing};
+    gap: ${spacing}px;
+    width: 100%;
   `;
 
   data.forEach((item, index) => {
@@ -394,14 +522,14 @@ const createChart = (data) => {
       display: flex;
       flex-direction: column;
       align-items: center;
-      width: ${barWidth};
-      min-width: ${barWidth};
+      width: ${barWidth}px;
+      min-width: ${barWidth}px;
+      cursor: ${selectedTimeRange.value === 'nam' ? 'pointer' : 'default'};
     `;
 
     const barHeight = Math.max((item.value / maxValue) * 280, 20);
     const valueLabel = document.createElement("div");
 
-    // Format value display
     if (item.value >= 1000000) {
       valueLabel.textContent = (item.value / 1000000).toFixed(1) + "M";
     } else if (item.value >= 1000) {
@@ -411,7 +539,7 @@ const createChart = (data) => {
     }
 
     valueLabel.style.cssText = `
-      font-size: ${dataLength > 12 ? "10px" : "12px"};
+      font-size: 12px;
       font-weight: bold;
       color: #333;
       margin-bottom: 5px;
@@ -426,7 +554,7 @@ const createChart = (data) => {
       background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
       border-radius: 8px 8px 4px 4px;
       transition: all 0.3s ease;
-      cursor: pointer;
+      cursor: ${selectedTimeRange.value === 'nam' ? 'pointer' : 'default'};
       box-shadow: 0 2px 8px rgba(66, 133, 244, 0.3);
     `;
 
@@ -434,15 +562,28 @@ const createChart = (data) => {
       bar.style.transform = "scale(1.05) translateY(-5px)";
       bar.style.boxShadow = "0 8px 16px rgba(66, 133, 244, 0.4)";
     });
+    
     bar.addEventListener("mouseleave", () => {
       bar.style.transform = "scale(1) translateY(0)";
       bar.style.boxShadow = "0 2px 8px rgba(66, 133, 244, 0.3)";
     });
 
+    // Add click event for yearly view
+    if (selectedTimeRange.value === 'nam') {
+      bar.addEventListener("click", () => {
+        handleBarClick(parseInt(item.x) - 1); // Convert to 0-based index
+      });
+    }
+
     const xLabel = document.createElement("div");
-    xLabel.textContent = item.x;
+    if (selectedTimeRange.value === 'thang') {
+      xLabel.textContent = `${item.x}`;
+    } else {
+      xLabel.textContent = `T${item.x}`;
+    }
+    
     xLabel.style.cssText = `
-      font-size: ${dataLength > 12 ? "10px" : "12px"};
+      font-size: 12px;
       color: #666;
       margin-top: 10px;
       text-align: center;
@@ -454,67 +595,55 @@ const createChart = (data) => {
     chartDiv.appendChild(barContainer);
   });
 
-  scrollContainer.appendChild(chartDiv);
-  chartContainer.value.appendChild(scrollContainer);
-
-  debugInfo.value = `Chart created with ${data.length} bars`;
-  console.log("Chart created successfully");
+  chartContainer.value.appendChild(chartDiv);
 };
 
-// Load chart data
-const loadChartData = async (timeRange) => {
-  console.log("Loading chart data for:", timeRange);
+// Load chart data with optional month/year parameters
+const loadChartData = async (timeRange, month = null, year = null) => {
+  console.log("Loading chart data for:", timeRange, "Month:", month, "Year:", year);
 
   try {
     isLoading.value = true;
     debugInfo.value = "Loading data...";
 
-    const endpoint =
-      timeRange === "thang"
-        ? "/ThongKe/DoanhThuThangHienTai"
-        : "/ThongKe/DoanhThuNamHienTai";
-
+    let endpoint, params;
+    
+    if (timeRange === "thang") {
+      endpoint = "/ThongKe/DoanhThuTheoThang";
+      params = {
+        month: month || selectedMonth.value,
+        year: year || selectedYear.value
+      };
+    } else {
+      endpoint = "/ThongKe/DoanhThuNamHienTai";
+      params = {
+        year: year || selectedYear.value
+      };
+    }
     let data;
     try {
-      data = await apiClient.get(endpoint);
-      console.log("API Response:", data);
+      data = await apiClient.get(endpoint, { params });
     } catch (apiError) {
-      console.warn("API failed, using mock data:", apiError);
-      // Use mock data if API fails
-      data =
-        timeRange === "thang"
-          ? mockChartData
-          : mockChartData.map((item) => ({
-              ...item,
-              period: `2024-${item.period.replace("T", "")}`,
-            }));
+      data = [];
     }
 
     const formattedData = formatDataForChart(data);
-    chartData.value = formattedData;
+    const fullChartData = getFullChartData(formattedData, timeRange);
+    chartData.value = fullChartData;
 
-    if (formattedData.length > 0) {
+    if (fullChartData.length > 0 && fullChartData.some(item => item.value > 0)) {
       await nextTick();
-      // Add delay to ensure DOM is ready
       setTimeout(() => {
-        createChart(formattedData);
+        createChart(fullChartData);
       }, 100);
     } else {
+      chartData.value = [];
       debugInfo.value = "No data after formatting";
-      console.warn("No chart data after formatting");
     }
   } catch (error) {
     console.error("Error loading chart data:", error);
     debugInfo.value = `Error: ${error.message}`;
-
-    // Fallback to mock data
-    const formattedData = formatDataForChart(mockChartData);
-    chartData.value = formattedData;
-
-    await nextTick();
-    setTimeout(() => {
-      createChart(formattedData);
-    }, 100);
+    chartData.value = [];
   } finally {
     isLoading.value = false;
   }
@@ -526,22 +655,29 @@ const changeTimeRange = (timeRange) => {
   loadChartData(timeRange);
 };
 
+// Handle month/year change for monthly view
+const onMonthYearChange = () => {
+  loadChartData('thang', selectedMonth.value, selectedYear.value);
+};
+
+// Handle year change for yearly view
+const onYearChange = () => {
+  loadChartData('nam', null, selectedYear.value);
+};
+
 // Load service data for pie chart
 const loadServiceData = async () => {
   console.log("Loading service data...");
 
   try {
     isLoadingService.value = true;
-
     const response = await apiClient.get("/ThongKe/SoLuongDichVu");
     console.log("Service API Response:", response);
 
-    // API returns array directly based on your example
     if (Array.isArray(response) && response.length > 0) {
       serviceData.value = response;
     } else {
-      console.warn("No service data received, using mock data");
-      serviceData.value = mockServiceData;
+      serviceData.value = [];
     }
 
     if (serviceData.value.length > 0) {
@@ -552,12 +688,7 @@ const loadServiceData = async () => {
     }
   } catch (error) {
     console.error("Error loading service data:", error);
-    // Use mock data as fallback
-    serviceData.value = mockServiceData;
-    await nextTick();
-    setTimeout(() => {
-      createPieChart();
-    }, 100);
+    serviceData.value = [];
   } finally {
     isLoadingService.value = false;
   }
@@ -577,7 +708,6 @@ const createPieChart = () => {
     return;
   }
 
-  // Destroy existing chart
   if (pieChartInstance) {
     pieChartInstance.destroy();
   }
@@ -654,7 +784,7 @@ const createPieChart = () => {
   console.log("Pie chart created successfully");
 };
 
-// Thêm biến cho phần sản phẩm
+// Product pie chart variables
 const productPieChart = ref(null);
 const productData = ref([]);
 let productPieChartInstance = null;
@@ -662,30 +792,14 @@ const isLoadingProduct = ref(false);
 
 // Load product data for pie chart
 const loadProductData = async () => {
-  console.log("Loading product data...");
-
   try {
     isLoadingProduct.value = true;
-
     const response = await apiClient.get("/ThongKe/SoLuongSanPham");
-    console.log("Product API Response:", response);
-
-    // API returns array directly based on your example
     if (Array.isArray(response) && response.length > 0) {
-      // Tính tổng số lượng
-      const total = response.reduce((sum, item) => sum + item.soLuong, 0);
-      
-      // Thêm phần trăm
-      productData.value = response.map(item => ({
-        productName: item.productName,
-        soLuong: item.soLuong,
-        phanTram: total > 0 ? parseFloat(((item.soLuong / total) * 100).toFixed(2)) : 0
-      }));
+      productData.value = response;
     } else {
-      console.warn("No product data received, using mock data");
-      productData.value = mockProductData; // Bạn có thể thêm mock data nếu cần
+      productData.value = [];
     }
-
     if (productData.value.length > 0) {
       await nextTick();
       setTimeout(() => {
@@ -694,38 +808,18 @@ const loadProductData = async () => {
     }
   } catch (error) {
     console.error("Error loading product data:", error);
-    // Use mock data as fallback
-    productData.value = mockProductData || [];
-    await nextTick();
-    setTimeout(() => {
-      createProductPieChart();
-    }, 100);
+    productData.value = [];
   } finally {
     isLoadingProduct.value = false;
   }
 };
 
-// Create product pie chart
 const createProductPieChart = () => {
-  console.log("Creating product pie chart with data:", productData.value);
-
-  if (!productPieChart.value) {
-    console.error("Product pie chart canvas not found");
-    return;
-  }
-
-  if (!productData.value || productData.value.length === 0) {
-    console.warn("No product data for pie chart");
-    return;
-  }
-
-  // Destroy existing chart
-  if (productPieChartInstance) {
-    productPieChartInstance.destroy();
-  }
+  if (!productPieChart.value) return;
+  if (!productData.value || productData.value.length === 0) return;
+  if (productPieChartInstance) productPieChartInstance.destroy();
 
   const ctx = productPieChart.value.getContext("2d");
-
   productPieChartInstance = new Chart(ctx, {
     type: "pie",
     data: {
@@ -755,11 +849,7 @@ const createProductPieChart = () => {
         legend: {
           position: "right",
           labels: {
-            font: {
-              size: 12,
-              family: "Arial",
-              weight: "500",
-            },
+            font: { size: 12, family: "Arial", weight: "500" },
             color: "#333",
             padding: 15,
             usePointStyle: true,
@@ -792,8 +882,6 @@ const createProductPieChart = () => {
       },
     },
   });
-
-  console.log("Product pie chart created successfully");
 };
 
 // Watch for data changes
@@ -813,7 +901,6 @@ watch(serviceData, (newData) => {
   }
 });
 
-// Watch for product data changes
 watch(productData, (newData) => {
   if (newData && newData.length > 0 && productPieChart.value) {
     nextTick(() => {
@@ -822,9 +909,70 @@ watch(productData, (newData) => {
   }
 });
 
+// Load appointments and sort by time, filter by "Chưa đến"
+const getLichHenHomNay = async () => {
+  try {
+    const res = await apiClient.get("/DatLich");
+    console.log("Appointments API Response:", res);
+    if (Array.isArray(res)) {
+      const today = new Date().toISOString().slice(0, 10); // yyyy-mm-dd
+      lichHenHienThi.value = res
+        .filter(
+          (lich) =>
+            lich.thoiGian.slice(0, 10) === today &&
+            lich.trangThai === "Chưa đến" &&
+            lich.datTruoc == true
+        )
+        .sort((a, b) => new Date(a.thoiGian) - new Date(b.thoiGian));
+    } else {
+      console.error("API response is not an array:", res);
+      lichHenHienThi.value = [];
+    }
+  } catch (err) {
+    console.error("Lỗi khi lấy lịch hẹn:", err);
+    lichHenHienThi.value = [];
+  }
+};
+
+// Get color based on status
+const getColor = (lich) => {
+  return lich.trangThai === "Chưa đến" ? "#ff9800" : "#9e9e9e"; // Orange for Chưa đến, gray for others
+};
+
+// Get service names
+const getTenDichVu = (lich) => {
+  return lich.chiTietDatLichs.map((dv) => dv.dichVu.tenDichVu).join(", ");
+};
+
+// Format start time
+const formatGio = (isoTime) => {
+  const date = new Date(isoTime);
+  return date.toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+// Calculate end time
+const tinhGioKetThuc = (lich) => {
+  const start = new Date(lich.thoiGian);
+  const totalMinutes = lich.chiTietDatLichs.reduce(
+    (sum, dv) => sum + dv.dichVu.thoiGian,
+    0
+  );
+  start.setMinutes(start.getMinutes() + totalMinutes);
+  return start.toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
 // Initialize component
 onMounted(async () => {
   console.log("Component mounted, initializing...");
+
+  // Initialize years dropdown
+  initializeYears();
 
   try {
     // Load basic stats
@@ -839,21 +987,25 @@ onMounted(async () => {
         "/ThongKe/dvHoanThanhToday"
       );
       dvHoanThanh.value = serviceCompletedData.soLuotDichVu || 0;
+      const danhgia = await apiClient.get("/DanhGia/trungbinh-trongso");
+      danhGia.value = danhgia || 0;
+      await getLichHenHomNay();
+      console.log(lichHenHienThi.value);
     } catch (statsError) {
       console.warn("Error loading stats, using defaults:", statsError);
-      // Use default values
     }
 
-    // Load charts
+    // Load charts - mặc định load tháng hiện tại
     await Promise.all([
       loadServiceData(),
       loadProductData(),
-      loadChartData(selectedTimeRange.value),
+      loadChartData(selectedTimeRange.value, selectedMonth.value, selectedYear.value),
     ]);
   } catch (error) {
     console.error("Initialization error:", error);
   }
 });
+
 </script>
 
 <style scoped>
@@ -911,7 +1063,6 @@ onMounted(async () => {
   border-color: #0d6efd;
 }
 
-/* Custom scrollbar for chart */
 #revenueChart::-webkit-scrollbar {
   height: 8px;
 }
@@ -945,5 +1096,63 @@ onMounted(async () => {
     border-radius: 8px !important;
     margin-bottom: 5px;
   }
+  .d-flex.gap-3.flex-wrap {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .d-flex.gap-2 {
+    margin-bottom: 10px;
+  }
+}
+
+.list-group-item {
+  transition: background-color 0.3s ease;
+}
+
+.list-group-item:hover {
+  background-color: #f8f9fa;
+}
+
+.badge {
+  width: 12px;
+  height: 12px;
+}
+
+/* Custom scrollbar for appointment list */
+.card-body {
+  scrollbar-width: thin;
+  scrollbar-color: #0d6efd #f1f1f1;
+}
+
+.card-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.card-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.card-body::-webkit-scrollbar-thumb {
+  background: #0d6efd;
+  border-radius: 10px;
+}
+
+.card-body::-webkit-scrollbar-thumb:hover {
+  background: #0b5ed7;
+}
+
+/* Form select styling */
+.form-select-sm {
+  font-size: 0.875rem;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-select-sm:focus {
+  border-color: #86b7fe;
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
 </style>

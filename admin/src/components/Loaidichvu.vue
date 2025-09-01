@@ -40,11 +40,14 @@
             </div>
             <div>
               <h2 class="card-title">{{ isEditing ? 'Cập nhật' : 'Thêm mới' }} Loại Dịch Vụ</h2>
-              <p class="card-subtitle">{{ isEditing ? 'Chỉnh sửa thông tin loại dịch vụ' : 'Thêm loại dịch vụ mới vào hệ thống' }}</p>
+              <p class="card-subtitle">
+                {{ isEditing ? 'Chỉnh sửa thông tin loại dịch vụ' : 'Thêm loại dịch vụ mới vào hệ thống' }}
+
+              </p>
             </div>
           </div>
         </div>
-        
+
         <div class="card-body-modern">
           <form @submit.prevent="isEditing ? updateLoaiDichVu() : createLoaiDichVu()" class="modern-form">
             <div class="form-row">
@@ -54,29 +57,19 @@
                   <span class="required-indicator">*</span>
                 </label>
                 <div class="input-wrapper">
-                  <input 
-                    type="text" 
-                    class="modern-input" 
-                    v-model="form.tenLoai" 
-                    placeholder="Nhập tên loại dịch vụ..."
-                    required
-                  />
+                  <input type="text" class="modern-input" v-model="form.tenLoai" placeholder="Nhập tên loại dịch vụ..."
+                    required />
                   <div class="input-focus-line"></div>
                 </div>
               </div>
-              
+
               <div class="button-group">
                 <button type="submit" class="btn-primary-modern">
                   <i class="fa" :class="isEditing ? 'fa-save' : 'fa-plus'"></i>
                   <span>{{ isEditing ? 'Cập nhật' : 'Thêm mới' }}</span>
                 </button>
-                
-                <button 
-                  v-if="isEditing"
-                  type="button"
-                  class="btn-secondary-modern" 
-                  @click="resetForm"
-                >
+
+                <button v-if="isEditing" type="button" class="btn-secondary-modern" @click="resetForm">
                   <i class="fa fa-undo"></i>
                   <span>Hủy</span>
                 </button>
@@ -94,23 +87,13 @@
                   <label class="file-upload-btn">
                     <i class="fa fa-cloud-upload-alt"></i>
                     <span>Chọn file</span>
-                    <input 
-                      type="file" 
-                      ref="fileInput"
-                      accept=".xlsx,.xls"
-                      @change="handleFileChange"
-                    />
+                    <input type="file" ref="fileInput" accept=".xlsx,.xls" @change="handleFileChange" />
                   </label>
                   <div class="file-info" v-if="selectedFile">
                     <i class="fa fa-file-excel"></i>
                     <span>{{ selectedFile.name }}</span>
                   </div>
-                  <button 
-                    type="button"
-                    class="btn-upload"
-                    @click="importLoaiDichVu"
-                    :disabled="!selectedFile"
-                  >
+                  <button type="button" class="btn-upload" @click="importLoaiDichVu" :disabled="!selectedFile">
                     <i class="fa fa-upload"></i>
                     <span>Tải lên</span>
                   </button>
@@ -139,35 +122,26 @@
               <p class="card-subtitle">Quản lý và tìm kiếm các loại dịch vụ</p>
             </div>
           </div>
-          
+
           <div class="header-actions">
             <div class="search-modern">
               <div class="search-input-wrapper">
                 <i class="fa fa-search"></i>
-                <input
-                  v-model="searchName"
-                  @input="searchByName"
-                  type="text"
-                  class="search-input-modern"
-                  placeholder="Tìm kiếm loại dịch vụ..."
-                />
-                <button
-                  v-if="searchName"
-                  @click="resetSearch"
-                  class="clear-search-modern"
-                >
+                <input v-model="searchName" @input="searchByName" type="text" class="search-input-modern"
+                  placeholder="Tìm kiếm loại dịch vụ..." />
+                <button v-if="searchName" @click="resetSearch" class="clear-search-modern">
                   <i class="fa fa-times"></i>
                 </button>
               </div>
             </div>
-            
+
             <button @click="fetchData" class="btn-refresh">
               <i class="fa fa-sync-alt"></i>
               <span>Làm mới</span>
             </button>
           </div>
         </div>
-        
+
         <div class="card-body-modern">
           <!-- Empty State -->
           <div v-if="!loaiDichVus?.length" class="empty-state-modern">
@@ -176,7 +150,7 @@
             </div>
             <h3>Chưa có loại dịch vụ nào</h3>
             <p>Hãy thêm loại dịch vụ đầu tiên để bắt đầu</p>
-            <button @click="() => {}" class="btn-primary-modern">
+            <button @click="() => { }" class="btn-primary-modern">
               <i class="fa fa-plus"></i>
               <span>Thêm loại dịch vụ</span>
             </button>
@@ -188,9 +162,6 @@
               <table class="modern-table">
                 <thead>
                   <tr>
-                    <th class="th-id">
-                      <span>ID</span>
-                    </th>
                     <th class="th-name">
                       <span>Tên Loại Dịch Vụ</span>
                     </th>
@@ -200,15 +171,8 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr 
-                    v-for="(item, index) in loaiDichVus" 
-                    :key="item.loaiDichVuID" 
-                    class="table-row"
-                    :style="{ animationDelay: `${index * 0.05}s` }"
-                  >
-                    <td class="td-id">
-                      <div class="id-badge">{{ item.loaiDichVuID }}</div>
-                    </td>
+                  <tr v-for="(item, index) in loaiDichVus" :key="item.loaiDichVuID" class="table-row"
+                    :style="{ animationDelay: `${index * 0.05}s` }">
                     <td class="td-name">
                       <div class="name-content">
                         <div class="name-text">{{ item.tenLoai }}</div>
@@ -216,18 +180,10 @@
                     </td>
                     <td class="td-actions">
                       <div class="action-buttons-modern">
-                        <button 
-                          class="action-btn edit-btn" 
-                          @click="editLoaiDichVu(item)"
-                          title="Chỉnh sửa"
-                        >
+                        <button class="action-btn edit-btn" @click="editLoaiDichVu(item)" title="Chỉnh sửa">
                           <i class="fa fa-edit"></i>
                         </button>
-                        <button 
-                          class="action-btn delete-btn" 
-                          @click="deleteLoaiDichVu(item.loaiDichVuID)"
-                          title="Xóa"
-                        >
+                        <button class="action-btn delete-btn" @click="deleteLoaiDichVu(item.loaiDichVuID)" title="Xóa">
                           <i class="fa fa-trash"></i>
                         </button>
                       </div>
@@ -244,12 +200,7 @@
     <!-- Modern Toast Notifications -->
     <div class="toast-container-modern">
       <transition-group name="toast" tag="div">
-        <div 
-          v-for="toast in toasts" 
-          :key="toast.id" 
-          class="toast-modern" 
-          :class="toast.type"
-        >
+        <div v-for="toast in toasts" :key="toast.id" class="toast-modern" :class="toast.type">
           <div class="toast-icon">
             <i class="fa" :class="getToastIcon(toast.type)"></i>
           </div>
@@ -273,7 +224,6 @@ import apiClient from "../utils/axiosClient";
 const loaiDichVus = ref([]);
 const allLoaiDichVus = ref([]);
 const form = ref({
-  loaiDichVuID: 0,
   tenLoai: ''
 });
 const isEditing = ref(false);
@@ -298,10 +248,10 @@ const importLoaiDichVu = async () => {
   formData.append("file", selectedFile.value);
 
   try {
-    const res = await apiClient.post("/LoaiDichVu/import", formData, {
+    const res = await apiClient.post("/LoaiDichVu/importt", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-    showToast(`Import thành công ${res.count || 0} loại dịch vụ!`, "success");
+    showToast(`Import thành công loại dịch vụ!`, "success");
 
     selectedFile.value = null;
     if (fileInput.value) fileInput.value.value = "";
@@ -384,7 +334,7 @@ const deleteLoaiDichVu = async (id) => {
     try {
       await apiClient.delete(`/LoaiDichVu/${id}`);
       showToast("Xóa loại dịch vụ thành công!", 'success');
-      fetchData();  
+      fetchData();
     } catch (error) {
       showToast("Lỗi khi xóa loại dịch vụ", 'error');
       console.error(error);
@@ -398,13 +348,13 @@ const editLoaiDichVu = (item) => {
 };
 const downloadTemplate = () => {
   const link = document.createElement("a");
-  link.href =
-    "https://drive.google.com/uc?export=download&id=1bf_a4YgEFKGOcyT6gbmyE_J6DfU3r6XQ";
+  link.href = "https://docs.google.com/spreadsheets/d/1XKhk2qVil9iVqwYN_tVd19N9orq-7QEc/export?format=xlsx";
   link.download = "LDV_DV_LSP_SP.xlsx";
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
 };
+
 const resetForm = () => {
   form.value = {
     loaiDichVuID: 0,
@@ -496,10 +446,23 @@ onMounted(() => {
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  25% { transform: translateY(-20px) rotate(90deg); }
-  50% { transform: translateY(0px) rotate(180deg); }
-  75% { transform: translateY(-10px) rotate(270deg); }
+
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+
+  25% {
+    transform: translateY(-20px) rotate(90deg);
+  }
+
+  50% {
+    transform: translateY(0px) rotate(180deg);
+  }
+
+  75% {
+    transform: translateY(-10px) rotate(270deg);
+  }
 }
 
 /* Header Section */
@@ -584,7 +547,8 @@ onMounted(() => {
 }
 
 /* Modern Card */
-.form-container, .list-container {
+.form-container,
+.list-container {
   position: relative;
   z-index: 10;
   margin-bottom: 30px;
@@ -721,7 +685,7 @@ onMounted(() => {
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-.modern-input:focus + .input-focus-line {
+.modern-input:focus+.input-focus-line {
   transform: scaleX(1);
 }
 
@@ -986,82 +950,55 @@ onMounted(() => {
 }
 
 /* Modern Table */
-.table-container-modern {
-  margin-top: 20px;
-}
-
-.table-wrapper {
-  overflow-x: auto;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
 .modern-table {
   width: 100%;
   border-collapse: collapse;
   background: white;
+  table-layout: auto;
 }
 
+.modern-table th,
+.modern-table td {
+  padding: 14px 20px;
+  border: none;
+  vertical-align: middle;
+  font-size: 0.95rem;
+}
+
+/* Header */
 .modern-table thead {
   background: linear-gradient(135deg, #2d3748, #4a5568);
 }
 
 .modern-table th {
-  padding: 20px 25px;
-  text-align: left;
   font-weight: 600;
   font-size: 0.95rem;
   color: white;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border: none;
 }
 
-.th-id {
-  width: 15%;
+/* Cột tên loại dịch vụ */
+.th-name,
+.td-name {
+  text-align: left;
+  width: 70%;
+}
+
+/* Cột hành động */
+.th-actions,
+.td-actions {
   text-align: center;
+  width: 30%;
 }
 
-.th-actions {
-  width: 20%;
-  text-align: center;
-}
-
-.modern-table tbody tr {
-  transition: all 0.3s ease;
-  border-bottom: 1px solid #e2e8f0;
-  animation: fadeInUp 0.5s ease forwards;
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.modern-table tbody tr:hover {
-  background: linear-gradient(135deg, #f7fafc, #edf2f7);
-  transform: translateX(5px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-.modern-table td {
-  padding: 20px 25px;
-  border: none;
-  vertical-align: middle;
-}
-
-.td-id {
-  text-align: center;
-}
-
-.id-badge {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-weight: 600;
-  font-size: 0.85rem;
-  display: inline-block;
-  min-width: 50px;
-  text-align: center;
-  box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+/* Nút hành động căn giữa */
+.action-buttons-modern {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* căn giữa theo chiều dọc */
+  gap: 12px;
 }
 
 .td-name .name-content {
@@ -1229,7 +1166,8 @@ onMounted(() => {
 }
 
 /* Toast Animations */
-.toast-enter-active, .toast-leave-active {
+.toast-enter-active,
+.toast-leave-active {
   transition: all 0.4s ease;
 }
 

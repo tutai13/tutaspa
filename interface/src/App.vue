@@ -14,42 +14,86 @@
             <span>TutaSpa 🌿</span>
           </router-link>
         </div>
-        <ul class="nav-links">
-          <li><router-link to="/">Trang chủ</router-link></li>
-          <li><router-link to="/#services">Dịch vụ</router-link></li>
-          <li><router-link to="/#booking">Đặt lịch</router-link></li>
-          <li><router-link to="/#about">Về chúng tôi</router-link></li>
-          <li><router-link to="/#contact">Liên hệ</router-link></li>
+        
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle" @click="toggleMenu" :class="{ active: isMenuVisible }">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        
+        <!-- Navigation Links -->
+        <ul class="nav-links" :class="{ 'mobile-active': isMenuVisible }">
+          <li><router-link to="/" @click="closeMobileMenu">Trang chủ</router-link></li>
+          <li><router-link to="/#services" @click="closeMobileMenu">Dịch vụ</router-link></li>
+          <li><router-link to="/DatLich" @click="closeMobileMenu">Đặt lịch</router-link></li>
+          <li><router-link to="/#about" @click="closeMobileMenu">Về chúng tôi</router-link></li>
+          <li><router-link to="/#contact" @click="closeMobileMenu">Liên hệ</router-link></li>
+          
+          <!-- Mobile User Actions - Inside Menu -->
+          <li class="mobile-user-actions">
+            <router-link style="background-color: orange;"
+              v-if="!state.isAuthenticated"
+              to="/login"
+              class="mobile-auth-btn login-btn"
+              @click="closeMobileMenu"
+            >
+              <i class="fa-solid fa-user"></i>
+              <span>Đăng nhập</span>
+            </router-link>
+            <router-link
+              v-if="state.isAuthenticated"
+              to="/LichSuDatLich"
+              class="mobile-auth-btn schedule-btn"
+              @click="closeMobileMenu"
+            >
+              <i class="fa-regular fa-calendar-check"></i>
+              <span>Xem lịch</span>
+            </router-link>
+            <button
+              v-if="state.isAuthenticated"
+              class="mobile-auth-btn logout-btn"
+              @click="handleLogout"
+            >
+              <i class="fa-solid fa-sign-out-alt"></i>
+              <span>Đăng xuất</span>
+            </button>
+          </li>
         </ul>
-        <!-- <router-link to="/#booking" class="book-btn">Đặt lịch ngay</router-link> -->
-        <div class="d-flex align-items-center gap-2">
+        
+        <!-- Desktop User Actions -->
+        <div class="user-actions desktop-only">
           <router-link
             v-if="!state.isAuthenticated"
             to="/login"
             class="book-btn"
           >
-            <i class="fa-solid fa-user"></i> Đăng nhập
+            <i class="fa-solid fa-user"></i>
+            <span class="btn-text">Đăng nhập</span>
           </router-link>
           <router-link
             v-if="state.isAuthenticated"
             to="/LichSuDatLich"
             class="book-btn"
           >
-            <i class=""></i> Dịch vụ đã dùng
+            <i class="fa-regular fa-calendar-check"></i>
+            <span class="btn-text">Xem lịch</span>
           </router-link>
           <button
             v-if="state.isAuthenticated"
             class="book-btn"
             @click="state.logout"
           >
-            <i class="fa-regular fa-sign-out-alt"></i> Đăng Xuất
+            <i class="fa-solid fa-sign-out-alt"></i>
+            <span class="btn-text">Đăng xuất</span>
           </button>
         </div>
       </nav>
     </header>
 
     <!-- Content -->
-    <router-view></router-view>
+    <main class="main-content"><router-view></router-view></main>
+    
     <!-- Floating Button -->
     <div class="chat-popup-wrapper">
       <!-- Chat Toggle Button -->
@@ -125,7 +169,7 @@
           </div>
         </div>
 
-        <!-- Chat Input - chỉ hiện khi chat đang hoạt động và admin chưa disconnect -->
+        <!-- Chat Input -->
         <div v-if="chatStarted && !adminDisconnected" class="chat-input">
           <div class="input-group">
             <input
@@ -146,7 +190,7 @@
           </div>
         </div>
 
-        <!-- Nút bắt đầu phiên mới khi admin disconnect -->
+        <!-- New Session Section -->
         <div
           v-if="chatStarted && adminDisconnected"
           class="new-session-section"
@@ -165,10 +209,10 @@
       <div class="footer-content">
         <div class="footer-section">
           <h3>Liên hệ</h3>
-          <p>📍 123 Đường Nguyễn Huệ, Quận 1, TP.HCM</p>
+          <p>📍 31 Nguyễn Mộng Tuân, Phường Liên Chiểu, TP Đà Nẵng</p>
           <p>📞 Hotline: 0123 456 789</p>
           <p>✉️ Email: info@serenityspa.vn</p>
-          <p>🌐 Website: www.serenityspa.vn</p>
+          <p>🌐 Website: tutaspa.vercel.app</p>
         </div>
         <div class="footer-section">
           <h3>Giờ mở cửa</h3>
@@ -188,18 +232,12 @@
         </div>
         <div class="footer-section">
           <h3>Theo dõi chúng tôi</h3>
-          <p><a href="#">📘 Facebook: Serenity Spa VN</a></p>
+          <p><a href="#">📘 Facebook: Tuta Spa</a></p>
           <p><a href="#">📷 Instagram: @serenityspa_vn</a></p>
-          <p><a href="#">💬 Zalo: 0123 456 789</a></p>
+          <p><a href="#">💬 Zalo: 0903209925</a></p>
           <p><a href="#">📺 YouTube: Serenity Spa Vietnam</a></p>
         </div>
       </div>
-      <!-- <div class="footer-bottom">
-        <p>
-          &copy; 2024 Serenity Spa. Tất cả quyền được bảo lưu. | Thiết kế bởi
-          Serenity Team
-        </p>
-      </div> -->
     </footer>
   </div>
 </template>
@@ -208,9 +246,10 @@
 import { onMounted, onUnmounted, ref, nextTick } from "vue";
 import * as signalR from "@microsoft/signalr";
 import { useAuthState } from "./services/authstate";
+import { authAPI } from "./services/authservice";
 
 const chatClosed = ref(false);
-const adminDisconnected = ref(false); // Thêm biến theo dõi trạng thái admin disconnect
+const adminDisconnected = ref(false);
 const base_url = import.meta.env.VITE_CHAT_URL;
 const chatOpen = ref(false);
 const chatStarted = ref(false);
@@ -229,6 +268,8 @@ const assignedAdmin = ref({ id: null, name: null });
 const isNavbarHidden = ref(false);
 let lastScroll = 0;
 const state = useAuthState();
+const isMenuVisible = ref(false);
+
 onMounted(() => {
   window.addEventListener("scroll", () => {
     const currentScroll =
@@ -240,10 +281,17 @@ onMounted(() => {
     }
     lastScroll = currentScroll;
   });
+  
+  // Close mobile menu when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.nav') && isMenuVisible.value) {
+      isMenuVisible.value = false;
+    }
+  });
+  
   initializeChat();
 });
 
-// Enhanced cleanup function
 onUnmounted(async () => {
   try {
     if (
@@ -257,26 +305,22 @@ onUnmounted(async () => {
   }
 });
 
-const isMenuVisible = ref(false);
-
-const searchQuery = ref("");
-
-function handleSearch() {
-  if (searchQuery.value.trim()) {
-    window.location.href = `/DichVu?search=${encodeURIComponent(
-      searchQuery.value
-    )}`;
-  }
-}
-
 function toggleMenu() {
   isMenuVisible.value = !isMenuVisible.value;
+}
+
+function closeMobileMenu() {
+  isMenuVisible.value = false;
+}
+
+function handleLogout() {
+  state.logout();
+  closeMobileMenu();
 }
 
 // Chat functions
 function initializeChat() {
   try {
-    // Only create connection if it doesn't exist or is disconnected
     if (
       !connection.value ||
       connection.value.state === signalR.HubConnectionState.Disconnected
@@ -311,13 +355,9 @@ function setupChatEventHandlers() {
 
   connection.value.on("AdminAssigned", (data) => {
     console.log("Admin assigned:", data);
-    // Lưu admin vào biến để hiện ở header
     assignedAdmin.value = { id: data.adminId, name: data.adminName };
-    // Reset trạng thái admin disconnect khi có admin mới
     adminDisconnected.value = false;
-    // Hiện thông báo inline
     addInlineSystemNotice(data.message);
-    //addMessage(data.chatMessage);
   });
 
   connection.value.on("ChatSessionCreated", (data) => {
@@ -325,7 +365,6 @@ function setupChatEventHandlers() {
     sessionId.value = data.sessionId;
     userName.value = data.userName;
     chatStarted.value = true;
-    // Reset trạng thái khi tạo session mới
     adminDisconnected.value = false;
     chatClosed.value = false;
     addSystemMessage1(data.message);
@@ -343,9 +382,8 @@ function setupChatEventHandlers() {
   connection.value.on("AdminDisconnected", handleSessionEnded);
 
   function handleSessionEnded(data) {
-    // Ẩn phần nhập tin nhắn, hiện new-session-section
-    chatStarted.value = true; // Để giữ khung chat đang mở
-    adminDisconnected.value = true; // Hiện new-session-section
+    chatStarted.value = true;
+    adminDisconnected.value = true;
     chatClosed.value = true;
     addInlineSystemNotice(
       (data?.Message || data?.message) ??
@@ -361,24 +399,17 @@ function setupChatEventHandlers() {
     addSystemMessage(`Lỗi: ${error}`, "error");
   });
 
-  // Sửa lại logic xử lý AdminDisconnected
   connection.value.on("AdminDisconnected", (data) => {
-    // Đánh dấu admin đã disconnect nhưng giữ chatStarted = true
     adminDisconnected.value = true;
-
-    // // Hiện thông báo
-    // addInlineSystemNotice(data.Message || "Nhân viên hỗ trợ đã kết thúc phiên làm việc.");
   });
 }
 
 async function startConnection() {
   try {
-    // Check connection state before starting
     if (!connection.value) {
       initializeChat();
     }
 
-    // Only start if connection is in Disconnected state
     if (connection.value.state === signalR.HubConnectionState.Disconnected) {
       await connection.value.start();
       isConnected.value = true;
@@ -387,14 +418,12 @@ async function startConnection() {
     } else if (
       connection.value.state === signalR.HubConnectionState.Connected
     ) {
-      // Already connected
       isConnected.value = true;
       return true;
     } else {
-      // Connection is in Connecting or Reconnecting state, wait a bit
       console.log("Connection is in state:", connection.value.state);
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      return await startConnection(); // Retry
+      return await startConnection();
     }
   } catch (error) {
     console.error("Lỗi kết nối:", error);
@@ -417,22 +446,19 @@ function toggleChat() {
 
 async function startChat() {
   try {
-    // Nếu đang kết nối thì disconnect trước
     if (
       connection.value &&
       connection.value.state === signalR.HubConnectionState.Connected
     ) {
       await connection.value.stop();
-      // Reset trạng thái
       chatStarted.value = false;
       chatClosed.value = false;
-      adminDisconnected.value = false; // Reset trạng thái admin disconnect
+      adminDisconnected.value = false;
       sessionId.value = null;
       userName.value = null;
       messages.value = [];
       assignedAdmin.value = { id: null, name: null };
     }
-    // Kết nối lại và bắt đầu phiên mới
     const connected = await startConnection();
     if (
       connected &&
@@ -451,9 +477,7 @@ async function startChat() {
   }
 }
 
-// Thêm function mới để xử lý khi nhấn nút bắt đầu phiên mới
 async function startNewSession() {
-  // Reset trạng thái về ban đầu
   chatStarted.value = false;
   adminDisconnected.value = false;
   chatClosed.value = false;
@@ -462,14 +486,12 @@ async function startNewSession() {
   messages.value = [];
   assignedAdmin.value = { id: null, name: null };
 
-  // Disconnect connection hiện tại nếu có
   if (
     connection.value &&
     connection.value.state === signalR.HubConnectionState.Connected
   ) {
     await connection.value.stop();
   }
-  // Welcome screen sẽ hiện lại cho nhập tên
 }
 
 async function sendMessage() {
@@ -501,6 +523,7 @@ function addMessage(message) {
   });
   scrollToBottom();
 }
+
 function addSystemMessage1(message, type = "info") {
   messages.value.push({
     id: Date.now() + Math.random(),
@@ -561,7 +584,6 @@ function handleMessageKeyPress(e) {
   }
 }
 
-// Helper function to check connection status
 function checkConnectionStatus() {
   if (connection.value) {
     console.log("Connection state:", connection.value.state);
@@ -570,7 +592,6 @@ function checkConnectionStatus() {
   return false;
 }
 
-// Optional: Add connection status monitoring
 setInterval(() => {
   if (connection.value && chatStarted.value) {
     const wasConnected = isConnected.value;
@@ -588,426 +609,391 @@ setInterval(() => {
 </script>
 
 <style scoped>
-body {
+/* Reset & Base */
+* {
   margin: 0;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background: #fff;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-/* Navbar */
-.navbar {
-  background-color: #57e6ad;
-  color: #8c7851;
+body {
+  font-family: "Georgia", "Times New Roman", serif;
+  line-height: 1.7;
+  color: #2d4a2d;
+  overflow-x: hidden;
+  background-color: #f8fcf8;
+}
+
+/* Header Styles - Enhanced WOW Factor */
+.header {
+  background: linear-gradient(135deg, 
+    rgba(120, 186, 126, 0.95) 0%, 
+    rgba(107, 163, 113, 0.95) 30%,
+    rgba(94, 140, 100, 0.95) 70%,
+    rgba(78, 120, 85, 0.95) 100%
+  );
+  color: white;
+  padding: 0.5rem 0;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+  backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 
+    0 8px 32px rgba(120, 186, 126, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, 
+    transparent 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    transparent 100%
+  );
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+.header.hidden {
+  transform: translateY(-100%);
+  box-shadow: none;
+}
+
+.nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 13px 23px;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  transition: transform 0.4s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-.navbar.hidden {
-  transform: translateY(-100%);
-}
-.nav-links {
-  list-style: none;
-  display: flex;
-  gap: 50px;
-  margin: 0;
-  padding: 0;
-  font-size: 30px;
-}
-.nav-links li a {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem 2rem;
   position: relative;
-  color: rgb(255, 255, 255); /* Màu mặc định */
-  text-decoration: none;
-  transition: color 0.3s;
-  font-size: 21px;
-  font-weight: bold;
+  height: 70px;
 }
 
-/* Gạch dưới ẩn ban đầu */
-.nav-links li a::after {
-  content: "";
-  position: absolute;
-  bottom: -4px;
-  left: 0;
-  width: 0%;
-  height: 2px;
-  background-color: #ffd700; /* Màu gạch dưới */
-  transition: width 0.3s ease;
-}
-
-/* Khi hover: đổi màu và hiện gạch dưới */
-.nav-links li a:hover {
-  color: #ffd700;
-}
-
-.nav-links li a:hover::after {
-  width: 100%;
-}
-
-.nav-links i {
-  margin-right: 6px;
-}
-.user-icon i {
-  font-size: 24px;
-  color: #ffffff;
-  margin-left: 10px;
-  cursor: pointer;
-  transition: transform 0.3s ease;
-}
-.user-icon i:hover {
-  transform: scale(1.1);
-}
-
-/* Logo Animation */
-.logo-image {
-  height: 75px; /* hoặc kích thước bạn muốn */
-  animation: fadeInDown 1s ease-in-out;
-}
-
-/* Nếu bạn có hiệu ứng logo đang dùng */
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Content */
-.main-content {
-  padding: 20px;
-}
-.carousel-inner img {
-  object-fit: cover;
-  height: 400px;
-}
-
-.input-group-custom {
+.logo {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: white;
   display: flex;
-  flex-wrap: nowrap;
-  gap: 12px;
-  width: 100%;
-  max-width: 600px;
-  margin: auto;
-}
-
-.input-custom {
-  flex: 1;
-  padding: 14px 16px;
-  border-radius: 12px;
-  border: 1px solid #ccc;
-  transition: all 0.3s ease;
-  font-size: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.input-custom:focus {
-  border-color: #2a5298;
-  box-shadow: 0 0 0 4px rgba(42, 82, 152, 0.2);
-  outline: none;
-}
-
-.btn-submit {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #1e3c72, #2a5298);
-  color: white;
-  font-weight: bold;
-  font-size: 16px;
-  white-space: nowrap;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  box-shadow: 0 4px 14px rgba(42, 82, 152, 0.4);
-}
-
-.btn-submit:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px #8c7851;
-}
-
-@media (max-width: 400px) {
-  .input-group-custom {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .btn-submit {
-    width: 100%;
-  }
-}
-
-.form-control-custom {
-  flex: 1;
-  padding: 12px 16px;
-  border: none;
-  border-radius: 8px 0 0 8px;
-  outline: none;
-  font-size: 16px;
-}
-.btn-custom {
-  padding: 12px 20px;
-  background-color: #fff;
-  color: #000;
-  font-weight: bold;
-  border: none;
-  border-radius: 0 8px 8px 0;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-.btn-custom:hover {
-  background-color: #f1f1f1;
-}
-
-/* Responsive input group */
-@media (max-width: 768px) {
-  .input-group-custom {
-    flex-direction: column;
-  }
-  .form-control-custom {
-    border-radius: 8px 8px 0 0;
-  }
-  .btn-custom {
-    border-radius: 0 0 8px 8px;
-  }
-}
-
-/* ⭐ Hiệu ứng sao động */
-.custom-star {
-  font-size: 36px; /* giống ảnh */
-  color: white;
-  transition: color 0.6s ease;
-}
-
-.star-yellow {
-  color: #ffd700; /* vàng gold */
-}
-
-.animated-stars .star-animate {
-  color: white;
-  animation: glowStar 1.5s ease-in-out infinite;
-}
-.animated-stars .delay-1 {
-  animation-delay: 0.2s;
-}
-.animated-stars .delay-2 {
-  animation-delay: 0.4s;
-}
-.animated-stars .delay-3 {
-  animation-delay: 0.6s;
-}
-.animated-stars .delay-4 {
-  animation-delay: 0.8s;
-}
-
-@keyframes glowStar {
-  0% {
-    color: white;
-    transform: scale(1);
-  }
-  50% {
-    color: #ffd700;
-    transform: scale(1.1);
-  }
-  100% {
-    color: white;
-    transform: scale(1);
-  }
-}
-/* phần thêm bên phải */
-.floating-menu {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
+  align-items: center;
+  gap: 0.7rem;
   z-index: 1001;
+  transition: all 0.3s ease;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.main-btn,
-.close-btn {
-  width: 60px;
-  height: 60px;
-  background: linear-gradient(135deg, #0d47a1, #1976d2);
-  border: none;
-  border-radius: 50%;
-  color: white;
-  font-size: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+.logo:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 4px 8px rgba(255, 255, 255, 0.3));
+}
+
+.logo a {
+  color: inherit;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.logo img {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  transition: all 0.3s ease;
+}
+
+.logo:hover img {
+  filter: drop-shadow(0 4px 8px rgba(255, 255, 255, 0.2));
+  transform: rotate(5deg);
+}
+
+/* Mobile Menu Toggle - Enhanced */
+.mobile-menu-toggle {
+  display: none;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
   cursor: pointer;
-  transition: transform 0.3s ease;
+  padding: 0.6rem;
+  z-index: 1001;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
 }
 
-.main-btn:hover,
-.close-btn:hover {
+.mobile-menu-toggle:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
   transform: scale(1.05);
 }
 
-.menu-items {
-  display: none;
-  flex-direction: column;
-  align-items: flex-end;
-  margin-bottom: 10px;
+.mobile-menu-toggle span {
+  width: 25px;
+  height: 3px;
+  background: white;
+  margin: 2px 0;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 2px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-.menu-item {
-  background: #fff;
-  color: #333;
-  border-radius: 30px;
-  padding: 8px 12px;
-  margin-bottom: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+.mobile-menu-toggle.active span:nth-child(1) {
+  transform: rotate(-45deg) translate(-5px, 6px);
+}
+
+.mobile-menu-toggle.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.mobile-menu-toggle.active span:nth-child(3) {
+  transform: rotate(45deg) translate(-5px, -6px);
+}
+
+/* Navigation Links - Enhanced */
+.nav-links {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  transition: all 0.3s ease;
-}
-
-.menu-item i {
-  color: #0d47a1;
-  font-size: 20px;
-}
-
-.menu-item span {
-  white-space: nowrap;
-  font-size: 14px;
-}
-
-.menu-item:hover {
-  background: #f5f5f5;
-}
-
-.show-menu {
-  display: flex !important;
-}
-/* footer */
-
-.footer {
-  background-color: #a80032; /* Đỏ mận sang trọng */
-  color: #fff;
-  padding: 40px 20px 20px;
-  font-family: "Segoe UI", sans-serif;
-}
-
-.footer-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  max-width: 1200px;
-  margin: auto;
-  gap: 20px;
-}
-
-.footer-section {
-  flex: 1 1 220px;
-  min-width: 220px;
-}
-
-.footer-logo {
-  width: 140px;
-  margin-bottom: 10px;
-}
-
-.footer-section h3 {
-  font-size: 18px;
-  margin-bottom: 15px;
-  border-bottom: 2px solid #fff;
-  padding-bottom: 5px;
-}
-
-.footer-section ul {
   list-style: none;
+  gap: 0.5rem;
+  margin: 0;
   padding: 0;
 }
 
-.footer-section ul li {
-  margin-bottom: 8px;
-}
-
-.footer-section ul li a {
-  color: #fff;
-  text-decoration: none;
-  transition: color 0.3s;
-}
-
-.footer-section ul li a:hover {
-  color: #ffd4e1; /* Hồng nhạt nổi bật */
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .footer-container {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .footer-section {
-    text-align: center;
-  }
-
-  .footer-section h3 {
-    border: none;
-  }
-}
-.bg-dark-red {
-  background-color: #7d1d1d; /* Đỏ mận sang trọng */
-}
-
-.footer-logo {
-  max-width: 120px;
-}
-
-.user-icon {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-}
-
-.user-link,
-.calendar-link {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  text-decoration: none;
-  color: #333;
-  font-weight: 500;
-}
-
-.user-link:hover,
-.calendar-link:hover {
-  color: #007bff;
-}
-
-new-session-section {
-  padding: 16px;
-}
-.start-new-session-btn {
-  background: linear-gradient(135deg, #ff6b6b, #ff5252);
+.nav-links a {
   color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 14px;
+  text-decoration: none;
   font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0.7rem 1.2rem;
+  border-radius: 50px;
+  position: relative;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.nav-links a::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
   width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s ease;
 }
 
-.start-new-session-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
-  background: linear-gradient(135deg, #ff5252, #ff4444);
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0%;
+  height: 2px;
+  background: linear-gradient(90deg, #ffd700, #ffed4e);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateX(-50%);
+  border-radius: 2px;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
 }
 
-.start-new-session-btn:active {
-  transform: translateY(0);
+.nav-links a:hover {
+  color: #ffd700;
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 215, 0, 0.3);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 
+    0 10px 25px rgba(0, 0, 0, 0.2),
+    0 0 20px rgba(255, 215, 0, 0.3);
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
+
+.nav-links a:hover::before {
+  left: 100%;
+}
+
+.nav-links a:hover::after {
+  width: 80%;
+}
+
+.nav-links a:active {
+  transform: translateY(-1px) scale(1.02);
+}
+
+/* --- Disable header menu button effects, but keep .book-btn effects --- */
+.nav-links a,
+.nav-links a:hover,
+.nav-links a:active {
+  transition: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+  text-shadow: none !important;
+  background: rgba(255,255,255,0.05) !important;
+  color: white !important;
+  border-color: rgba(255,255,255,0.1) !important;
+}
+
+.nav-links a::before,
+.nav-links a::after {
+  display: none !important;
+}
+
+/* Mobile User Actions in Menu */
+.mobile-user-actions {
+  display: none;
+}
+
+.mobile-auth-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1rem 1.5rem;
+  margin: 0.5rem 0;
+  border-radius: 50px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  cursor: pointer;
+  width: 100%;
+  justify-content: center;
+  min-width: 200px;
+}
+
+.mobile-auth-btn i {
+  font-size: 1.2em;
+}
+
+.login-btn {
+  background: linear-gradient(135deg, #f59e0b 0%, #f97316 50%, #ea580c 100%);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.schedule-btn {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.logout-btn {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.mobile-auth-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Desktop User Actions */
+.user-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.desktop-only {
+  display: flex;
+}
+
+.book-btn {
+  background: linear-gradient(135deg, 
+    #f59e0b 0%, 
+    #f97316 50%, 
+    #ea580c 100%
+  );
+  padding: 0.8rem 1.5rem;
+  border-radius: 50px;
+  text-decoration: none;
+  color: white;
+  font-weight: 700;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 8px 20px rgba(245, 158, 11, 0.4),
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.book-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: left 0.6s ease;
+}
+
+.book-btn:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 
+    0 15px 35px rgba(245, 158, 11, 0.5),
+    0 5px 15px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(255, 215, 0, 0.4);
+  border-color: rgba(255, 215, 0, 0.4);
+  color: white;
+  text-decoration: none;
+  background: linear-gradient(135deg, 
+    #fbbf24 0%, 
+    #f59e0b 50%, 
+    #d97706 100%
+  );
+}
+
+.book-btn:hover::before {
+  left: 100%;
+}
+
+.book-btn:active {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 
+    0 8px 20px rgba(245, 158, 11, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.book-btn i {
+  font-size: 1.1em;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+/* Main Content */
+.main-content {
+  margin-top: 80px;
+  padding: 0px 0;
+}
+
 /* Chat Popup Styles */
 .chat-popup-wrapper {
   position: fixed;
@@ -1313,18 +1299,6 @@ new-session-section {
   cursor: not-allowed;
 }
 
-@media (max-width: 768px) {
-  .chat-popup-wrapper {
-    bottom: 10px;
-    right: 10px;
-  }
-
-  .chat-window {
-    width: 320px;
-    height: 450px;
-  }
-}
-
 .inline-system-notice {
   width: 100%;
   text-align: center;
@@ -1337,86 +1311,32 @@ new-session-section {
   font-style: italic;
   opacity: 0.85;
 }
-/* Reset và Base */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+
+.new-session-section {
+  padding: 16px;
 }
 
-body {
-  font-family: "Georgia", "Times New Roman", serif;
-  line-height: 1.7;
-  color: #2d4a2d;
-  overflow-x: hidden;
-  background-color: #f8fcf8;
-}
-
-/* Header với màu xanh lá tươi */
-.header {
-  background: linear-gradient(135deg, #78ba7e 0%, #6ba371 50%, #5e8c64 100%);
+.start-new-session-btn {
+  background: linear-gradient(135deg, #ff6b6b, #ff5252);
   color: white;
-  padding: 1rem 0;
-  position: fixed;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
   width: 100%;
-  top: 0;
-  z-index: 1000;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 20px rgba(120, 186, 126, 0.3);
 }
 
-.nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 2rem;
-}
-
-.logo {
-  font-size: 1.8rem;
-  font-weight: bold;
-  color: white;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.nav-links {
-  display: flex;
-  list-style: none;
-  gap: 2rem;
-}
-
-.nav-links a {
-  color: white;
-  text-decoration: none;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  padding: 0.5rem 1rem;
-  border-radius: 25px;
-}
-
-.nav-links a:hover {
-  background: rgba(255, 255, 255, 0.2);
+.start-new-session-btn:hover {
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+  background: linear-gradient(135deg, #ff5252, #ff4444);
 }
 
-.book-btn {
-  background: linear-gradient(45deg, #f59e0b, #f97316);
-  padding: 0.8rem 2rem;
-  border-radius: 30px;
-  text-decoration: none;
-  color: white;
-  font-weight: bold;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
-}
-
-.book-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+.start-new-session-btn:active {
+  transform: translateY(0);
 }
 
 /* Footer */
@@ -1454,10 +1374,398 @@ body {
   color: #8bc792;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .nav-links {
+/* --- Disable header button effects --- */
+.nav-links a,
+.nav-links a:hover,
+.nav-links a:active,
+.book-btn,
+.book-btn:hover,
+.book-btn:active,
+.mobile-auth-btn,
+.mobile-auth-btn:hover,
+.mobile-auth-btn:active {
+  transition: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+  text-shadow: none !important;
+  background: rgba(255,255,255,0.05) !important;
+  color: white !important;
+  border-color: rgba(255,255,255,0.1) !important;
+}
+
+.nav-links a::before,
+.nav-links a::after,
+.book-btn::before {
+  display: none !important;
+}
+
+/* ===== RESPONSIVE STYLES ===== */
+
+/* Tablets (768px and below) */
+@media screen and (max-width: 768px) {
+  .nav {
+    padding: 0 1rem;
+  }
+
+  .mobile-menu-toggle {
+    display: flex;
+  }
+
+  /* Hide desktop user actions */
+  .desktop-only {
     display: none;
+  }
+
+  /* Show mobile user actions in menu */
+  .mobile-user-actions {
+    display: block;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .nav-links {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100vh;
+    background: linear-gradient(135deg, #78ba7e 0%, #6ba371 50%, #5e8c64 100%);
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    transition: left 0.3s ease;
+    z-index: 1000;
+    padding: 2rem;
+    overflow-y: auto;
+  }
+
+  .nav-links.mobile-active {
+    left: 0;
+  }
+
+  .nav-links li {
+    text-align: center;
+    width: 100%;
+    max-width: 280px;
+  }
+
+  .nav-links a {
+    font-size: 1.1rem;
+    padding: 1rem 2rem;
+    display: block;
+    width: 100%;
+    margin: 0.3rem 0;
+  }
+
+  .logo {
+    font-size: 1.4rem;
+  }
+
+  .logo img {
+    height: 40px !important;
+  }
+
+  /* Chat window responsive */
+  .chat-window {
+    width: 90vw;
+    max-width: 350px;
+    height: 80vh;
+    max-height: 500px;
+  }
+
+  .footer-content {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+  }
+}
+
+/* Mobile phones (480px and below) */
+@media screen and (max-width: 480px) {
+  .nav {
+    padding: 0 0.5rem;
+  }
+
+  .logo {
+    font-size: 1.2rem;
+  }
+
+  .logo span {
+    display: none;
+  }
+
+  .logo img {
+    height: 35px !important;
+  }
+
+  .nav-links {
+    padding: 1.5rem;
+    gap: 1.2rem;
+  }
+
+  .nav-links a {
+    font-size: 1rem;
+    padding: 0.8rem 1.5rem;
+  }
+
+  .mobile-auth-btn {
+    font-size: 0.9rem;
+    padding: 0.8rem 1.2rem;
+    min-width: 180px;
+  }
+
+  /* Chat positioning for mobile */
+  .chat-popup-wrapper {
+    bottom: 15px;
+    right: 15px;
+  }
+
+  .chat-toggle-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+
+  .chat-window {
+    width: 95vw;
+    height: 85vh;
+    border-radius: 15px;
+    bottom: 10px;
+    right: 2.5vw;
+    position: fixed;
+  }
+
+  .chat-header {
+    padding: 15px;
+  }
+
+  .chat-header h3 {
+    font-size: 1rem;
+  }
+
+  .chat-header p {
+    font-size: 0.75em;
+  }
+
+  .welcome-screen {
+    padding: 20px 15px;
+  }
+
+  .chat-messages {
+    padding: 10px;
+  }
+
+  .message-bubble {
+    max-width: 85%;
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+
+  .chat-input {
+    padding: 10px;
+  }
+
+  .message-input {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+
+  .send-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* Footer responsive */
+  .footer {
+    padding: 2rem 1rem 1rem;
+  }
+
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    text-align: center;
+  }
+
+  .footer-section h3 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  .footer-section p {
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  .main-content {
+    margin-top: 70px;
+    padding: 20px 0;
+  }
+}
+
+/* Extra small devices (360px and below) */
+@media screen and (max-width: 360px) {
+  .nav {
+    padding: 0 0.25rem;
+  }
+
+  .logo {
+    font-size: 1rem;
+  }
+
+  .mobile-menu-toggle span {
+    width: 20px;
+    height: 2px;
+  }
+
+  .nav-links {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .nav-links a {
+    font-size: 0.9rem;
+    padding: 0.6rem 1rem;
+  }
+
+  .mobile-auth-btn {
+    font-size: 0.85rem;
+    padding: 0.7rem 1rem;
+    min-width: 160px;
+  }
+
+  .chat-window {
+    width: 98vw;
+    height: 90vh;
+    right: 1vw;
+    border-radius: 10px;
+  }
+
+  .chat-toggle-btn {
+    width: 45px;
+    height: 45px;
+    font-size: 18px;
+  }
+
+  .notification-badge {
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+  }
+
+  .footer-section p {
+    font-size: 0.8rem;
+  }
+}
+
+/* Landscape mobile (max-height: 500px) */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+  .chat-window {
+    height: 90vh;
+    width: 350px;
+  }
+
+  .nav-links {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 1rem;
+    height: auto;
+    top: 70px;
+    gap: 0.5rem;
+  }
+
+  .nav-links li {
+    max-width: none;
+    width: auto;
+  }
+
+  .mobile-user-actions {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+    padding-top: 1rem;
+  }
+
+  .mobile-auth-btn {
+    min-width: 120px;
+    font-size: 0.8rem;
+    padding: 0.6rem 1rem;
+  }
+}
+
+/* High DPI displays */
+@media screen and (-webkit-min-device-pixel-ratio: 2), 
+       screen and (min-resolution: 192dpi) {
+  .logo img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* Touch devices */
+@media (hover: none) and (pointer: coarse) {
+  .book-btn:hover,
+  .nav-links a:hover,
+  .chat-toggle-btn:hover,
+  .send-btn:hover,
+  .start-chat-btn:hover,
+  .start-new-session-btn:hover,
+  .mobile-auth-btn:hover {
+    transform: none;
+    box-shadow: inherit;
+  }
+
+  .book-btn:active,
+  .chat-toggle-btn:active,
+  .send-btn:active,
+  .start-chat-btn:active,
+  .mobile-auth-btn:active {
+    transform: scale(0.95);
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .chat-window {
+    background: #1f2937;
+    color: white;
+  }
+
+  .chat-messages {
+    background: #111827;
+  }
+
+  .message.support .message-bubble {
+    background: #374151;
+    color: white;
+    border-color: #4b5563;
+  }
+
+  .welcome-screen input {
+    background: #374151;
+    color: white;
+    border-color: #4b5563;
+  }
+
+  .message-input {
+    background: #374151;
+    color: white;
+    border-color: #4b5563;
   }
 }
 </style>

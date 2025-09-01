@@ -1,305 +1,250 @@
 <template>
-  <div class="dich-vu-management">
-    <!-- Tiêu đề trang -->
-    <div class="header">
-      <h1 class="title">
-        <i class="fa fa-list-alt"></i>
-        Quản lý Dịch Vụ
-      </h1>
-    </div>
-
-    <!-- Import Section -->
-    <div class="card import-section">
-      <div class="card-header">
-        <h2 class="section-title">
-          <i class="fa fa-file-excel"></i>
-          Import Dịch vụ từ Excel
-        </h2>
-        <button class="btn btn-outline-light btn-sm" @click="downloadTemplate">
-          <i class="fa fa-download"></i>
-          Tải file mẫu
-        </button>
+  <div class="container">
+    <div class="dich-vu-management">
+      <!-- Tiêu đề trang -->
+      <div class="header">
+        <h1 class="title">
+          <i class="fa fa-list-alt"></i>
+          Quản lý Dịch Vụ
+        </h1>
       </div>
-      <div class="card-body">
-        <div class="import-container">
-          <div class="upload-zone" :class="{ 'dragover': isDragOver }" 
-               @drop="handleDrop" 
-               @dragover.prevent="isDragOver = true" 
-               @dragleave="isDragOver = false"
-               @click="triggerFileInput">
-            <div class="upload-content">
-              <i class="fa fa-cloud-upload-alt upload-icon"></i>
-              <h3>Kéo thả file Excel vào đây</h3>
-              <p>hoặc <span class="upload-link">nhấn để chọn file</span></p>
-              <small class="upload-note">Chỉ hỗ trợ file .xlsx</small>
-            </div>
-            <input 
-              ref="fileInput" 
-              type="file" 
-              accept=".xlsx" 
-              @change="handleFileSelect" 
-              style="display: none"
-            />
-          </div>
-          
-          <div v-if="selectedFile" class="selected-file">
-            <div class="file-info">
-              <i class="fa fa-file-excel file-icon"></i>
-              <div class="file-details">
-                <span class="file-name">{{ selectedFile.name }}</span>
-                <small class="file-size">{{ formatFileSize(selectedFile.size) }}</small>
-              </div>
-              <button class="btn btn-sm btn-danger" @click="removeFile">
-                <i class="fa fa-times"></i>
-              </button>
-            </div>
-            <div class="import-actions">
-              <button class="btn btn-success" @click="importFile" :disabled="importing">
-                <i class="fa fa-upload" :class="{ 'fa-spin': importing }"></i>
-                {{ importing ? 'Đang import...' : 'Import dữ liệu' }}
-              </button>
-            </div>
-          </div>
-
-          <!-- Import Progress -->
-          <div v-if="importing" class="import-progress">
-            <div class="progress-bar">
-              <div class="progress-fill" :style="{ width: importProgress + '%' }"></div>
-            </div>
-            <p class="progress-text">Đang xử lý... {{ importProgress }}%</p>
-          </div>
-
-          <!-- Import Result -->
-          <div v-if="importResult" class="import-result" :class="importResult.success ? 'success' : 'error'">
-            <div class="result-icon">
-              <i class="fa" :class="importResult.success ? 'fa-check-circle' : 'fa-exclamation-circle'"></i>
-            </div>
-            <div class="result-content">
-              <h4>{{ importResult.success ? 'Import thành công!' : 'Import thất bại!' }}</h4>
-              <p v-if="importResult.success">
-                Đã import thành công {{ importResult.count }} dịch vụ
-              </p>
-              <p v-else>{{ importResult.message }}</p>
-            </div>
-            <button class="btn btn-sm btn-outline-secondary" @click="clearResult">
-              <i class="fa fa-times"></i>
-            </button>
-          </div>
+      <!-- Bộ lọc -->
+      <div class="card filter-section">
+        <div class="card-header">
+          <h2 class="section-title">
+            <i class="fa fa-filter"></i>
+            Bộ lọc và tìm kiếm
+          </h2>
+          <button @click="resetFilters" class="btn btn-outline-light">
+            <i class="fas fa-sync-alt"></i>
+            Làm mới
+          </button>
         </div>
-      </div>
-    </div>
-
-    <!-- Bộ lọc -->
-    <div class="card filter-section">
-      <div class="card-header">
-        <h2 class="section-title">
-          <i class="fa fa-filter"></i>
-          Bộ lọc và tìm kiếm
-        </h2>
-      </div>
-      <div class="card-body">
-        <div class="filter-grid">
-          <!-- Tìm kiếm theo tên -->
-          <div class="filter-group">
-            <label class="filter-label">
-            <i class="fa-solid fa-magnifying-glass me-1" style="color:#e83e8c;"></i> Tìm theo tên
-            </label>
-            <div class="search-container">
-              <input 
-                v-model="searchName" 
-                @input="searchByName" 
-                type="text" 
-                class="search-input" 
-                placeholder="Nhập tên dịch vụ..." 
-              />
-              <i class="fa fa-search search-icon"></i>
-            </div>
-          </div>
-
-          <!-- Lọc theo giá -->
-          <div class="filter-group price-filter">
-            <label class="filter-label">
-            <i class="fa-solid fa-sliders me-1"></i> Lọc giá
-            </label>
-            <div class="price-inputs">
-              <input v-model.number="priceMin" type="number" class="form-control" placeholder="Từ" min="0" />
-              <input v-model.number="priceMax" type="number" class="form-control" placeholder="Đến" min="0" />
-              <button class="btn btn-primary" @click="filterByPrice">
-                <i class="fa fa-sort-amount-down-alt"></i> Lọc
-              </button>
-            </div>
-          </div>
-
-          <!-- Xem tất cả -->
-          <div class="filter-group">
-            <button class="btn btn-outline-primary" @click="fetchDichVus">
-            <i class="fa fa-list me-1"></i> Tất cả
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="content-grid">
-      <!-- Form -->
-      <div class="form-section">
-        <div class="card">
-          <div class="card-header">
-            <h2 class="section-title">
-              <i class="fa fa-plus-circle"></i>
-              {{ isEditing ? "Cập nhật Dịch vụ" : "Thêm Dịch vụ mới" }}
-            </h2>
-          </div>
-          <div class="card-body">
-            <form @submit.prevent="saveDichVu" class="service-form">
-              <div class="form-grid">
-                <div class="form-group">
-                  <label class="form-label">Tên dịch vụ <span class="required">*</span></label>
-                  <input v-model="dichVu.tenDichVu" class="form-control" required />
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Giá (VND) <span class="required">*</span></label>
-                  <input v-model.number="dichVu.gia" type="number" class="form-control" min="0" required />
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Thời gian (phút) <span class="required">*</span></label>
-                  <input v-model.number="dichVu.thoiGian" type="number" class="form-control" min="0" required />
-                </div>
-                 <div class="form-group">
-                  <label class="form-label">Hình ảnh</label>
-                  <input type="file" class="form-control" @change="handleFileChange" accept="image/*" />
-                </div>
-                <div class="form-group full-width">
-                  <label class="form-label">Mô tả</label>
-                  <textarea v-model="dichVu.moTa" class="form-control" rows="3"></textarea>
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Loại dịch vụ <span class="required">*</span></label>
-                  <select v-model.number="dichVu.loaiDichVuID" class="form-control" required>
-                    <option disabled value="">-- Chọn loại dịch vụ --</option>
-                    <option v-for="ldv in loaiDichVus" :key="ldv.loaiDichVuID" :value="ldv.loaiDichVuID">
-                      {{ ldv.tenLoai }}
-                    </option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Trạng thái</label>
-                  <select v-model.number="dichVu.trangThai" class="form-control">
-                    <option :value="1">Hoạt động</option>
-                    <option :value="0">Tạm ngừng</option>
-                  </select>
-                </div>
-              </div>
-              <div class="form-actions">
-                <button type="submit" class="btn btn-primary">
-                  <i class="fa fa-save"></i> {{ isEditing ? "Cập nhật" : "Thêm" }}
+        <div class="card-body">
+          <div class="filter-grid">
+            <!-- Tìm kiếm theo tên -->
+            <div class="filter-group">
+              <label class="filter-label">
+                <i class="fa-solid fa-magnifying-glass me-1" style="color:#e83e8c;"></i> Tìm theo tên
+              </label>
+              <div class="search-container">
+                <input v-model="searchName" type="text" class="search-input" placeholder="Nhập tên dịch vụ..." />
+                <button v-if="searchName" @click="clearSearch" class="clear-search" title="Xóa tìm kiếm">
+                  <i class="fas fa-times"></i>
                 </button>
-                <button type="button" class="btn btn-danger" @click="resetForm">
-                  <i class="fa fa-undo"></i> Hủy
-                </button>
+                <i class="fa fa-search search-icon"></i>
               </div>
-            </form>
+            </div>
+
+            <!-- Lọc theo giá -->
+            <div class="filter-group price-filter">
+              <label class="filter-label">
+                <i class="fa-solid fa-sliders me-1"></i> Lọc giá
+              </label>
+              <div class="price-inputs">
+                <input v-model.number="priceMin" type="number" class="form-control" placeholder="Từ" min="0" />
+                <input v-model.number="priceMax" type="number" class="form-control" placeholder="Đến" min="0" />
+              </div>
+            </div>
+
+            <!-- Lọc theo loại dịch vụ -->
+            <div class="filter-group">
+              <label class="filter-label">Loại dịch vụ</label>
+              <select v-model="selectedLoaiDichVu" class="form-control">
+                <option value="">Tất cả loại</option>
+                <option v-for="ldv in loaiDichVus" :key="ldv.loaiDichVuID" :value="ldv.loaiDichVuID">
+                  {{ ldv.tenLoai }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Lọc theo trạng thái -->
+            <div class="filter-group">
+              <label class="filter-label">Trạng thái</label>
+              <select v-model="selectedTrangThai" class="form-control">
+                <option value="">Tất cả</option>
+                <option value="1">Hoạt động</option>
+                <option value="0">Tạm ngừng</option>
+              </select>
+            </div>
+
+            <!-- Lọc theo thời gian -->
+            <div class="filter-group">
+              <label class="filter-label">
+                <i class="fa-solid fa-clock me-1"></i> Thời gian (phút)
+              </label>
+              <div class="time-inputs">
+                <input v-model.number="timeMin" type="number" class="form-control" placeholder="Từ" min="0" />
+                <input v-model.number="timeMax" type="number" class="form-control" placeholder="Đến" min="0" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Danh sách -->
-      <div class="list-section">
-        <div class="card">
-          <div class="card-header">
-            <h2 class="section-title">
-              <i class="fa fa-table"></i>
-              Danh sách Dịch vụ
-            </h2>
-          </div>
-          <div class="card-body">
-            <div class="table-responsive">
-              <table class="services-table">
-                <thead>
-                  <tr>
-                    <th>Tên</th>
-                    <th>Giá</th>
-                    <th>Thời gian</th>
-                    <th>Ảnh</th>
-                    <th>Ngày tạo</th>
-                    <th>Loại</th>
-                    <th>Trạng thái</th>
-                    <th>Hành động</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="dv in paginatedDichVus" :key="dv.dichVuID" class="service-row">
-                    <td class="service-name">{{ dv.tenDichVu }}</td>
-                    <td class="service-price">{{ dv.gia.toLocaleString() }} vnđ</td>
-                    <td class="service-time">{{ dv.thoiGian }} phút</td>
-                    <td class="service-image">
-                      <img 
-                        :src="'https://localhost:7183/images/' + dv.hinhAnh" 
-                        class="service-img" 
-                        alt="Service image"
-                      />
-                    </td>
-                    <td class="service-date">{{ new Date(dv.ngayTao).toLocaleDateString() }}</td>
-                    <td class="service-type">
-                      <span class="type-badge">{{ dv.tenLoai }}</span>
-                    </td>
-                    <td class="service-status">
-                      <span class="status-badge" :class="dv.trangThai === 1 ? 'active' : 'inactive'">
-                        {{ dv.trangThai === 1 ? 'Hoạt động' : 'Tạm ngừng' }}
-                      </span>
-                    </td>
-                    <td class="service-actions">
-                      <div class="action-buttons">
-                        <button class="btn btn-sm btn-info" @click="editDichVu(dv)" title="Chỉnh sửa">
-                          <i class="fa fa-edit"></i>
-                        </button>
-                        <button 
-                          class="btn btn-sm" 
-                          :class="dv.trangThai === 1 ? 'btn-warning' : 'btn-success'" 
-                          @click="toggleTrangThai(dv)"
-                          :title="dv.trangThai === 1 ? 'Tạm ngừng' : 'Kích hoạt'"
-                        >
-                          <i class="fa" :class="dv.trangThai === 1 ? 'fa-pause' : 'fa-play'"></i>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+      <div class="content-grid">
+        <!-- Form -->
+        <div class="form-section">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="section-title">
+                <i class="fa fa-plus-circle"></i>
+                {{ isEditing ? "Cập nhật Dịch vụ" : "Thêm Dịch vụ mới" }}
+              </h2>
             </div>
+            <div class="card-body">
+              <form @submit.prevent="saveDichVu" class="service-form">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label">Tên dịch vụ <span class="required">*</span></label>
+                    <input v-model="dichVu.tenDichVu" class="form-control" required />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Giá (VND) <span class="required">*</span></label>
+                    <input v-model.number="dichVu.gia" type="number" class="form-control" min="0" required />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Thời gian (phút) <span class="required">*</span></label>
+                    <input v-model.number="dichVu.thoiGian" type="number" class="form-control" min="0" required />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Hình ảnh</label>
+                    <input type="file" class="form-control" @change="handleFileChange" accept="image/*" />
+                  </div>
+                  <div class="form-group full-width">
+                    <label class="form-label">Mô tả</label>
+                    <textarea v-model="dichVu.moTa" class="form-control" rows="3"></textarea>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Loại dịch vụ <span class="required">*</span></label>
+                    <select v-model.number="dichVu.loaiDichVuID" class="form-control" required>
+                      <option disabled value="">-- Chọn loại dịch vụ --</option>
+                      <option v-for="ldv in loaiDichVus" :key="ldv.loaiDichVuID" :value="ldv.loaiDichVuID">
+                        {{ ldv.tenLoai }}
+                      </option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Trạng thái</label>
+                    <select v-model.number="dichVu.trangThai" class="form-control">
+                      <option :value="1">Hoạt động</option>
+                      <option :value="0">Tạm ngừng</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-actions">
+                  <button type="submit" class="btn btn-primary" :disabled="loading">
+                    <i class="fa fa-save"></i>
+                    {{ loading ? 'Đang lưu...' : (isEditing ? "Cập nhật" : "Thêm") }}
+                  </button>
+                  <button type="button" class="btn btn-danger" @click="resetForm">
+                    <i class="fa fa-undo"></i> Hủy
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
 
-            <!-- Phân trang -->
-            <div class="pagination-container">
-              <button 
-                class="btn btn-outline-primary" 
-                :disabled="currentPage === 1" 
-                @click="goToPage(currentPage - 1)"
-              >
-                <i class="fa fa-angle-left"></i>
-                Trước
-              </button>
-              <span class="page-info">Trang {{ currentPage }} / {{ totalPages }}</span>
-              <div class="page-numbers">
-                <button 
-                  v-for="page in totalPages" 
-                  :key="page" 
-                  class="btn btn-sm page-btn" 
-                  :class="page === currentPage ? 'btn-primary' : 'btn-outline-secondary'" 
-                  @click="goToPage(page)"
-                >
-                  {{ page }}
+        <!-- Danh sách -->
+        <div class="list-section">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="section-title">
+                <i class="fa fa-table"></i>
+                Danh sách Dịch vụ ({{ filteredDichVus.length }} kết quả)
+              </h2>
+            </div>
+            <div class="card-body">
+              <!-- Loading State -->
+              <div v-if="loading" class="loading-state">
+                <i class="fas fa-spinner fa-spin"></i>
+                Đang tải...
+              </div>
+
+              <!-- Empty State -->
+              <div v-else-if="!filteredDichVus.length" class="empty-state">
+                <i class="fas fa-concierge-bell"></i>
+                <p>{{ dichVus.length ? 'Không tìm thấy dịch vụ phù hợp với bộ lọc' : 'Không có dịch vụ nào' }}</p>
+              </div>
+
+              <div v-else class="table-responsive">
+                <table class="services-table">
+                  <thead>
+                    <tr>
+                      <th>Tên</th>
+                      <th>Giá</th>
+                      <th>Thời gian</th>
+                      <th>Ảnh</th>
+                      <th>Ngày tạo</th>
+                      <th>Loại</th>
+                      <th>Trạng thái</th>
+                      <th>Hành động</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="dv in paginatedDichVus" :key="dv.dichVuID" class="service-row">
+                      <td class="service-name">{{ dv.tenDichVu }}</td>
+                      <td class="service-price">{{ formatCurrency(dv.gia) }}</td>
+                      <td class="service-time">{{ dv.thoiGian }} phút</td>
+                      <td class="service-image">
+                        <img :src="imageUrl + dv.hinhAnh" class="service-img" alt="Service image" />
+                      </td>
+                      <td class="service-date">{{ formatDate(dv.ngayTao) }}</td>
+                      <td class="service-type">
+                        <span class="type-badge">{{ dv.tenLoai }}</span>
+                      </td>
+                      <td class="service-status">
+                        <span class="status-badge" :class="dv.trangThai === 1 ? 'active' : 'inactive'">
+                          {{ dv.trangThai === 1 ? 'Hoạt động' : 'Tạm ngừng' }}
+                        </span>
+                      </td>
+                      <td class="service-actions">
+                        <div class="action-buttons">
+                          <button class="btn btn-sm btn-info" @click="editDichVu(dv)" title="Chỉnh sửa">
+                            <i class="fa fa-edit"></i>
+                          </button>
+                          <button class="btn btn-sm" :class="dv.trangThai === 1 ? 'btn-warning' : 'btn-success'"
+                            @click="toggleTrangThai(dv)" :title="dv.trangThai === 1 ? 'Tạm ngừng' : 'Kích hoạt'">
+                            <i class="fa" :class="dv.trangThai === 1 ? 'fa-pause' : 'fa-play'"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Phân trang -->
+              <div v-if="filteredDichVus.length > 0" class="pagination-container">
+                <button class="btn btn-outline-primary" :disabled="currentPage === 1"
+                  @click="goToPage(currentPage - 1)">
+                  <i class="fa fa-angle-left"></i>
+                  Trước
+                </button>
+                <span class="page-info">Trang {{ currentPage }} / {{ totalPages }}</span>
+                <div class="page-numbers">
+                  <button v-for="page in visiblePages" :key="page" class="btn btn-sm page-btn"
+                    :class="page === currentPage ? 'btn-primary' : 'btn-outline-secondary'" @click="goToPage(page)">
+                    {{ page }}
+                  </button>
+                </div>
+                <button class="btn btn-outline-primary" :disabled="currentPage === totalPages"
+                  @click="goToPage(currentPage + 1)">
+                  Sau
+                  <i class="fa fa-angle-right"></i>
                 </button>
               </div>
-              <button 
-                class="btn btn-outline-primary" 
-                :disabled="currentPage === totalPages" 
-                @click="goToPage(currentPage + 1)"
-              >
-                Sau
-                <i class="fa fa-angle-right"></i>
-              </button>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Toast Notifications -->
+      <div class="toast-container">
+        <div v-for="toast in toasts" :key="toast.id" class="toast" :class="toast.type">
+          <i class="fas" :class="getToastIcon(toast.type)"></i>
+          {{ toast.message }}
         </div>
       </div>
     </div>
@@ -307,11 +252,25 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import apiClient from "../utils/axiosClient";
 import Swal from "sweetalert2";
+
+const imageUrl = import.meta.env.VITE_BASE_URL.replace("/api", "/images/");
 const dichVus = ref([]);
 const loaiDichVus = ref([]);
+const loading = ref(false);
+const toasts = ref([]);
+
+// Search and filter states
+const searchName = ref("");
+const priceMin = ref("");
+const priceMax = ref("");
+const selectedLoaiDichVu = ref("");
+const selectedTrangThai = ref("");
+const timeMin = ref("");
+const timeMax = ref("");
+
 const dichVu = ref({
   dichVuID: 0,
   tenDichVu: "",
@@ -323,161 +282,173 @@ const dichVu = ref({
   trangThai: 1,
   loaiDichVuID: 1,
 });
+
 const selectedImage = ref(null);
 const isEditing = ref(false);
-const searchName = ref("");
-const priceMin = ref(0);
-const priceMax = ref(0);
 
-// Import related refs
-const selectedFile = ref(null);
-const isDragOver = ref(false);
-const importing = ref(false);
-const importProgress = ref(0);
-const importResult = ref(null);
-const fileInput = ref(null);
-
+// Pagination
 const currentPage = ref(1);
 const pageSize = ref(5);
-const totalItems = ref(0);
-const totalPages = computed(() => Math.ceil(totalItems.value / pageSize.value));
+
+// Toast methods
+const showToast = (message, type = 'info') => {
+  const toast = {
+    id: Date.now(),
+    message,
+    type
+  }
+  toasts.value.push(toast)
+  setTimeout(() => {
+    const index = toasts.value.findIndex(t => t.id === toast.id)
+    if (index > -1) toasts.value.splice(index, 1)
+  }, 3000)
+}
+
+const getToastIcon = (type) => {
+  switch (type) {
+    case 'success': return 'fa-check-circle'
+    case 'error': return 'fa-exclamation-circle'
+    case 'warning': return 'fa-exclamation-triangle'
+    default: return 'fa-info-circle'
+  }
+}
+
+// Computed properties for filtering
+const filteredDichVus = computed(() => {
+  let filtered = [...dichVus.value];
+
+  // Filter by name
+  if (searchName.value.trim()) {
+    filtered = filtered.filter(dv =>
+      dv.tenDichVu.toLowerCase().includes(searchName.value.trim().toLowerCase())
+    );
+  }
+
+  // Filter by price range
+  const min = Number(priceMin.value);
+  const max = Number(priceMax.value);
+
+  if (!isNaN(min) && priceMin.value !== "" && (isNaN(max) || priceMax.value === "")) {
+    filtered = filtered.filter(dv => dv.gia >= min);
+  }
+
+  if (!isNaN(max) && priceMax.value !== "" && (isNaN(min) || priceMin.value === "")) {
+    filtered = filtered.filter(dv => dv.gia <= max);
+  }
+
+  if (!isNaN(min) && priceMin.value !== "" && !isNaN(max) && priceMax.value !== "") {
+    filtered = filtered.filter(dv => dv.gia >= min && dv.gia <= max);
+  }
+
+  // Filter by service type
+  if (selectedLoaiDichVu.value !== "") {
+    filtered = filtered.filter(dv => dv.loaiDichVuID === Number(selectedLoaiDichVu.value));
+  }
+
+  // Filter by status
+  if (selectedTrangThai.value !== "") {
+    filtered = filtered.filter(dv => dv.trangThai === Number(selectedTrangThai.value));
+  }
+
+  // Filter by time range
+  const timeMinVal = Number(timeMin.value);
+  const timeMaxVal = Number(timeMax.value);
+
+  if (!isNaN(timeMinVal) && timeMin.value !== "" && (isNaN(timeMaxVal) || timeMax.value === "")) {
+    filtered = filtered.filter(dv => dv.thoiGian >= timeMinVal);
+  }
+
+  if (!isNaN(timeMaxVal) && timeMax.value !== "" && (isNaN(timeMinVal) || timeMin.value === "")) {
+    filtered = filtered.filter(dv => dv.thoiGian <= timeMaxVal);
+  }
+
+  if (!isNaN(timeMinVal) && timeMin.value !== "" && !isNaN(timeMaxVal) && timeMax.value !== "") {
+    filtered = filtered.filter(dv => dv.thoiGian >= timeMinVal && dv.thoiGian <= timeMaxVal);
+  }
+
+  return filtered;
+});
+
+const totalPages = computed(() => Math.ceil(filteredDichVus.value.length / pageSize.value));
+
 const paginatedDichVus = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value;
-  return dichVus.value.slice(start, start + pageSize.value);
+  return filteredDichVus.value.slice(start, start + pageSize.value);
 });
+
+const visiblePages = computed(() => {
+  const total = totalPages.value;
+  const current = currentPage.value;
+  const delta = 2;
+
+  let pages = [];
+  for (let i = Math.max(1, current - delta); i <= Math.min(total, current + delta); i++) {
+    pages.push(i);
+  }
+
+  if (pages[0] > 1) {
+    if (pages[0] > 2) pages.unshift('...');
+    pages.unshift(1);
+  }
+
+  if (pages[pages.length - 1] < total) {
+    if (pages[pages.length - 1] < total - 1) pages.push('...');
+    pages.push(total);
+  }
+
+  return pages.filter(page => page !== '...' || pages.indexOf(page) === pages.lastIndexOf(page));
+});
+
+// Filter methods
+const clearSearch = () => {
+  searchName.value = '';
+}
+
+const resetFilters = () => {
+  searchName.value = "";
+  priceMin.value = "";
+  priceMax.value = "";
+  selectedLoaiDichVu.value = "";
+  selectedTrangThai.value = "";
+  timeMin.value = "";
+  timeMax.value = "";
+  currentPage.value = 1;
+}
+
+// Utility methods
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND'
+  }).format(value);
+}
+
+const formatDate = (dateString) => {
+  return new Date(dateString).toLocaleDateString('vi-VN');
+}
 
 const handleFileChange = (e) => {
   selectedImage.value = e.target.files[0];
 };
 
-// Import functions
-const triggerFileInput = () => {
-  fileInput.value.click();
-};
-
-const handleFileSelect = (e) => {
-  const file = e.target.files[0];
-  if (file && file.name.endsWith('.xlsx')) {
-    selectedFile.value = file;
-    importResult.value = null;
-  } else {
-    alert('Chỉ hỗ trợ file .xlsx');
-  }
-};
-
-const handleDrop = (e) => {
-  e.preventDefault();
-  isDragOver.value = false;
-  const file = e.dataTransfer.files[0];
-  if (file && file.name.endsWith('.xlsx')) {
-    selectedFile.value = file;
-    importResult.value = null;
-  } else {
-    alert('Chỉ hỗ trợ file .xlsx');
-  }
-};
-
-const removeFile = () => {
-  selectedFile.value = null;
-  if (fileInput.value) {
-    fileInput.value.value = '';
-  }
-};
-
-const formatFileSize = (bytes) => {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-};
-
-const importFile = async () => {
-  if (!selectedFile.value) return;
-
-  importing.value = true;
-  importProgress.value = 0;
-  importResult.value = null;
-
-  try {
-    const formData = new FormData();
-    formData.append('file', selectedFile.value);
-
-    // Simulate progress
-    const progressInterval = setInterval(() => {
-      if (importProgress.value < 90) {
-        importProgress.value += 10;
-      }
-    }, 200);
-
-    const response = await apiClient.post('/DichVu/import', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-
-    clearInterval(progressInterval);
-    importProgress.value = 100;
-
-    setTimeout(() => {
-      importing.value = false;
-      importResult.value = {
-        success: true,
-        count: response.count || 0,
-        message: `Import thành công ${response.count || 0} dịch vụ`
-      };
-      
-      // Refresh the list
-      fetchDichVus();
-      
-      // Clear file after successful import
-      setTimeout(() => {
-        selectedFile.value = null;
-        if (fileInput.value) {
-          fileInput.value.value = '';
-        }
-      }, 3000);
-    }, 500);
-
-  } catch (error) {
-    importing.value = false;
-    importProgress.value = 0;
-    importResult.value = {
-      success: false,
-      message: error.response?.data?.message || 'Có lỗi xảy ra khi import file'
-    };
-    console.error('Import error:', error);
-  }
-};
-
-const downloadTemplate = () => {
-  const link = document.createElement('a');
-  link.href = 'https://drive.google.com/uc?export=download&id=1bf_a4YgEFKGOcyT6gbmyE_J6DfU3r6XQ';
-  link.download = 'LDV_DV_LSP_SP.xlsx';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
-
-
-const clearResult = () => {
-  importResult.value = null;
-};
-
 const goToPage = (page) => {
-  if (page >= 1 && page <= totalPages.value) {
+  if (page >= 1 && page <= totalPages.value && page !== '...') {
     currentPage.value = page;
   }
 };
 
+// API methods
 const fetchDichVus = async () => {
   try {
+    loading.value = true;
     const data = await apiClient.get("/DichVu/all");
     dichVus.value = data;
-    totalItems.value = data.length;
-    currentPage.value = 1;
+    showToast('Tải danh sách dịch vụ thành công', 'success');
   } catch (error) {
     console.error("Lỗi lấy danh sách dịch vụ:", error);
+    showToast('Lỗi khi tải danh sách dịch vụ', 'error');
+  } finally {
+    loading.value = false;
   }
 };
 
@@ -487,47 +458,61 @@ const fetchLoaiDichVus = async () => {
     loaiDichVus.value = data;
   } catch (error) {
     console.error("Lỗi lấy loại dịch vụ:", error);
+    showToast('Lỗi khi tải loại dịch vụ', 'error');
   }
 };
 
-const searchByName = async () => {
-  if (!searchName.value.trim()) return fetchDichVus();
-  try {
-    const data = await apiClient.get(`/DichVu/name?ten=${searchName.value}`);
-    dichVus.value = data;
-    totalItems.value = data.length;
-    currentPage.value = 1;
-  } catch (error) {
-    console.error("Không tìm thấy dịch vụ:", error);
-  }
-};
-
-const filterByPrice = async () => {
-  if (priceMin.value < 0 || priceMax.value < 0) {
-    return alert("Giá không được nhỏ hơn 0");
-  }
-
-  if (priceMax.value === 0 && priceMin.value > 0) {
-    priceMax.value = priceMin.value;
-  }
-
-  if (priceMin.value > priceMax.value) {
-    return alert("Giá tối thiểu không được lớn hơn giá tối đa");
-  }
-
-  try {
-    const data = await apiClient.get(`/DichVu/filter-by-price?min=${priceMin.value}&max=${priceMax.value}`);
-    dichVus.value = data;
-    totalItems.value = data.length;
-    currentPage.value = 1;
-  } catch (error) {
-    console.error("Lỗi lọc giá:", error);
-  }
-};
 const saveDichVu = async () => {
-  try {
-    let imageName = dichVu.value.hinhAnh;
+  let hasError = false;
 
+  // --- Validation cơ bản ---
+  if (!dichVu.value.tenDichVu || !dichVu.value.tenDichVu.trim()) {
+    showToast("Tên dịch vụ không được để trống", "warning");
+    return;
+  }
+  if (/\d/.test(dichVu.value.tenDichVu)) {
+    showToast("Tên dịch vụ không được chứa số", "warning");
+    return;
+  }
+  if (dichVu.value.gia == null || dichVu.value.gia <= 0) {
+    showToast("Giá dịch vụ phải lớn hơn 0", "warning");
+    return;
+  }
+  if (dichVu.value.thoiGian == null || dichVu.value.thoiGian <= 0) {
+    showToast("Thời gian phải lớn hơn 0", "warning");
+    return;
+  }
+  if ((!dichVu.value.hinhAnh || !dichVu.value.hinhAnh.trim()) && !selectedImage.value) {
+    showToast("Hình ảnh không được để trống", "warning");
+    return;
+  }
+
+  try {
+    loading.value = true;
+
+    // --- 🔎 Kiểm tra trùng tên theo loại ---
+    const checkRes = await apiClient.get("/DichVu"); // hoặc làm API riêng: /DichVu/check?ten=xxx
+    const allDV = checkRes || [];
+    const tenNormalized = dichVu.value.tenDichVu.trim().toLowerCase();
+
+    const existedDV = allDV.find(
+      x =>
+        x.tenDichVu.trim().toLowerCase() === tenNormalized &&
+        x.dichVuID !== dichVu.value.dichVuID
+    );
+
+    if (existedDV) {
+      if (existedDV.loaiDichVuID !== dichVu.value.loaiDichVuID) {
+        showToast(`Dịch vụ '${dichVu.value.tenDichVu}' đã tồn tại trong loại khác, vui lòng chọn đúng loại dịch vụ.`, "warning");
+        return;
+      } else {
+        showToast("Tên dịch vụ đã tồn tại trong loại này.", "warning");
+        return;
+      }
+    }
+
+    // --- Upload ảnh nếu có ---
+    let imageName = dichVu.value.hinhAnh;
     if (selectedImage.value) {
       const formData = new FormData();
       formData.append("file", selectedImage.value);
@@ -540,42 +525,32 @@ const saveDichVu = async () => {
       imageName = uploadRes.fileName || uploadRes;
     }
 
+    // --- Submit ---
     const payload = { ...dichVu.value, hinhAnh: imageName };
 
     if (isEditing.value) {
       await apiClient.put(`/DichVu/${payload.dichVuID}`, payload);
-      Swal.fire({
-        icon: "success",
-        title: "Cập nhật dịch vụ thành công!",
-        showConfirmButton: false,
-        timer: 2000
-      });
+      showToast("Cập nhật dịch vụ thành công!", "success");
     } else {
       await apiClient.post("/DichVu", payload);
-      Swal.fire({
-        icon: "success",
-        title: "Thêm dịch vụ thành công!",
-        showConfirmButton: false,
-        timer: 2000
-      });
+      showToast("Thêm dịch vụ thành công!", "success");
     }
 
     resetForm();
     selectedImage.value = null;
-    fetchDichVus();
+    await fetchDichVus();
   } catch (error) {
     console.error("Lỗi lưu dịch vụ:", error);
-    Swal.fire({
-      icon: "error",
-      title: "Lỗi khi lưu dịch vụ!",
-      text: "Vui lòng thử lại sau.",
-    });
+    showToast("Có lỗi khi lưu dịch vụ!", "error");
+  } finally {
+    loading.value = false;
   }
 };
-
 const editDichVu = (dv) => {
   dichVu.value = { ...dv };
   isEditing.value = true;
+  // Scroll to form
+  document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
 };
 
 const resetForm = () => {
@@ -591,18 +566,42 @@ const resetForm = () => {
     trangThai: 1,
     loaiDichVuID: 1,
   };
+  selectedImage.value = null;
 };
 
 const toggleTrangThai = async (dv) => {
-  try {
-    const updatedDv = { ...dv, trangThai: dv.trangThai === 1 ? 0 : 1 };
-    await apiClient.put(`/DichVu/${dv.dichVuID}`, updatedDv);
-    fetchDichVus();
-  } catch (error) {
-    console.error("Lỗi cập nhật trạng thái:", error);
+  const action = dv.trangThai === 1 ? 'tạm ngừng' : 'kích hoạt';
+
+  const result = await Swal.fire({
+    title: `Xác nhận ${action}`,
+    text: `Bạn có chắc chắn muốn ${action} dịch vụ "${dv.tenDichVu}"?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: `Có, ${action}!`,
+    cancelButtonText: 'Hủy'
+  });
+
+  if (result.isConfirmed) {
+    try {
+      const updatedDv = { ...dv, trangThai: dv.trangThai === 1 ? 0 : 1 };
+      await apiClient.put(`/DichVu/${dv.dichVuID}`, updatedDv);
+      await fetchDichVus();
+      showToast(`${action.charAt(0).toUpperCase() + action.slice(1)} dịch vụ thành công!`, 'success');
+    } catch (error) {
+      console.error("Lỗi cập nhật trạng thái:", error);
+      showToast("Lỗi khi cập nhật trạng thái", 'error');
+    }
   }
 };
 
+// Watchers for real-time filtering
+watch([searchName, priceMin, priceMax, selectedLoaiDichVu, selectedTrangThai, timeMin, timeMax], () => {
+  currentPage.value = 1; // Reset to first page when filters change
+});
+
+// Lifecycle
 onMounted(() => {
   fetchDichVus();
   fetchLoaiDichVus();
@@ -610,6 +609,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* ===== BASE STYLES ===== */
 .dich-vu-management {
   max-width: 1400px;
   margin: 0 auto;
@@ -635,6 +635,7 @@ onMounted(() => {
   color: #3498db;
 }
 
+/* ===== CARD COMPONENTS ===== */
 .card {
   background: white;
   border-radius: 12px;
@@ -666,212 +667,15 @@ onMounted(() => {
   padding: 25px;
 }
 
-/* Import Section Styles */
-.import-section {
-  margin-bottom: 30px;
-}
-
-.import-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.upload-zone {
-  border: 3px dashed #cbd5e0;
-  border-radius: 12px;
-  padding: 40px 20px;
-  text-align: center;
-  background: #f8f9fa;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.upload-zone:hover,
-.upload-zone.dragover {
-  border-color: #3498db;
-  background: rgba(52, 152, 219, 0.05);
-  transform: translateY(-2px);
-}
-
-.upload-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 15px;
-}
-
-.upload-icon {
-  font-size: 3rem;
-  color: #3498db;
-  margin-bottom: 10px;
-}
-
-.upload-zone h3 {
-  color: #2c3e50;
-  font-size: 1.5rem;
-  margin: 0;
-}
-
-.upload-zone p {
-  color: #7f8c8d;
-  font-size: 1.1rem;
-  margin: 0;
-}
-
-.upload-link {
-  color: #3498db;
-  font-weight: 600;
-  text-decoration: underline;
-}
-
-.upload-note {
-  color: #95a5a6;
-  font-style: italic;
-}
-
-.selected-file {
-  background: white;
-  border: 2px solid #e1e8ed;
-  border-radius: 12px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.file-info {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  padding: 15px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  border: 1px solid #e1e8ed;
-}
-
-.file-icon {
-  font-size: 2rem;
-  color: #27ae60;
-}
-
-.file-details {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.file-name {
-  font-weight: 600;
-  color: #2c3e50;
-  font-size: 1.1rem;
-}
-
-.file-size {
-  color: #7f8c8d;
-  font-size: 0.9rem;
-}
-
-.import-actions {
-  display: flex;
-  justify-content: flex-start;
-}
-
-.import-progress {
-  background: white;
-  border: 2px solid #e1e8ed;
-  border-radius: 12px;
-  padding: 25px;
-  text-align: center;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 8px;
-  background: #ecf0f1;
-  border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 15px;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #3498db, #2ecc71);
-  border-radius: 4px;
-  transition: width 0.3s ease;
-}
-
-.progress-text {
-  color: #2c3e50;
-  font-weight: 600;
-  margin: 0;
-}
-
-.import-result {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  padding: 20px;
-  border-radius: 12px;
-  border-left: 5px solid;
-}
-
-.import-result.success {
-  background: rgba(39, 174, 96, 0.1);
-  border-left-color: #27ae60;
-}
-
-.import-result.error {
-  background: rgba(231, 76, 60, 0.1);
-  border-left-color: #e74c3c;
-}
-
-.result-icon {
-  font-size: 2rem;
-}
-
-.import-result.success .result-icon {
-  color: #27ae60;
-}
-
-.import-result.error .result-icon {
-  color: #e74c3c;
-}
-
-.result-content {
-  flex: 1;
-}
-
-.result-content h4 {
-  margin: 0 0 5px 0;
-  font-size: 1.2rem;
-  font-weight: 600;
-}
-
-.import-result.success .result-content h4 {
-  color: #27ae60;
-}
-
-.import-result.error .result-content h4 {
-  color: #e74c3c;
-}
-
-.result-content p {
-  margin: 0;
-  color: #7f8c8d;
-  font-size: 1rem;
-}
-
-/* Filter Section Styles */
+/* ===== FILTER SECTION ===== */
 .filter-section {
   margin-bottom: 30px;
+  width: 113%;
 }
 
 .filter-grid {
   display: grid;
-  grid-template-columns: 1fr 2fr auto;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 20px;
   align-items: end;
 }
@@ -886,6 +690,9 @@ onMounted(() => {
   color: #2c3e50;
   margin-bottom: 8px;
   font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .search-container {
@@ -919,74 +726,108 @@ onMounted(() => {
   font-size: 1.1rem;
 }
 
-.price-filter .price-inputs {
+.clear-search {
+  position: absolute;
+  right: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #7f8c8d;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.clear-search:hover {
+  background: rgba(108, 117, 125, 0.2);
+  color: #495057;
+}
+
+.price-inputs,
+.time-inputs {
   display: flex;
   gap: 10px;
   align-items: center;
 }
 
-/* Content Grid */
+/* ===== STATES ===== */
+.loading-state,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #6c757d;
+  font-size: 1.1rem;
+}
+
+.loading-state i {
+  font-size: 2rem;
+  margin-bottom: 15px;
+  color: #007bff;
+}
+
+.empty-state i {
+  font-size: 3rem;
+  margin-bottom: 20px;
+  color: #dee2e6;
+}
+
+.empty-state p {
+  margin: 0;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* ===== CONTENT GRID ===== */
 .content-grid {
   display: grid;
   grid-template-columns: 1fr 2fr;
   gap: 30px;
 }
 
-/* Form Styles */
-.service-form {
-  max-width: none;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-  margin-bottom: 25px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.form-group.full-width {
-  grid-column: 1 / -1;
-}
-
-.form-label {
-  font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 8px;
-  font-size: 0.95rem;
-}
-
-.required {
-  color: #e74c3c;
-}
-
-.form-control {
-  padding: 12px 15px;
+/* ===== FORM STYLES ===== */
+.service-form .form-control {
+  padding: 12px 14px;
   border: 2px solid #e1e8ed;
   border-radius: 8px;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  background: #fafbfc;
+  font-size: 0.95rem;
+  height: 44px;
+  /* fix chiều cao */
+  box-sizing: border-box;
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-.form-control:focus {
-  outline: none;
+.service-form .form-control:focus {
   border-color: #3498db;
-  background: white;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+  outline: none;
 }
 
-.form-actions {
+/* Textarea cao hơn nhưng vẫn cùng style */
+.service-form textarea.form-control {
+  height: auto;
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Full width cho các trường dài */
+.service-form .form-group.full-width {
+  grid-column: 1 / -1;
+  /* chiếm trọn hàng */
+}
+
+/* Hành động nút */
+.service-form .form-actions {
   display: flex;
   gap: 15px;
-  justify-content: flex-start;
+  margin-top: 20px;
 }
 
-/* Button Styles */
+/* ===== BUTTON STYLES ===== */
 .btn {
   padding: 12px 24px;
   border: none;
@@ -997,43 +838,65 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s;
+}
+
+.btn:hover:not(:disabled)::before {
+  left: 100%;
 }
 
 .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none !important;
+}
+
+.btn:disabled::before {
+  display: none;
 }
 
 .btn-primary {
   background: linear-gradient(135deg, #3498db, #2980b9);
   color: white;
+  box-shadow: 0 4px 16px rgba(52, 152, 219, 0.3);
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+  box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
 }
 
 .btn-success {
   background: linear-gradient(135deg, #27ae60, #229954);
   color: white;
-}
-
-.btn-success:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
-}
-
-.btn-secondary {
-  background: linear-gradient(135deg, #95a5a6, #7f8c8d);
-  color: white;
+  box-shadow: 0 4px 16px rgba(39, 174, 96, 0.3);
 }
 
 .btn-info {
-  background: linear-gradient(135deg, #3498db, #2980b9);
+  background: linear-gradient(135deg, #17a2b8, #138496);
   color: white;
+}
+
+.btn-info:hover:not(:disabled) {
+  background: linear-gradient(135deg, #138496, #117a8b);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(23, 162, 184, 0.4);
 }
 
 .btn-warning {
@@ -1041,20 +904,32 @@ onMounted(() => {
   color: white;
 }
 
+.btn-warning:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(243, 156, 18, 0.4);
+}
+
 .btn-danger {
   background: linear-gradient(135deg, #e74c3c, #c0392b);
   color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
 }
 
 .btn-outline-primary {
   background: transparent;
   color: #3498db;
   border: 2px solid #3498db;
+  box-shadow: none;
 }
 
 .btn-outline-primary:hover:not(:disabled) {
   background: #3498db;
   color: white;
+  transform: translateY(-2px);
 }
 
 .btn-outline-secondary {
@@ -1079,51 +954,75 @@ onMounted(() => {
   font-size: 0.85rem;
 }
 
-/* Table Styles */
+/* ===== TABLE STYLES ===== */
 .table-responsive {
   overflow-x: auto;
+  border-radius: 0 0 12px 12px;
 }
 
 .services-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
+  background: white;
+  margin: 0;
 }
 
-.services-table th {
-  background: linear-gradient(135deg, #34495e, #2c3e50);
-  color: white;
-  padding: 15px 12px;
+.services-table thead {
+  background: linear-gradient(135deg, #495057 0%, #343a40 100%);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.services-table thead th {
+  padding: 18px 15px;
   text-align: left;
   font-weight: 600;
-  font-size: 0.95rem;
-  border-bottom: 3px solid #3498db;
+  font-size: 0.9rem;
+  color: white;
+  border: none;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.services-table tbody tr {
+  transition: all 0.3s ease;
+  border-bottom: 1px solid #f1f3f4;
+}
+
+.services-table tbody tr:hover {
+  background: linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%);
+  transform: translateX(3px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .services-table td {
-  padding: 15px 12px;
-  border-bottom: 1px solid #ecf0f1;
+  padding: 16px 15px;
   vertical-align: middle;
-  text-align: center;
+  border: none;
+  font-size: 0.95rem;
 }
 
-.service-row:hover {
-  background: #f8f9fa;
-}
-
+/* ===== TABLE CELL STYLES ===== */
 .service-name {
   font-weight: 600;
   color: #2c3e50;
   text-align: left;
+  min-width: 150px;
 }
 
 .service-price {
   color: #27ae60;
   font-weight: 600;
+  font-size: 1.05rem;
+  min-width: 120px;
 }
 
 .service-time {
   color: #7f8c8d;
+  font-weight: 500;
+  min-width: 80px;
 }
 
 .service-img {
@@ -1132,11 +1031,17 @@ onMounted(() => {
   object-fit: cover;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.service-img:hover {
+  transform: scale(1.1);
 }
 
 .service-date {
   color: #7f8c8d;
   font-size: 0.9rem;
+  min-width: 100px;
 }
 
 .type-badge {
@@ -1152,19 +1057,21 @@ onMounted(() => {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(155, 89, 182, 0.3);
 }
 
 .status-badge {
   display: inline-block;
   min-width: 100px;
   text-align: center;
-  padding: 6px 12px;
-  border-radius: 16px;
+  padding: 8px 14px;
+  border-radius: 20px;
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .status-badge.active {
@@ -1184,7 +1091,7 @@ onMounted(() => {
   align-items: center;
 }
 
-/* Pagination Styles */
+/* ===== PAGINATION STYLES ===== */
 .pagination-container {
   display: flex;
   justify-content: space-between;
@@ -1197,6 +1104,7 @@ onMounted(() => {
 .page-info {
   font-weight: 600;
   color: #2c3e50;
+  font-size: 1rem;
 }
 
 .page-numbers {
@@ -1212,28 +1120,89 @@ onMounted(() => {
   justify-content: center;
 }
 
-/* Animation for import progress */
+/* ===== TOAST NOTIFICATIONS ===== */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+}
+
+.toast {
+  background: white;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  border-left: 4px solid #007bff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 300px;
+  animation: slideInRight 0.3s ease-out;
+}
+
+.toast.success {
+  border-left-color: #28a745;
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  color: #155724;
+}
+
+.toast.error {
+  border-left-color: #dc3545;
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+  color: #721c24;
+}
+
+.toast.warning {
+  border-left-color: #ffc107;
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+  color: #856404;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* ===== ANIMATIONS ===== */
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .fa-spin {
   animation: spin 1s linear infinite;
 }
 
-/* Responsive Design */
-@media (max-width: 1200px) {
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 1500px) {
   .content-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .form-section {
     order: 1;
   }
-  
+
   .list-section {
     order: 2;
+  }
+
+  .filter-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
 }
 
@@ -1251,7 +1220,8 @@ onMounted(() => {
     gap: 15px;
   }
 
-  .price-filter .price-inputs {
+  .price-inputs,
+  .time-inputs {
     flex-direction: column;
     align-items: stretch;
   }
@@ -1274,36 +1244,15 @@ onMounted(() => {
     gap: 15px;
   }
 
-  .upload-zone {
-    padding: 30px 15px;
-  }
-
-  .upload-icon {
-    font-size: 2.5rem;
-  }
-
-  .upload-zone h3 {
-    font-size: 1.3rem;
-  }
-
-  .upload-zone p {
-    font-size: 1rem;
-  }
-
-  .file-info {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  .import-actions {
-    justify-content: center;
-  }
-
   .card-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 15px;
+  }
+
+  .toast {
+    min-width: 280px;
+    margin: 0 10px 10px;
   }
 }
 
@@ -1311,17 +1260,17 @@ onMounted(() => {
   .table-responsive {
     font-size: 0.8rem;
   }
-  
+
   .services-table th,
   .services-table td {
     padding: 8px 6px;
   }
-  
+
   .btn {
     padding: 10px 16px;
     font-size: 0.9rem;
   }
-  
+
   .btn-sm {
     padding: 6px 10px;
     font-size: 0.8rem;
@@ -1332,16 +1281,17 @@ onMounted(() => {
     height: 45px;
   }
 
-  .upload-zone {
-    padding: 20px 10px;
+  .action-buttons {
+    flex-direction: column;
+    gap: 4px;
   }
 
-  .upload-icon {
-    font-size: 2rem;
+  .filter-grid {
+    grid-template-columns: 1fr;
   }
 
-  .upload-zone h3 {
-    font-size: 1.1rem;
+  .form-actions {
+    flex-direction: column;
   }
 }
 </style>

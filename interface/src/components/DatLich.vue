@@ -1,673 +1,765 @@
 <template>
-  <div class="spa-booking-container">
+  <div class="dat-lich-page">
     <!-- Hero Section -->
-    <div class="hero-section">
-      <div class="hero-content">
-        <div class="hero-icon">✨</div>
-        <h1 class="hero-title">Đặt lịch hẹn tại Spa</h1>
-        <p class="hero-subtitle">Trải nghiệm thư giãn đẳng cấp</p>
-      </div>
-      <div class="hero-decoration"></div>
-    </div>
-
-    <div class="booking-content">
-      <!-- Service Selection -->
-      <div class="booking-card service-section">
-        <div class="card-header">
-          <div class="header-icon">💆‍♀️</div>
-          <div class="header-content">
-            <h3>Chọn dịch vụ yêu thích</h3>
-            <p>Bạn có thể chọn nhiều dịch vụ hoặc để nhân viên tư vấn</p>
-          </div>
+    <!-- <section class="hero-section">
+      <div class="container">
+        <div class="hero-content">
+          <h1 class="hero-title">Đặt lịch hẹn</h1>
+          <p class="hero-subtitle">
+            Chọn dịch vụ và thời gian phù hợp để trải nghiệm không gian thư giãn tuyệt vời
+          </p>
         </div>
+      </div>
+    </section> -->
 
-        <div class="card-body">
-          <!-- Enhanced Search -->
-          <div class="search-container">
-            <div class="search-icon">🔍</div>
-            <input
-              type="text"
-              v-model="tuKhoa"
-              placeholder="Tìm kiếm dịch vụ spa..."
-              class="search-input"
-            />
-            <div class="search-decoration"></div>
+    <div class="container main-content">
+      <div class="booking-layout">
+        <!-- Left Side - Service Selection -->
+        <div class="services-section">
+          <div class="section-header">
+            <h2>Chọn dịch vụ</h2>
+            <p>Tìm kiếm và chọn các dịch vụ bạn muốn sử dụng</p>
           </div>
 
-          <!-- Service Grid -->
-          <div class="services-grid">
+          <!-- Search and Filter -->
+          <div class="search-filter-section">
+            <div class="search-box">
+              <input
+                type="text"
+                v-model="searchKeyword"
+                placeholder="Tìm kiếm dịch vụ..."
+                class="search-input"
+                @input="debounceSearch"
+              />
+              <i class="search-icon">🔍</i>
+            </div>
+
+            <div class="filter-section">
+              <select
+                v-model="selectedCategoryId"
+                @change="searchServices"
+                class="category-filter"
+              >
+                <option value="">Tất cả danh mục</option>
+                <option
+                  v-for="category in categories"
+                  :key="category.loaiDichVuID"
+                  :value="category.loaiDichVuID"
+                >
+                  {{ category.tenLoai }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Services Grid -->
+          <div v-if="servicesLoading" class="loading">
+            <div class="loading-spinner"></div>
+            <p>Đang tải dịch vụ...</p>
+          </div>
+
+          <div v-else-if="servicesError" class="error">
+            <p>{{ servicesError }}</p>
+          </div>
+
+          <div v-else class="services-grid">
             <div
-              v-for="dv in dichVuLoc"
-              :key="dv.dichVuID"
+              v-for="service in services"
+              :key="service.id"
               class="service-card"
-              :class="{ selected: dichVuIDs.includes(dv.dichVuID) }"
-              @click="toggleDichVu(dv.dichVuID)"
+              :class="{ selected: isServiceSelected(service.id) }"
             >
               <div class="service-image-container">
-                <img
-                  :src="
-                    dv.hinhAnh.startsWith('http')
-                      ? dv.hinhAnh
-                      : '/images/' + dv.hinhAnh
-                  "
-                  class="service-image"
-                  :alt="dv.tenDichVu"
-                />
-                <div class="service-overlay">
-                  <div
-                    class="service-check"
-                    v-if="dichVuIDs.includes(dv.dichVuID)"
-                  >
-                    ✓
+                <router-link
+                  class="detail-service-link"
+                  :to="`/DichVuChiTiet/${service.id}`"
+                >
+                  <img
+                    :src="service.image"
+                    :alt="service.name"
+                    class="service-image"
+                  />
+                </router-link>
+                <div class="service-rating-overlay">
+                  <div class="service-rating">
+                    <i
+                      v-for="n in 5"
+                      :key="n"
+                      class="rating-star"
+                      :class="
+                        n <= Math.floor(service.rating)
+                          ? 'filled'
+                          : n - 0.5 <= service.rating
+                          ? 'half-filled'
+                          : ''
+                      "
+                      >★</i
+                    >
+                    <span class="rating-text"
+                      >({{ service.rating?.toFixed(1) || "0.0" }})</span
+                    >
                   </div>
                 </div>
               </div>
               <div class="service-content">
-                <h4 class="service-title">{{ dv.tenDichVu }}</h4>
-                <p class="service-description">{{ dv.moTa }}</p>
-                <div class="service-details">
-                  <span class="service-price"
-                    >{{ dv.gia.toLocaleString() }}đ</span
-                  >
-                  <span class="service-duration">{{ dv.thoiGian }} phút</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Consultation Option -->
-          <div class="consultation-option">
-            <button
-              class="consultation-btn"
-              :class="{ active: dichVuIDs.length === 0 }"
-              @click="dichVuIDs = []"
-            >
-              <span class="consultation-icon">💬</span>
-              <span class="consultation-text"
-                >Để nhân viên tư vấn dịch vụ phù hợp</span
-              >
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Date & Time Selection -->
-      <div class="booking-card datetime-section">
-        <div class="card-header">
-          <div class="header-icon">📅</div>
-          <div class="header-content">
-            <h3>Chọn thời gian</h3>
-            <p>Lựa chọn ngày và khung giờ phù hợp với bạn</p>
-          </div>
-        </div>
-
-        <div class="card-body">
-          <div class="datetime-container">
-            <div class="date-section">
-              <label class="datetime-label">Ngày đến spa</label>
-              <div class="date-input-container">
-                <input
-                  type="date"
-                  v-model="ngay"
-                  class="date-input"
-                  @change="layKhungGio"
-                />
-                <div class="date-icon">📅</div>
-              </div>
-            </div>
-
-            <div class="time-section">
-              <label class="datetime-label">Khung giờ</label>
-              <div class="time-slots">
-                <button
-                  v-for="gio in danhSachKhungGio"
-                  :key="gio.khungGio"
-                  class="time-slot"
-                  :class="{
-                    selected: gio.khungGio === khungGioChon,
-                    unavailable: gio.conLai === 0,
-                  }"
-                  :disabled="gio.conLai === 0"
-                  @click="khungGioChon = gio.khungGio"
+                <router-link
+                  class="detail-service-link"
+                  :to="`/DichVuChiTiet/${service.id}`"
                 >
-                  <span class="time-text">{{ gio.khungGio }}</span>
-                  <span v-if="gio.conLai === 0" class="unavailable-badge"
-                    >Hết chỗ</span
-                  >
+                  <h3 class="service-title">{{ service.name }}</h3>
+                  <div class="service-meta">
+                    <div class="service-duration">
+                      <i class="duration-icon">⏱</i>
+                      {{ service.duration }} phút
+                    </div>
+                    <div class="service-price">{{ service.price }} VNĐ</div>
+                  </div>
+                  <p class="service-description">{{ service.description }}</p>
+                </router-link>
+                <button
+                  class="service-select-btn"
+                  :class="{ selected: isServiceSelected(service.id) }"
+                  @click="toggleService(service)"
+                >
+                  <span v-if="isServiceSelected(service.id)">✓ Đã chọn</span>
+                  <span v-else>+ Chọn dịch vụ</span>
                 </button>
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- Phone Number -->
-      <div class="booking-card phone-section">
-        <div class="card-header">
-          <div class="header-icon">📱</div>
-          <div class="header-content">
-            <h3>Thông tin liên hệ</h3>
-            <p>Để chúng tôi có thể xác nhận lịch hẹn</p>
+          <!-- Pagination -->
+          <div v-if="totalPages > 1" class="pagination">
+            <button
+              class="page-btn"
+              :disabled="currentPage === 1"
+              @click="changePage(currentPage - 1)"
+            >
+              ‹ Trước
+            </button>
+
+            <button
+              v-for="page in visiblePages"
+              :key="page"
+              class="page-btn"
+              :class="{ active: page === currentPage }"
+              @click="changePage(page)"
+            >
+              {{ page }}
+            </button>
+
+            <button
+              class="page-btn"
+              :disabled="currentPage === totalPages"
+              @click="changePage(currentPage + 1)"
+            >
+              Sau ›
+            </button>
           </div>
         </div>
 
-        <div class="card-body">
-          <div class="phone-input-container">
-            <div class="phone-icon">📞</div>
-            <input
-              v-model="soDienThoai"
-              type="tel"
-              class="phone-input"
-              placeholder="Nhập số điện thoại của bạn"
-            />
-          </div>
-        </div>
-      </div>
+        <!-- Right Side - Booking Form -->
+        <div class="booking-section">
+          <div class="booking-card">
+            <h2>Thông tin đặt lịch</h2>
 
-      <!-- Booking Summary -->
-      <div
-        class="booking-summary"
-        v-if="dichVuIDs.length > 0 || khungGioChon || soDienThoai"
-      >
-        <h3 class="summary-title">Tóm tắt đặt lịch</h3>
-        <div class="summary-content">
-          <div v-if="dichVuIDs.length > 0" class="summary-item">
-            <span class="summary-label">Dịch vụ:</span>
-            <div class="selected-services">
-              <span
-                v-for="id in dichVuIDs"
-                :key="id"
-                class="selected-service-tag"
-              >
-                {{ getDichVuName(id) }}
-              </span>
+            <!-- Selected Services - Compact Version -->
+            <div class="selected-services" v-if="selectedServices.length > 0">
+              <h3>Dịch vụ đã chọn ({{ selectedServices.length }})</h3>
+              <div class="selected-list-compact">
+                <div
+                  v-for="(service, index) in selectedServices"
+                  :key="service.id"
+                  class="selected-item-compact"
+                >
+                  <div class="service-info-compact">
+                    <h4>{{ service.name }}</h4>
+                    <div class="service-details-compact">
+                      <span class="duration">{{ service.duration }}p</span>
+                      <span class="price">{{ service.price }} VNĐ</span>
+                    </div>
+                  </div>
+                  <!-- <div class="quantity-controls-compact">
+                    <input
+                      type="number"
+                      v-model.number="service.soLuong"
+                      min="1"
+                      max="10"
+                      class="quantity-input-compact"
+                    />
+                    <button class="remove-btn-compact" @click="removeService(index)">×</button>
+                  </div> -->
+                </div>
+              </div>
+              <div class="total-info-compact">
+                <div class="total-duration">{{ totalDuration }}p</div>
+                <div class="total-price">
+                  {{ totalPrice.toLocaleString("vi-VN") }} VNĐ
+                </div>
+              </div>
             </div>
-          </div>
-          <div v-if="ngay && khungGioChon" class="summary-item">
-            <span class="summary-label">Thời gian:</span>
-            <span class="summary-value">{{ formatDateTime() }}</span>
-          </div>
-          <div v-if="soDienThoai" class="summary-item">
-            <span class="summary-label">Số điện thoại:</span>
-            <span class="summary-value">{{ soDienThoai }}</span>
-          </div>
-        </div>
-      </div>
 
-      <!-- Booking Button -->
-      <div class="booking-action">
-        <button
-          class="booking-btn"
-          :disabled="!khungGioChon || !soDienThoai"
-          :class="{ disabled: !khungGioChon || !soDienThoai }"
-          @click="datLich"
-        >
-          <span class="booking-btn-icon">✨</span>
-          <span class="booking-btn-text">Xác nhận đặt lịch</span>
-          <div class="booking-btn-decoration"></div>
-        </button>
-      </div>
+            <!-- Consultation Option -->
+            <div class="consultation-option">
+              <label class="consult-checkbox">
+                <input
+                  type="checkbox"
+                  v-model="bookingForm.consultAtStore"
+                  @change="handleConsultAtStore"
+                />
+                <span class="checkmark"></span>
+                Tôi muốn đến spa để nhân viên tư vấn trực tiếp
+              </label>
+            </div>
 
-      <!-- Notification -->
-      <div v-if="thongBao" class="notification" :class="getNotificationClass()">
-        <div class="notification-icon">
-          {{ thongBao.startsWith("🎉") ? "🎉" : "⚠️" }}
-        </div>
-        <div class="notification-content">
-          {{ thongBao.replace(/^[🎉❌]\s*/, "") }}
+            <!-- Booking Form -->
+            <form @submit.prevent="submitBooking" class="booking-form">
+              <div class="form-group">
+                <label for="phone">Số điện thoại *</label>
+                <input
+                  type="tel"
+                  id="phone"
+                  v-model="bookingForm.phone"
+                  required
+                  placeholder="0123 456 789"
+                  class="form-input"
+                />
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="date">Ngày hẹn *</label>
+                  <input
+                    type="date"
+                    id="date"
+                    v-model="bookingForm.date"
+                    :min="minDate"
+                    required
+                    class="form-input"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="time">Giờ hẹn *</label>
+                  <select
+                    id="time"
+                    v-model="bookingForm.time"
+                    required
+                    class="form-input"
+                  >
+                    <option value="">-- Chọn giờ --</option>
+                    <option
+                      v-for="slot in availableSlots"
+                      :key="slot.khungGio"
+                      :value="slot.khungGio"
+                    >
+                      {{ slot.khungGio }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="notes">Ghi chú</label>
+                <textarea
+                  id="notes"
+                  v-model="bookingForm.notes"
+                  rows="3"
+                  placeholder="Những yêu cầu đặc biệt hoặc ghi chú khác..."
+                  class="form-input"
+                ></textarea>
+              </div>
+
+              <button
+                type="submit"
+                class="submit-btn"
+                :disabled="!canSubmit || submitting"
+              >
+                <span v-if="submitting">Đang xử lý...</span>
+                <span v-else>
+                  <i class="btn-icon">📅</i>
+                  Đặt lịch hẹn
+                </span>
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted, watch, computed } from "vue";
+import { useRoute } from "vue-router";
 import apiClient from "../utils/axiosClient";
+import dayjs from "dayjs";
+const route = useRoute();
 
-export default {
-  name: "DatLichCard",
-  data() {
-    return {
-      danhSachDichVu: [],
-      tuKhoa: "",
-      dichVuIDs: [],
-      ngay: new Date().toISOString().substring(0, 10),
-      danhSachKhungGio: [],
-      khungGioChon: "",
-      soDienThoai: "",
-      thongBao: "",
-    };
-  },
-  computed: {
-    dichVuLoc() {
-      return this.danhSachDichVu.filter((dv) =>
-        dv.tenDichVu.toLowerCase().includes(this.tuKhoa.toLowerCase())
-      );
-    },
-  },
-  methods: {
-    async layDichVu() {
-      const res = await apiClient.get("dichvu");
-      this.danhSachDichVu = res;
-    },
-    async layKhungGio() {
-      const res = await apiClient.get("datlich/slots", {
-        params: { ngay: this.ngay },
-      });
-      this.danhSachKhungGio = res;
-    },
-    toggleDichVu(id) {
-      const index = this.dichVuIDs.indexOf(id);
-      if (index === -1) this.dichVuIDs.push(id);
-      else this.dichVuIDs.splice(index, 1);
-    },
-    getDichVuName(id) {
-      const dv = this.danhSachDichVu.find((d) => d.dichVuID === id);
-      return dv ? dv.tenDichVu : "";
-    },
-    formatDateTime() {
-      if (!this.ngay || !this.khungGioChon) return "";
-      const date = new Date(this.ngay);
-      const options = {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      };
-      const dateStr = date.toLocaleDateString("vi-VN", options);
-      return `${dateStr} lúc ${this.khungGioChon}`;
-    },
-    getNotificationClass() {
-      return this.thongBao.startsWith("🎉") ? "success" : "error";
-    },
-    async datLich() {
-      const thoiGian = `${this.ngay}T${this.khungGioChon}:00`;
+// Reactive state
+const services = ref([]);
+const categories = ref([]);
+const selectedServices = ref([]);
+const servicesLoading = ref(false);
+const servicesError = ref(null);
+const submitting = ref(false);
 
-      try {
-        await apiClient.post("DatLich", {
-          soDienThoai: this.soDienThoai,
-          thoiGian,
-          dichVuIDs: this.dichVuIDs,
-        });
+// Search and pagination
+const searchKeyword = ref("");
+const selectedCategoryId = ref("");
+const currentPage = ref(1);
+const totalPages = ref(1);
+const totalItems = ref(0);
+const pageSize = 12;
 
-        this.thongBao =
-          "🎉 Đặt lịch thành công! Nhân viên sẽ tư vấn nếu bạn chưa chọn dịch vụ.";
-        this.khungGioChon = "";
-        this.dichVuIDs = [];
-        this.soDienThoai = "";
-        await this.layKhungGio();
-      } catch (err) {
-        if (err.response?.status === 400) {
-          this.thongBao = "❌ " + err.response.message;
-        } else {
-          this.thongBao = "❌ Đã có lỗi xảy ra. Vui lòng thử lại sau.";
-        }
-      }
-    },
-  },
-  mounted() {
-    this.layDichVu();
-    this.layKhungGio();
-  },
+// Booking form
+const bookingForm = ref({
+  phone: "",
+  date: dayjs().format("YYYY-MM-DD"),
+  time: "",
+  notes: "",
+  consultAtStore: false,
+});
+
+const availableSlots = ref([]);
+const minDate = ref("");
+
+// Base URL for images
+const IMAGE_BASE_URL =
+  import.meta.env.VITE_BASE_URL.replace("/api", "") + "/images/";
+
+// Debounce timer
+let searchTimer = null;
+
+// Computed properties
+const totalDuration = computed(() => {
+  return selectedServices.value.reduce((total, service) => {
+    return total + service.duration * service.soLuong;
+  }, 0);
+});
+
+const totalPrice = computed(() => {
+  return selectedServices.value.reduce((total, service) => {
+    const price = parseInt(service.price.replace(/[^\d]/g, ""));
+    return total + price * service.soLuong;
+  }, 0);
+});
+
+const canSubmit = computed(() => {
+  return (
+    bookingForm.value.phone &&
+    bookingForm.value.date &&
+    bookingForm.value.time &&
+    (selectedServices.value.length > 0 || bookingForm.value.consultAtStore)
+  );
+});
+
+const visiblePages = computed(() => {
+  const pages = [];
+  const maxVisible = 5;
+  let start = Math.max(1, currentPage.value - Math.floor(maxVisible / 2));
+  let end = Math.min(totalPages.value, start + maxVisible - 1);
+
+  if (end - start < maxVisible - 1) {
+    start = Math.max(1, end - maxVisible + 1);
+  }
+
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+
+  return pages;
+});
+
+// Methods
+const debounceSearch = () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    currentPage.value = 1;
+    searchServices();
+  }, 500);
 };
+
+const fetchCategories = async () => {
+  try {
+    const response = await apiClient.get("/LoaiDichVu");
+    categories.value = Array.isArray(response) ? response : response.data || [];
+  } catch (err) {
+    console.error("Lỗi khi tải danh mục:", err);
+  }
+};
+
+const searchServices = async () => {
+  try {
+    servicesLoading.value = true;
+    servicesError.value = null;
+
+    const params = {
+      keyword: searchKeyword.value,
+      cateId: selectedCategoryId.value,
+      page: currentPage.value,
+    };
+
+    const response = await apiClient.get("/DichVu/filter", { params });
+    const data = response;
+
+    // Process services data
+    services.value = (data.data || data || [])
+      .filter((service) => service.trangThai === 1)
+      .map((service) => ({
+        id: service.dichVuID,
+        name: service.tenDichVu,
+        category:
+          categories.value.find(
+            (cat) => cat.loaiDichVuID === service.loaiDichVuID
+          )?.tenLoai || "Khác",
+        price: service.gia.toLocaleString("vi-VN"),
+        duration: service.thoiGian,
+        description: service.moTa,
+        rating: service.mucDanhGia || 0,
+        image: `${IMAGE_BASE_URL}${service.hinhAnh}`,
+      }));
+
+    // Update pagination info
+    totalItems.value = data.pagination.totalItems || services.value.length;
+    totalPages.value = Math.ceil(totalItems.value / pageSize);
+  } catch (err) {
+    console.error("Lỗi khi tải dịch vụ:", err);
+    servicesError.value = "Không thể tải danh sách dịch vụ";
+  } finally {
+    servicesLoading.value = false;
+  }
+};
+
+const changePage = (page) => {
+  currentPage.value = page;
+  searchServices();
+};
+
+const isServiceSelected = (serviceId) => {
+  return selectedServices.value.some((s) => s.id === serviceId);
+};
+
+const toggleService = (service) => {
+  if (bookingForm.value.consultAtStore) return;
+
+  const existingIndex = selectedServices.value.findIndex(
+    (s) => s.id === service.id
+  );
+
+  if (existingIndex >= 0) {
+    selectedServices.value.splice(existingIndex, 1);
+  } else {
+    selectedServices.value.push({
+      ...service,
+      soLuong: 1,
+    });
+  }
+};
+
+const removeService = (index) => {
+  selectedServices.value.splice(index, 1);
+};
+
+const handleConsultAtStore = () => {
+  if (bookingForm.value.consultAtStore) {
+    selectedServices.value = [];
+  }
+};
+
+const fetchSlots = async () => {
+  if (!bookingForm.value.date) return;
+  try {
+    const res = await apiClient.get("/DatLich/slots", {
+      params: { ngay: bookingForm.value.date },
+    });
+    availableSlots.value = res.filter((slot) => slot.conLai > 0);
+  } catch (err) {
+    console.error("Lỗi khi lấy giờ hẹn:", err);
+    availableSlots.value = [];
+  }
+};
+
+const submitBooking = async () => {
+  try {
+    submitting.value = true;
+
+    const thoiGian = new Date(
+      new Date(
+        `${bookingForm.value.date}T${bookingForm.value.time}`
+      ).getTime() +
+        7 * 60 * 60 * 1000
+    ).toISOString();
+
+    const dichVus = bookingForm.value.consultAtStore
+      ? []
+      : selectedServices.value.map((s) => ({
+          dichVuID: s.id,
+          soLuong: 1,
+        }));
+
+    const payload = {
+      soDienThoai: bookingForm.value.phone,
+      thoiGian,
+      dichVus,
+      ghiChu: bookingForm.value.notes,
+      datTruoc: true,
+    };
+
+    await apiClient.post("/DatLich", payload);
+
+    alert("Đặt lịch thành công! Chúng tôi sẽ liên hệ với bạn sớm nhất.");
+    fetchSlots();
+    // Reset form
+    bookingForm.value = {
+      phone: "",
+      date: dayjs().format("YYYY-MM-DD"),
+      time: "",
+      notes: "",
+      consultAtStore: false,
+    };
+    selectedServices.value = [];
+  } catch (err) {
+    console.error("Lỗi đặt lịch:", err);
+    alert("Đặt lịch thất bại! Vui lòng thử lại.");
+  } finally {
+    submitting.value = false;
+  }
+};
+
+// Load preselected service from route
+const loadPreselectedService = async (serviceId) => {
+  try {
+    const response = await apiClient.get(`/DichVu/${serviceId}`);
+    const serviceData = response;
+
+    if (serviceData && serviceData.trangThai === 1) {
+      const service = {
+        id: serviceData.dichVuID,
+        name: serviceData.tenDichVu,
+        category:
+          categories.value.find(
+            (cat) => cat.loaiDichVuID === serviceData.loaiDichVuID
+          )?.tenLoai || "Khác",
+        price: serviceData.gia.toLocaleString("vi-VN"),
+        duration: serviceData.thoiGian,
+        description: serviceData.moTa,
+        rating: serviceData.mucDanhGia || 0,
+        image: `${IMAGE_BASE_URL}${serviceData.hinhAnh}`,
+        soLuong: 1,
+      };
+
+      selectedServices.value = [service];
+    }
+  } catch (err) {
+    console.error("Lỗi khi tải dịch vụ được chọn:", err);
+  }
+};
+
+// Watchers
+watch(
+  () => bookingForm.value.date,
+  () => {
+    fetchSlots();
+    bookingForm.value.time = "";
+  }
+);
+
+// Lifecycle
+onMounted(async () => {
+  minDate.value = dayjs().format("YYYY-MM-DD");
+
+  await fetchCategories();
+
+  // Check if there's a preselected service from route
+  if (route.params.serviceId) {
+    await loadPreselectedService(route.params.serviceId);
+  }
+
+  await searchServices();
+  fetchSlots();
+});
 </script>
 
 <style scoped>
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
-
-/* CSS Root Variables - Dễ dàng thay đổi màu chủ đạo */
-:root {
-  /* Primary Colors - Xanh lá chủ đạo */
-  --primary-color: #e6dcdc;
-  --primary-dark: #059669;
-  --primary-light: #34d399;
-  --primary-lighter: #34d399;
-  --primary-lightest: #34d399;
-
-  /* Secondary Colors */
-  --secondary-color: #065f46;
-  --secondary-dark: #064e3b;
-  --secondary-light: #047857;
-
-  /* Accent Colors */
-  --accent-color: #fbbf24;
-  --accent-dark: #f59e0b;
-  --accent-light: #fcd34d;
-
-  /* Neutral Colors */
-  --neutral-50: #94a3b8;
-  --neutral-100: #94a3b8;
-  --neutral-200: #94a3b8;
-  --neutral-300: #94a3b8;
-  --neutral-400: #94a3b8;
-  --neutral-500: #64748b;
-  --neutral-600: #475569;
-  --neutral-700: #334155;
-  --neutral-800: #1e293b;
-  --neutral-900: #0f172a;
-
-  /* Semantic Colors */
-  --success-color: #10b981;
-  --success-light: #d1fae5;
-  --error-color: #ef4444;
-  --error-light: #fef2f2;
-  --warning-color: #f59e0b;
-  --warning-light: #fef3c7;
-
-  /* Gradients */
-  --gradient-primary: linear-gradient(
-    135deg,
-    var(--primary-color) 0%,
-    var(--primary-dark) 100%
-  );
-  --gradient-secondary: linear-gradient(
-    135deg,
-    var(--secondary-color) 0%,
-    var(--secondary-dark) 100%
-  );
-  --gradient-accent: linear-gradient(
-    135deg,
-    var(--accent-color) 0%,
-    var(--accent-dark) 100%
-  );
-  --gradient-background: linear-gradient(
-    90deg,
-    var(--primary-color) 100%,
-    var(--secondary-color) 50%
-  );
-  --gradient-card: linear-gradient(
-    135deg,
-    var(--neutral-50) 0%,
-    var(--neutral-100) 100%
-  );
-
-  /* Shadows */
-  --shadow-sm: 0 4px 12px rgba(16, 185, 129, 0.05);
-  --shadow-md: 0 8px 24px rgba(16, 185, 129, 0.1);
-  --shadow-lg: 0 16px 48px rgba(16, 185, 129, 0.15);
-  --shadow-primary: 0 8px 32px rgba(16, 185, 129, 0.3);
-  --shadow-accent: 0 8px 24px rgba(251, 191, 36, 0.3);
-}
-
-/* Alternative Color Scheme - Uncomment để dùng màu xanh dương */
-/*
-:root {
-  --primary-color: #3b82f6;
-  --primary-dark: #2563eb;
-  --primary-light: #60a5fa;
-  --primary-lighter: #93c5fd;
-  --primary-lightest: #dbeafe;
-  
-  --secondary-color: #1e40af;
-  --secondary-dark: #1e3a8a;
-  --secondary-light: #2563eb;
-  
-  --accent-color: #f59e0b;
-  --accent-dark: #d97706;
-  --accent-light: #fbbf24;
-  
-  --gradient-primary: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-  --gradient-secondary: linear-gradient(135deg, var(--secondary-color) 0%, var(--secondary-dark) 100%);
-  --gradient-background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-  
-  --shadow-primary: 0 8px 32px rgba(59, 130, 246, 0.3);
-}
-*/
-
-/* Alternative Color Scheme - Uncomment để dùng màu tím */
-/*
-:root {
-  --primary-color: #8b5cf6;
-  --primary-dark: #7c3aed;
-  --primary-light: #a78bfa;
-  --primary-lighter: #c4b5fd;
-  --primary-lightest: #ede9fe;
-  
-  --secondary-color: #6d28d9;
-  --secondary-dark: #5b21b6;
-  --secondary-light: #7c3aed;
-  
-  --accent-color: #ec4899;
-  --accent-dark: #db2777;
-  --accent-light: #f472b6;
-  
-  --gradient-primary: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-  --gradient-secondary: linear-gradient(135deg, var(--secondary-color) 0%, var(--secondary-dark) 100%);
-  --gradient-background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-  
-  --shadow-primary: 0 8px 32px rgba(139, 92, 246, 0.3);
-}
-*/
-
-* {
-  font-family: "Inter", sans-serif;
-}
-
-.spa-booking-container {
+/* Base styles */
+.dat-lich-page {
   min-height: 100vh;
-  background: var(--gradient-background);
-  padding: 0;
-  position: relative;
-  overflow-x: hidden;
-}
-
-.spa-booking-container::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(
-      circle at 20% 50%,
-      rgba(16, 185, 129, 0.3) 0%,
-      transparent 50%
-    ),
-    radial-gradient(circle at 80% 20%, rgba(6, 95, 70, 0.3) 0%, transparent 50%),
-    radial-gradient(
-      circle at 40% 80%,
-      rgba(52, 211, 153, 0.3) 0%,
-      transparent 50%
-    );
-  pointer-events: none;
-  z-index: 0;
+  background: linear-gradient(135deg, #f8fdf8 0%, #f0fdf4 50%, #e8f5e8 100%);
 }
 
 /* Hero Section */
 .hero-section {
-  position: relative;
-  padding: 4rem 2rem 3rem;
+  background: linear-gradient(135deg, #78ba7e 0%, #6ba371 50%, #5e8c64 100%);
+  color: white;
+  padding: 4rem 2rem 2rem;
   text-align: center;
-  z-index: 1;
 }
 
 .hero-content {
-  max-width: 600px;
+  max-width: 800px;
   margin: 0 auto;
-}
-
-.hero-icon {
-  font-size: 4rem;
-  margin-bottom: 1rem;
-  animation: float 3s ease-in-out infinite;
 }
 
 .hero-title {
   font-size: 3rem;
+  font-family: "Lora", serif;
+  margin-bottom: 1rem;
   font-weight: 700;
-  color: white;
-  margin-bottom: 0.5rem;
-  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  letter-spacing: -0.02em;
 }
 
 .hero-subtitle {
   font-size: 1.2rem;
-  color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 0;
-  font-weight: 300;
-}
-
-.hero-decoration {
-  position: absolute;
-  bottom: -20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100px;
-  height: 4px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.8),
-    transparent
-  );
-  border-radius: 2px;
+  opacity: 0.9;
+  line-height: 1.6;
 }
 
 /* Main Content */
-.booking-content {
-  position: relative;
-  z-index: 1;
-  max-width: 1200px;
+.container {
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+  padding: 0 1rem;
 }
 
-/* Card Styles */
-.booking-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-radius: 24px;
-  box-shadow: var(--shadow-md), 0 0 0 1px rgba(255, 255, 255, 0.2);
-  overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+.main-content {
+  padding: 4rem 0;
 }
 
-.booking-card:hover {
-  transform: translateY(-8px);
-  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255, 255, 255, 0.3);
+.booking-layout {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 4rem;
+  align-items: start;
 }
 
-.card-header {
-  display: flex;
-  align-items: center;
-  padding: 2rem;
-  background: var(--gradient-card);
-  border-bottom: 1px solid var(--neutral-200);
-  gap: 1rem;
+/* Services Section */
+.services-section {
+  background: white;
+  border-radius: 20px;
+  padding: 2.5rem;
+  box-shadow: 0 10px 30px rgba(120, 186, 126, 0.1);
 }
 
-.header-icon {
-  font-size: 2.5rem;
-  flex-shrink: 0;
+.section-header h2 {
+  font-size: 2rem;
+  color: #2d4a2d;
+  margin-bottom: 0.5rem;
+  font-family: "Lora", serif;
 }
 
-.header-content h3 {
-  margin: 0 0 0.25rem 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--neutral-800);
-}
-
-.header-content p {
-  margin: 0;
-  color: var(--neutral-500);
-  font-size: 0.95rem;
-}
-
-.card-body {
-  padding: 2rem;
-}
-
-/* Search Styles */
-.search-container {
-  position: relative;
+.section-header p {
+  color: #6b7280;
   margin-bottom: 2rem;
+}
+
+/* Search and Filter */
+.search-filter-section {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.search-box {
+  position: relative;
 }
 
 .search-input {
   width: 100%;
-  padding: 1rem 1rem 1rem 3.5rem;
-  border: 2px solid var(--neutral-200);
-  border-radius: 16px;
+  padding: 1rem 3rem 1rem 1rem;
+  border: 2px solid #e8f5e8;
+  border-radius: 25px;
   font-size: 1rem;
-  background: white;
   transition: all 0.3s ease;
 }
 
 .search-input:focus {
   outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+  border-color: #78ba7e;
+  box-shadow: 0 0 0 3px rgba(120, 186, 126, 0.1);
 }
 
 .search-icon {
   position: absolute;
-  left: 1rem;
+  right: 1rem;
   top: 50%;
   transform: translateY(-50%);
+  color: #6b7280;
   font-size: 1.2rem;
-  color: var(--neutral-500);
-  z-index: 2;
+}
+
+.category-filter {
+  padding: 1rem;
+  border: 2px solid #e8f5e8;
+  border-radius: 25px;
+  background: white;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 200px;
+}
+
+.category-filter:focus {
+  outline: none;
+  border-color: #78ba7e;
+  box-shadow: 0 0 0 3px rgba(120, 186, 126, 0.1);
 }
 
 /* Services Grid */
 .services-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
+  gap: 2rem;
   margin-bottom: 2rem;
-  max-height: 500px;
-  overflow-y: auto;
-  padding-right: 0.5rem;
-}
-
-.services-grid::-webkit-scrollbar {
-  width: 6px;
-}
-
-.services-grid::-webkit-scrollbar-track {
-  background: var(--neutral-100);
-  border-radius: 3px;
-}
-
-.services-grid::-webkit-scrollbar-thumb {
-  background: var(--neutral-300);
-  border-radius: 3px;
 }
 
 .service-card {
   background: white;
-  border-radius: 16px;
+  border-radius: 15px;
   overflow: hidden;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 5px 15px rgba(120, 186, 126, 0.1);
+  transition: all 0.3s ease;
   border: 2px solid transparent;
-  box-shadow: var(--shadow-sm);
+  position: relative;
 }
 
 .service-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(120, 186, 126, 0.2);
 }
 
 .service-card.selected {
-  border-color: var(--primary-color);
-  box-shadow: var(--shadow-primary);
+  border-color: #78ba7e;
+  background: linear-gradient(135deg, #f8fdf8 0%, #f0fdf4 100%);
+}
+
+.service-card.selected::before {
+  content: "✓";
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: #78ba7e;
+  color: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  z-index: 2;
 }
 
 .service-image-container {
   position: relative;
-  height: 180px;
   overflow: hidden;
 }
-
+.detail-service-link {
+  text-decoration: none;
+}
 .service-image {
   width: 100%;
-  height: 100%;
+  height: 180px;
   object-fit: cover;
   transition: transform 0.3s ease;
 }
@@ -676,41 +768,43 @@ export default {
   transform: scale(1.05);
 }
 
-.service-overlay {
+.service-rating-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--gradient-primary);
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0.4rem 0.6rem;
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+}
+
+.service-rating {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 0.2rem;
+  font-size: 0.8rem;
 }
 
-.service-card.selected .service-overlay {
-  opacity: 1;
+.rating-star {
+  color: #d1d5db;
+  font-size: 0.9rem;
 }
 
-.service-check {
-  width: 50px;
-  height: 50px;
-  background: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: var(--primary-color);
-  transform: scale(0);
-  transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+.rating-star.filled {
+  color: #fbbf24;
 }
 
-.service-card.selected .service-check {
-  transform: scale(1);
+.rating-star.half-filled {
+  background: linear-gradient(90deg, #fbbf24 50%, #d1d5db 50%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;        /* chuẩn W3C cho các trình duyệt mới */
+}
+
+.rating-text {
+  font-size: 0.7rem;
+  color: #6b7280;
+  font-weight: 600;
 }
 
 .service-content {
@@ -718,562 +812,604 @@ export default {
 }
 
 .service-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--neutral-800);
-  margin-bottom: 0.5rem;
-}
-
-.service-description {
-  color: var(--neutral-500);
-  font-size: 0.9rem;
+  font-size: 1.2rem;
   margin-bottom: 1rem;
-  line-height: 1.5;
+  color: #2d4a2d;
+  font-family: "Lora", serif;
+  font-weight: 600;
 }
 
-.service-details {
+.service-meta {
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-.service-price {
-  font-weight: 600;
-  color: var(--primary-color);
-  font-size: 1rem;
+  margin-bottom: 1rem;
 }
 
 .service-duration {
-  color: var(--neutral-500);
-  font-size: 0.9rem;
-  background: var(--neutral-100);
-  padding: 0.25rem 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #f0fdf4;
+  color: #4a6741;
+  padding: 0.3rem 0.8rem;
   border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.service-price {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #f59e0b;
+  font-family: "Lora", serif;
+}
+
+.service-description {
+  color: #6b7280;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+  font-size: 0.9rem;
+}
+
+.service-select-btn {
+  width: 100%;
+  padding: 0.8rem;
+  border: 2px solid #78ba7e;
+  background: white;
+  color: #78ba7e;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.service-select-btn:hover {
+  background: #78ba7e;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.service-select-btn.selected {
+  background: #78ba7e;
+  color: white;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.page-btn {
+  padding: 0.6rem 1rem;
+  border: 2px solid #e8f5e8;
+  background: white;
+  color: #6b7280;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.page-btn:hover:not(:disabled) {
+  border-color: #78ba7e;
+  color: #78ba7e;
+}
+
+.page-btn.active {
+  background: #78ba7e;
+  color: white;
+  border-color: #78ba7e;
+}
+
+.page-btn:disabled {
+  background: #f3f4f6;
+  color: #d1d5db;
+  cursor: not-allowed;
+}
+
+.booking-section {
+  position: sticky;
+  top: 2rem;
+  height: fit-content;
+}
+
+.booking-card {
+  background: linear-gradient(135deg, #78ba7e 0%, #6ba371 50%, #5e8c64 100%);
+  color: white;
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 15px 40px rgba(120, 186, 126, 0.3);
+}
+
+.booking-card h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  font-family: "Lora", serif;
+  text-align: center;
+}
+
+/* Selected Services - Compact Version */
+.selected-services {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  backdrop-filter: blur(10px);
+}
+
+.selected-services h3 {
+  font-size: 1rem;
+  margin-bottom: 0.8rem;
+  font-weight: 600;
+}
+
+.selected-list-compact {
+  max-height: 150px;
+  overflow-y: auto;
+  margin-bottom: 0.8rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.selected-list-compact::-webkit-scrollbar {
+  width: 4px;
+}
+
+.selected-list-compact::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.selected-list-compact::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+}
+
+.selected-item-compact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.8rem;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  gap: 0.8rem;
+}
+
+.service-info-compact {
+  flex: 1;
+  min-width: 0;
+}
+
+.service-info-compact h4 {
+  font-size: 0.9rem;
+  margin-bottom: 0.3rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.service-details-compact {
+  display: flex;
+  gap: 0.8rem;
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+.quantity-controls-compact {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.quantity-input-compact {
+  width: 40px;
+  padding: 0.2rem;
+  border: none;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: #2d4a2d;
+}
+
+.remove-btn-compact {
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.remove-btn-compact:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+}
+
+.total-info-compact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.8rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 0.9rem;
+}
+
+.total-duration {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+}
+
+.total-price {
+  color: #fbbf24;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 /* Consultation Option */
 .consultation-option {
-  text-align: center;
-}
-
-.consultation-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 2rem;
-  background: var(--gradient-card);
-  border: 2px solid var(--neutral-200);
-  border-radius: 16px;
-  color: var(--neutral-500);
-  font-weight: 500;
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.consultation-btn:hover,
-.consultation-btn.active {
-  background: var(--gradient-primary);
-  border-color: var(--primary-color);
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-primary);
-}
-
-.consultation-icon {
-  font-size: 1.2rem;
-}
-
-/* DateTime Styles */
-.datetime-container {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 2rem;
-  align-items: start;
-}
-
-.datetime-label {
-  display: block;
-  font-weight: 600;
-  color: var(--neutral-800);
-  margin-bottom: 0.75rem;
-  font-size: 0.95rem;
-}
-
-.date-input-container {
-  position: relative;
-}
-
-.date-input {
-  width: 100%;
-  padding: 1rem;
-  border: 2px solid var(--neutral-200);
-  border-radius: 12px;
-  font-size: 1rem;
-  background: white;
-  transition: all 0.3s ease;
-}
-
-.date-input:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
-}
-
-.date-icon {
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  font-size: 1.2rem;
-}
-
-.time-slots {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 0.75rem;
-}
-
-.time-slot {
-  padding: 0.75rem 1rem;
-  border: 2px solid var(--neutral-200);
-  border-radius: 12px;
-  background: white;
-  color: var(--neutral-500);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.time-slot:hover:not(:disabled) {
-  border-color: var(--primary-color);
-  color: var(--primary-color);
-  transform: translateY(-2px);
-}
-
-.time-slot.selected {
-  background: var(--gradient-primary);
-  border-color: var(--primary-color);
-  color: white;
-  box-shadow: var(--shadow-primary);
-}
-
-.time-slot.unavailable {
-  background: var(--neutral-50);
-  color: var(--neutral-300);
-  cursor: not-allowed;
-  border-color: var(--neutral-100);
-}
-
-.unavailable-badge {
-  position: absolute;
-  top: -4px;
-  right: -8px;
-  background: var(--error-color);
-  color: white;
-  font-size: 0.7rem;
-  padding: 0.125rem 0.375rem;
-  border-radius: 6px;
-  font-weight: 600;
-}
-
-/* Phone Input */
-.phone-input-container {
-  position: relative;
-  max-width: 400px;
-}
-
-.phone-input {
-  width: 100%;
-  padding: 1rem 1rem 1rem 3.5rem;
-  border: 2px solid var(--neutral-200);
-  border-radius: 16px;
-  font-size: 1rem;
-  background: white;
-  transition: all 0.3s ease;
-}
-
-.phone-input:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
-}
-
-.phone-icon {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 1.2rem;
-  color: var(--neutral-500);
-}
-
-/* Booking Summary */
-.booking-summary {
-  background: var(--gradient-card);
-  border-radius: 20px;
-  padding: 2rem;
-  border: 1px solid var(--neutral-200);
-}
-
-.summary-title {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: var(--neutral-800);
   margin-bottom: 1.5rem;
-  text-align: center;
 }
 
-.summary-content {
+.consult-checkbox {
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1.3;
 }
 
-.summary-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
+.consult-checkbox input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  transform: scale(1.1);
 }
 
-.summary-label {
+/* Booking Form */
+.booking-form {
+  margin-top: 0.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.2rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
   font-weight: 600;
-  color: var(--neutral-700);
-  min-width: 120px;
-  flex-shrink: 0;
+  font-size: 0.9rem;
 }
 
-.summary-value {
-  color: var(--neutral-500);
-  font-weight: 500;
+.form-input {
+  width: 100%;
+  padding: 0.8rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: rgba(255, 255, 255, 0.9);
+  color: #2d4a2d;
+  transition: all 0.3s ease;
 }
 
-.selected-services {
+.form-input:focus {
+  outline: none;
+  background: white;
+  transform: scale(1.01);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+}
+
+.submit-btn {
+  width: 100%;
+  background: linear-gradient(45deg, #f59e0b, #f97316);
+  color: white;
+  padding: 1rem 1.5rem;
+  border: none;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 0.5rem;
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
   gap: 0.5rem;
 }
 
-.selected-service-tag {
-  background: var(--gradient-primary);
-  color: white;
-  padding: 0.375rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.85rem;
-  font-weight: 500;
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
 }
 
-/* Booking Button */
-.booking-action {
-  text-align: center;
-  margin-top: 1rem;
-}
-
-.booking-btn {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1.25rem 3rem;
-  background: var(--gradient-primary);
-  border: none;
-  border-radius: 20px;
-  color: white;
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
-  box-shadow: var(--shadow-primary);
-}
-
-.booking-btn:hover:not(.disabled) {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
-}
-
-.booking-btn.disabled {
-  background: var(--neutral-300);
+.submit-btn:disabled {
+  background: #9ca3af;
   cursor: not-allowed;
-  box-shadow: none;
+  transform: none;
 }
 
-.booking-btn-decoration {
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
-  transition: left 0.6s ease;
+.btn-icon {
+  font-size: 1.1rem;
 }
 
-.booking-btn:hover:not(.disabled) .booking-btn-decoration {
-  left: 100%;
+/* Loading and Error States */
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7280;
 }
 
-.booking-btn-icon {
-  font-size: 1.3rem;
+.loading-spinner {
+  border: 3px solid #f3f4f6;
+  border-top: 3px solid #78ba7e;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
 }
 
-/* Notification */
-.notification {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.error {
+  text-align: center;
   padding: 1.5rem;
-  border-radius: 16px;
-  margin-top: 1rem;
-  animation: slideIn 0.5s ease;
-}
-
-.notification.success {
-  background: var(--success-light);
-  border: 1px solid var(--primary-light);
-  color: var(--secondary-color);
-}
-
-.notification.error {
-  background: var(--error-light);
-  border: 1px solid #fca5a5;
-  color: #991b1b;
-}
-
-.notification-icon {
-  font-size: 1.5rem;
-  flex-shrink: 0;
-}
-
-.notification-content {
-  font-weight: 500;
-  line-height: 1.5;
-}
-
-/* Animations */
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
+  color: #ef4444;
+  background: #fef2f2;
+  border-radius: 10px;
+  border: 1px solid #fecaca;
 }
 
 /* Responsive Design */
+@media (max-width: 1200px) {
+  .booking-layout {
+    grid-template-columns: 1fr 350px;
+    gap: 3rem;
+  }
+}
+
+@media (max-width: 992px) {
+  .booking-layout {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .booking-section {
+    position: static;
+  }
+
+  .services-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+
+  .hero-title {
+    font-size: 2.5rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.1rem;
+  }
+}
+
 @media (max-width: 768px) {
+  .main-content {
+    padding: 2rem 0;
+  }
+
+  .hero-section {
+    padding: 3rem 1rem 1.5rem;
+  }
+
   .hero-title {
     font-size: 2rem;
+  }
+
+  .services-section {
+    padding: 2rem;
+  }
+
+  .booking-card {
+    padding: 2rem;
+  }
+
+  .search-filter-section {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .category-filter {
+    min-width: auto;
+  }
+
+  .services-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .selected-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.8rem;
+  }
+
+  .quantity-controls {
+    justify-content: space-between;
+  }
+
+  .total-info {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: stretch;
+    text-align: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .hero-title {
+    font-size: 1.8rem;
   }
 
   .hero-subtitle {
     font-size: 1rem;
   }
 
-  .booking-content {
-    padding: 1rem;
-    gap: 1.5rem;
-  }
-
-  .card-header {
+  .services-section {
     padding: 1.5rem;
-    flex-direction: column;
-    text-align: center;
-    gap: 0.5rem;
   }
 
-  .card-body {
+  .booking-card {
     padding: 1.5rem;
   }
 
   .services-grid {
     grid-template-columns: 1fr;
-    max-height: 400px;
   }
 
-  .datetime-container {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
+  .service-card {
+    margin-bottom: 1rem;
   }
 
-  .time-slots {
-    grid-template-columns: repeat(2, 1fr);
+  .service-image {
+    height: 150px;
   }
 
-  .booking-btn {
-    padding: 1rem 2rem;
+  .service-content {
+    padding: 1.2rem;
+  }
+
+  .service-title {
+    font-size: 1.1rem;
+  }
+
+  .service-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .booking-card h2 {
+    font-size: 1.5rem;
+  }
+
+  .selected-services {
+    padding: 1.2rem;
+  }
+
+  .selected-item {
+    padding: 0.8rem;
+  }
+
+  .service-info h4 {
+    font-size: 0.9rem;
+  }
+
+  .service-details {
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .pagination {
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+
+  .page-btn {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.9rem;
+  }
+
+  .consult-checkbox {
+    font-size: 0.9rem;
+  }
+
+  .form-input {
+    padding: 0.8rem;
+  }
+
+  .submit-btn {
+    padding: 1rem 1.5rem;
     font-size: 1rem;
   }
-
-  .summary-item {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .summary-label {
-    min-width: auto;
-  }
 }
 
-@media (max-width: 480px) {
-  .hero-section {
-    padding: 2rem 1rem 2rem;
-  }
-
-  .hero-title {
-    font-size: 1.75rem;
-  }
-
-  .services-grid {
-    max-height: 300px;
-  }
-
-  .time-slots {
-    grid-template-columns: 1fr;
-  }
-
-  .booking-btn {
-    width: 100%;
-    padding: 1.25rem 1rem;
-  }
+/* Additional utility classes */
+.text-center {
+  text-align: center;
 }
 
-/* Enhanced Focus States */
-.service-card:focus-visible {
-  outline: 3px solid var(--primary-color);
-  outline-offset: 2px;
+.mb-0 {
+  margin-bottom: 0;
+}
+.mb-1 {
+  margin-bottom: 0.5rem;
+}
+.mb-2 {
+  margin-bottom: 1rem;
+}
+.mb-3 {
+  margin-bottom: 1.5rem;
 }
 
-.time-slot:focus-visible {
-  outline: 3px solid var(--primary-color);
-  outline-offset: 2px;
+.font-bold {
+  font-weight: 700;
 }
 
-.booking-btn:focus-visible {
-  outline: 3px solid #ffffff;
-  outline-offset: 2px;
+.font-semibold {
+  font-weight: 600;
 }
 
-/* Loading States */
-.booking-btn.loading {
-  pointer-events: none;
-}
-
-.booking-btn.loading .booking-btn-text::after {
-  content: "...";
-  animation: loading 1.5s infinite;
-}
-
-@keyframes loading {
-  0% {
-    content: "";
-  }
-  33% {
-    content: ".";
-  }
-  66% {
-    content: "..";
-  }
-  100% {
-    content: "...";
-  }
-}
-
-/* Smooth Scrolling */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Custom Scrollbar for Service Grid */
-.services-grid {
+/* Custom scrollbar for selected services */
+.selected-list {
+  max-height: 300px;
+  overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: var(--neutral-300) var(--neutral-100);
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
 }
 
-/* Enhanced Hover Effects */
-.service-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    45deg,
-    rgba(16, 185, 129, 0.05),
-    rgba(6, 95, 70, 0.05)
-  );
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  z-index: -1;
+.selected-list::-webkit-scrollbar {
+  width: 6px;
 }
 
-.service-card:hover::before {
-  opacity: 1;
+.selected-list::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-/* Glassmorphism Effects */
-.booking-card {
-  border: 1px solid rgba(255, 255, 255, 0.2);
+.selected-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
 }
 
-.booking-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.1) 0%,
-    rgba(255, 255, 255, 0.05) 100%
-  );
-  pointer-events: none;
-  z-index: -1;
-}
-
-/* Micro-interactions */
-.search-input:focus + .search-decoration {
-  transform: scaleX(1);
-}
-
-.search-decoration {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: var(--gradient-primary);
-  transform: scaleX(0);
-  transition: transform 0.3s ease;
+.selected-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
 }
 </style>

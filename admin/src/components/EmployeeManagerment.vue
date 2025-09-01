@@ -131,7 +131,7 @@
                 </button>
                 <i @click="handleSearch" class="fas fa-search search-icon"></i>
             </div>
-          <button @click="loadEmployees" class="btn btn-outline-primary">
+          <button @click="refreshList" class="btn btn-outline-primary">
             <i class="fas fa-sync-alt"></i>
             Làm mới
           </button>
@@ -409,6 +409,12 @@ import EmployeeService from '../services/employeeService'
     currentPage.value = 1
     await loadEmployees()
   }
+
+  const refreshList = async () => {
+  searchQuery.value = ''   // xoá keyword
+  currentPage.value = 1    // quay về trang 1
+  await loadEmployees()    // tải full danh sách
+}
 
     const loadEmployees = async () => {
       try {

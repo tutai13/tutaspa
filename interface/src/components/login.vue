@@ -1,80 +1,106 @@
 <template>
-  <div class="login-container">
-    <div class="login-header">
-      <h1>Đăng nhập</h1>
-      <p>Chào mừng bạn quay trở lại!</p>
+  <div class="spa-login-wrapper">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+          <div class="spa-login-container">
+            <!-- Header Section -->
+            <div class="login-header text-center mb-4">
+              <div class="welcome-icon mb-3">🌿</div>
+              <h1 class="login-title">Chào mừng trở lại</h1>
+              <p class="login-subtitle">Đăng nhập để tiếp tục hành trình chăm sóc sức khỏe của bạn</p>
+            </div>
+
+            <!-- Login Form -->
+            <form @submit.prevent="handleLogin" class="login-form">
+              <!-- Phone Input -->
+              <div class="mb-3">
+                <label for="phone" class="form-label">Số điện thoại</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light border-end-0">📱</span>
+                  <input 
+                    type="tel" 
+                    id="phone"
+                    class="form-control border-start-0"
+                    v-model="form.phone"
+                    placeholder="Nhập số điện thoại"
+                    :class="{ 'is-invalid': errors.phone }"
+                  >
+                </div>
+                <div v-if="errors.phone" class="invalid-feedback d-block">
+                  <i class="fas fa-exclamation-circle me-1"></i>
+                  {{ errors.phone }}
+                </div>
+              </div>
+
+              <!-- Password Input -->
+              <div class="mb-3">
+                <label for="password" class="form-label">Mật khẩu</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light border-end-0">🔒</span>
+                  <input 
+                    :type="showPassword ? 'text' : 'password'"
+                    id="password"
+                    class="form-control border-start-0 border-end-0"
+                    v-model="form.password"
+                    placeholder="Nhập mật khẩu"
+                    :class="{ 'is-invalid': errors.password }"
+                  >
+                  <button 
+                    class="btn btn-outline-secondary border-start-0"
+                    type="button"
+                    @click="togglePassword"
+                  >
+                    {{ showPassword ? '🙈' : '👁️' }}
+                  </button>
+                </div>
+                <div v-if="errors.password" class="invalid-feedback d-block">
+                  <i class="fas fa-exclamation-circle me-1"></i>
+                  {{ errors.password }}
+                </div>
+              </div>
+
+              <!-- Login Button -->
+              <button 
+                type="submit" 
+                class="btn btn-success w-100 mb-3 login-btn"
+                :disabled="isLoading"
+              >
+                <span v-if="isLoading" class="d-flex align-items-center justify-content-center">
+                  <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  Đang đăng nhập...
+                </span>
+                <span v-else class="d-flex align-items-center justify-content-center">
+                  <span class="me-2">🌸</span>
+                  Đăng nhập
+                </span>
+              </button>
+
+              <!-- Forgot Password -->
+              <div class="text-center mb-3">
+                <a href="#" @click.prevent="forgotPassword" class="text-success text-decoration-none">
+                  Quên mật khẩu?
+                </a>
+              </div>
+
+              <!-- Divider -->
+              <div class="text-center mb-3">
+                <span class="text-muted">Hoặc</span>
+              </div>
+
+              <!-- Register Link -->
+              <div class="text-center">
+                <p class="text-muted mb-2">Chưa có tài khoản?</p>
+                <a href="#" @click.prevent="goToRegister" class="btn btn-outline-success">
+                  <span class="me-2">✨</span>
+                  Đăng ký ngay
+                </a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
-
-    <form @submit.prevent="handleLogin">
-      <div class="form-group">
-        <label for="phone">Số điện thoại</label>
-        <div class="input-wrapper">
-          <i class="fas fa-phone input-icon"></i>
-          <input 
-            type="tel" 
-            id="phone"
-            class="form-control"
-            v-model="form.phone"
-            placeholder="Nhập số điện thoại"
-            :class="{ 'error': errors.phone }"
-          >
-        </div>
-        <transition name="fade">
-          <div v-if="errors.phone" class="error-message">
-            <i class="fas fa-exclamation-circle"></i>
-            {{ errors.phone }}
-          </div>
-        </transition>
-      </div>
-
-      <div class="form-group">
-        <label for="password">Mật khẩu</label>
-        <div class="input-wrapper">
-          <i class="fas fa-lock input-icon"></i>
-          <input 
-            :type="showPassword ? 'text' : 'password'"
-            id="password"
-            class="form-control"
-            v-model="form.password"
-            placeholder="Nhập mật khẩu"
-            :class="{ 'error': errors.password }"
-          >
-          <i 
-            :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"
-            class="password-toggle"
-            @click="togglePassword"
-          ></i>
-        </div>
-        <transition name="fade">
-          <div v-if="errors.password" class="error-message">
-            <i class="fas fa-exclamation-circle"></i>
-            {{ errors.password }}
-          </div>
-        </transition>
-      </div>
-
-      <button 
-        type="submit" 
-        class="login-btn"
-        :disabled="isLoading"
-      >
-        <span v-if="isLoading">
-          <i class="fas fa-spinner fa-spin"></i> Đang đăng nhập...
-        </span>
-        <span v-else>
-          <i class="fas fa-sign-in-alt"></i> Đăng nhập
-        </span>
-      </button>
-
-      <div class="forgot-password">
-        <a href="#" @click.prevent="forgotPassword">Quên mật khẩu?</a>
-      </div>
-
-      <div class="register-link">
-        <p>Chưa có tài khoản?</p>
-        <a href="#" @click.prevent="goToRegister">Đăng ký ngay</a>
-      </div>
-    </form>
   </div>
 </template>
 
@@ -152,13 +178,10 @@ const handleLogin = async () => {
             router.push('/')
         }, 1500)
         
-        
         return ;    
     }
 
-
     notification.error("Đăng nhập thất bại")
-
     
   } catch (error) {
     console.error('Login error:', error)
@@ -173,243 +196,139 @@ const togglePassword = () => {
 }
 
 const forgotPassword = () => {
-  // Chuyển hướng đến trang quên mật khẩu
-  router.push('/forgot-password')
+  router.push('/ForgetPassword')
 }
 
 const goToRegister = () => {
-  // Chuyển hướng đến trang đăng ký
   router.push('/register')
 }
 
-// Emit events (nếu cần thiết cho parent component)
+// Emit events
 const emit = defineEmits(['login-success', 'forgot-password', 'go-to-register'])
-
-// Có thể emit events thay vì navigate
-const handleLoginWithEmit = async () => {
-  if (!validateForm()) return
-
-  isLoading.value = true
-
-  try {
-    const response = await authAPI.login({
-      phone: form.phone,
-      password: form.password
-    })
-
-    // Emit event cho parent component
-    emit('login-success', {
-      user: response.user,
-      token: response.access_token
-    })
-    
-  } catch (error) {
-    console.error('Login error:', error)
-    alert('Đăng nhập thất bại. Vui lòng thử lại!')
-  } finally {
-    isLoading.value = false
-  }
-}
-
-const handleForgotPassword = () => {
-  emit('forgot-password')
-}
-
-const handleGoToRegister = () => {
-  emit('go-to-register')
-}
 </script>
 
-
-
 <style scoped>
-.login-container {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-  padding: 40px;
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+/* Import Bootstrap CSS nếu chưa có */
+@import url('https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css');
+
+.spa-login-wrapper {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  display: flex;
+  align-items: center;
+  padding: 2rem 0;
 }
 
-.login-header {
-  text-align: center;
-  margin-bottom: 30px;
+.spa-login-container {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  border: 1px solid #e9ecef;
 }
 
-.login-header h1 {
-  color: #333;
-  font-size: 28px;
-  font-weight: 600;
-  margin-bottom: 8px;
+.welcome-icon {
+  font-size: 3rem;
+  animation: pulse 2s infinite;
 }
 
-.login-header p {
-  color: #666;
-  font-size: 16px;
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
 }
 
-.form-group {
-  position: relative;
-  margin-bottom: 25px;
+.login-title {
+  color: #198754;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
 }
 
-.form-group label {
-  display: block;
-  color: #555;
-  font-weight: 500;
-  margin-bottom: 8px;
-  font-size: 14px;
+.login-subtitle {
+  color: #6c757d;
+  font-size: 0.95rem;
 }
 
-.input-wrapper {
-  position: relative;
+.input-group-text {
+  background-color: #f8f9fa !important;
+  border-color: #dee2e6;
 }
 
 .form-control {
-  width: 100%;
-  padding: 15px 20px 15px 50px;
-  border: 2px solid #e1e5e9;
-  border-radius: 12px;
-  font-size: 16px;
-  transition: all 0.3s ease;
-  background: #fff;
+  border-color: #dee2e6;
+  padding: 0.75rem;
 }
 
 .form-control:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.form-control.error {
-  border-color: #e74c3c;
-}
-
-.input-icon {
-  position: absolute;
-  left: 18px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #999;
-  font-size: 16px;
-}
-
-.password-toggle {
-  position: absolute;
-  right: 18px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #999;
-  cursor: pointer;
-  font-size: 16px;
-  transition: color 0.3s ease;
-}
-
-.password-toggle:hover {
-  color: #667eea;
+  border-color: #198754;
+  box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
 }
 
 .login-btn {
-  width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-size: 16px;
+  padding: 0.75rem 1.5rem;
   font-weight: 600;
-  cursor: pointer;
+  font-size: 1.1rem;
+  border-radius: 10px;
+  background: linear-gradient(45deg, #198754, #20c997);
+  border: none;
   transition: all 0.3s ease;
-  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
 }
 
-.login-btn:hover {
+.login-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 5px 15px rgba(25, 135, 84, 0.4);
+  background: linear-gradient(45deg, #157347, #0dcaf0);
 }
 
-.login-btn:active {
+.login-btn:active:not(:disabled) {
   transform: translateY(0);
 }
 
 .login-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  transform: none;
+  opacity: 0.8;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
-.forgot-password {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.forgot-password a {
-  color: #667eea;
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-  transition: color 0.3s ease;
-}
-
-.forgot-password a:hover {
-  color: #764ba2;
-  text-decoration: underline;
-}
-
-.register-link {
-  text-align: center;
-  padding-top: 20px;
-  border-top: 1px solid #e1e5e9;
-}
-
-.register-link p {
-  color: #666;
-  font-size: 14px;
-  margin-bottom: 8px;
-}
-
-.register-link a {
-  color: #667eea;
-  text-decoration: none;
+.btn-outline-success {
+  border-radius: 10px;
   font-weight: 600;
-  font-size: 16px;
-  transition: color 0.3s ease;
+  transition: all 0.3s ease;
 }
 
-.register-link a:hover {
-  color: #764ba2;
-  text-decoration: underline;
+.btn-outline-success:hover {
+  transform: translateY(-1px);
 }
 
-.error-message {
-  color: #e74c3c;
-  font-size: 14px;
-  margin-top: 5px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
+.text-success {
+  transition: all 0.3s ease;
 }
 
-@media (max-width: 480px) {
-  .login-container {
-    padding: 30px 20px;
-    margin: 10px;
+.text-success:hover {
+  color: #157347 !important;
+  text-decoration: underline !important;
+}
+
+.invalid-feedback {
+  font-size: 0.875rem;
+  color: #dc3545;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .spa-login-container {
+    margin: 1rem;
+    padding: 1.5rem;
   }
   
-  .login-header h1 {
-    font-size: 24px;
+  .login-title {
+    font-size: 1.5rem;
   }
-}
-
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
+  
+  .welcome-icon {
+    font-size: 2.5rem;
+  }
 }
 </style>
