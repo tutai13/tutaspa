@@ -1,5 +1,6 @@
 <!-- BangGiaDichVu.vue -->
 <template>
+  <div></div>
   <div class="banggia-management">
     <!-- Header -->
     <div class="header">
@@ -14,17 +15,28 @@
       <div class="card-header">
         <h2 class="section-title">
           <i class="fas fa-plus-circle"></i>
-          {{ isEditing ? 'Cập nhật Giá' : 'Thêm Giá Mới' }}
+          {{ isEditing ? "Cập nhật Giá" : "Thêm Giá Mới" }}
         </h2>
       </div>
       <div class="card-body">
         <form @submit.prevent="saveBangGia" class="banggia-form">
           <div class="form-grid">
             <div class="form-group">
-              <label for="dichVu">Dịch vụ <span class="required">*</span></label>
-              <select id="dichVu" v-model="bangGia.dichVuID" class="form-control" required>
+              <label for="dichVu"
+                >Dịch vụ <span class="required">*</span></label
+              >
+              <select
+                id="dichVu"
+                v-model="bangGia.dichVuID"
+                class="form-control"
+                required
+              >
                 <option disabled value="">-- Chọn dịch vụ --</option>
-                <option v-for="dv in dichVus" :key="dv.dichVuID" :value="dv.dichVuID">
+                <option
+                  v-for="dv in dichVus"
+                  :key="dv.dichVuID"
+                  :value="dv.dichVuID"
+                >
                   {{ dv.tenDichVu }}
                 </option>
               </select>
@@ -55,7 +67,11 @@
             </div>
             <div class="form-group">
               <label for="kieuTinhGia">Kiểu tính giá</label>
-              <select id="kieuTinhGia" v-model="bangGia.kieuTinhGia" class="form-control">
+              <select
+                id="kieuTinhGia"
+                v-model="bangGia.kieuTinhGia"
+                class="form-control"
+              >
                 <option :value="0">Theo thời gian</option>
                 <option :value="1">Theo quy trình</option>
               </select>
@@ -64,7 +80,7 @@
           <div class="form-actions">
             <button class="btn btn-success" type="submit">
               <i class="fas fa-save"></i>
-              {{ isEditing ? 'Cập nhật' : 'Thêm mới' }}
+              {{ isEditing ? "Cập nhật" : "Thêm mới" }}
             </button>
             <button class="btn btn-secondary" type="button" @click="resetForm">
               <i class="fas fa-undo"></i>
@@ -104,14 +120,25 @@
               <tr v-for="item in bangGias" :key="item.id" class="banggia-row">
                 <td class="banggia-name">
                   <div class="name-container">
-                    {{ item.tenDichVu || 'Không rõ' }}
+                    {{ item.tenDichVu || "Không rõ" }}
                   </div>
                 </td>
-                <td>{{ item.kieuTinhGia === 0 ? item.thoiLuong + ' phút' : '-' }}</td>
+                <td>
+                  {{ item.kieuTinhGia === 0 ? item.thoiLuong + " phút" : "-" }}
+                </td>
                 <td>{{ formatCurrency(item.gia) }}</td>
                 <td>
-                  <span class="role-badge" :class="item.kieuTinhGia === 0 ? 'time-based' : 'process-based'">
-                    {{ item.kieuTinhGia === 0 ? 'Theo thời gian' : 'Theo quy trình' }}
+                  <span
+                    class="role-badge"
+                    :class="
+                      item.kieuTinhGia === 0 ? 'time-based' : 'process-based'
+                    "
+                  >
+                    {{
+                      item.kieuTinhGia === 0
+                        ? "Theo thời gian"
+                        : "Theo quy trình"
+                    }}
                   </span>
                 </td>
                 <td>
@@ -126,7 +153,11 @@
                 </td>
                 <td class="banggia-actions">
                   <div class="action-buttons">
-                    <button class="btn btn-sm btn-info" @click="editBangGia(item)" title="Chỉnh sửa">
+                    <button
+                      class="btn btn-sm btn-info"
+                      @click="editBangGia(item)"
+                      title="Chỉnh sửa"
+                    >
                       <i class="fas fa-edit"></i>
                     </button>
                     <!-- <button class="btn btn-sm btn-danger" @click="deleteBangGia(item.id)" title="Xóa">
@@ -144,94 +175,99 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import axiosClient from "../utils/axiosClient"
-const bangGias = ref([])
-const dichVus = ref([])
-const isEditing = ref(false)
+import { ref, onMounted } from "vue";
+import axiosClient from "../utils/axiosClient";
+const bangGias = ref([]);
+const dichVus = ref([]);
+const isEditing = ref(false);
 
 const bangGia = ref({
   id: 0,
-  dichVuID: '',
+  dichVuID: "",
   thoiLuong: null,
   gia: 0,
   kieuTinhGia: 0,
-})
+});
 
 const fetchBangGias = async () => {
   try {
-    const res = await axiosClient.get('BangGiaDichVu')
-    bangGias.value = res
+    const res = await axiosClient.get("BangGiaDichVu");
+    bangGias.value = res;
   } catch (err) {
-    console.error('Lỗi khi lấy danh sách bảng giá:', err)
+    console.error("Lỗi khi lấy danh sách bảng giá:", err);
   }
-}
+};
 
 const fetchDichVus = async () => {
   try {
-    const res = await axiosClient.get('DichVu/all')
-    dichVus.value = res
+    const res = await axiosClient.get("DichVu/all");
+    dichVus.value = res;
   } catch (err) {
-    console.error('Lỗi khi lấy danh sách dịch vụ:', err)
+    console.error("Lỗi khi lấy danh sách dịch vụ:", err);
   }
-}
+};
 
 const saveBangGia = async () => {
   try {
     if (isEditing.value) {
-      await axiosClient.put(`BangGiaDichVu/UpdateGiaDichVu/${bangGia.value.id}`, bangGia.value)
+      await axiosClient.put(
+        `BangGiaDichVu/UpdateGiaDichVu/${bangGia.value.id}`,
+        bangGia.value
+      );
     } else {
-      await axiosClient.post('BangGiaDichVu/AddGiaDichVu', bangGia.value)
+      await axiosClient.post("BangGiaDichVu/AddGiaDichVu", bangGia.value);
     }
-    resetForm()
-    fetchBangGias()
+    resetForm();
+    fetchBangGias();
   } catch (err) {
-    console.error('Lỗi khi lưu bảng giá:', err)
+    console.error("Lỗi khi lưu bảng giá:", err);
   }
-}
+};
 
 const toggleHienGia = async (id) => {
   try {
-    await axiosClient.put(`BangGiaDichVu/ToggleGiaDichVu/${id}`)
-    fetchBangGias()
+    await axiosClient.put(`BangGiaDichVu/ToggleGiaDichVu/${id}`);
+    fetchBangGias();
   } catch (err) {
-    console.error('Lỗi khi bật/tắt hiển thị:', err)
+    console.error("Lỗi khi bật/tắt hiển thị:", err);
   }
-}
+};
 
 const editBangGia = (item) => {
-  bangGia.value = { ...item }
-  isEditing.value = true
-}
+  bangGia.value = { ...item };
+  isEditing.value = true;
+};
 
 const deleteBangGia = async (id) => {
-  if (!confirm('Bạn có chắc muốn xoá?')) return
+  if (!confirm("Bạn có chắc muốn xoá?")) return;
   try {
-    await axiosClient.delete(`BangGiaDichVu/DeleteGiaDichVu/${id}`)
-    fetchBangGias()
+    await axiosClient.delete(`BangGiaDichVu/DeleteGiaDichVu/${id}`);
+    fetchBangGias();
   } catch (err) {
-    console.error('Lỗi khi xoá bảng giá:', err)
+    console.error("Lỗi khi xoá bảng giá:", err);
   }
-}
+};
 
 const resetForm = () => {
   bangGia.value = {
     id: 0,
-    dichVuID: '',
+    dichVuID: "",
     thoiLuong: null,
     gia: 0,
     kieuTinhGia: 0,
-  }
-  isEditing.value = false
-}
+  };
+  isEditing.value = false;
+};
 
 const formatCurrency = (value) =>
-  new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value)
+  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
+    value
+  );
 
 onMounted(() => {
-  fetchBangGias()
-  fetchDichVus()
-})
+  fetchBangGias();
+  fetchDichVus();
+});
 </script>
 
 <style scoped>
@@ -239,7 +275,7 @@ onMounted(() => {
   max-width: 1400px;
   margin: 0 auto;
   padding: 20px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .header {
@@ -478,7 +514,7 @@ onMounted(() => {
   right: 0;
   bottom: 0;
   background-color: #ccc;
-  transition: .4s;
+  transition: 0.4s;
   border-radius: 24px;
 }
 
@@ -490,7 +526,7 @@ onMounted(() => {
   left: 3px;
   bottom: 3px;
   background-color: white;
-  transition: .4s;
+  transition: 0.4s;
   border-radius: 50%;
 }
 

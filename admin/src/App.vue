@@ -70,14 +70,6 @@
               </a>
             </li>
             <li>
-              <a
-                class="dropdown-item d-flex align-items-center gap-2 text-secondary"
-                href="/ve-da-dat"
-              >
-                <i class="fas fa-tasks fs-6"></i> My Task
-              </a>
-            </li>
-            <li>
               <a class="btn btn-outline-primary w-100" href="#" @click="Logout">
                 Đăng xuất
               </a>
@@ -108,7 +100,7 @@
             exact-active-class="active"
             title="Quản lý dịch vụ"
           >
-            <i class="fas fa-globe"></i>
+            <i class="fas fa-hand-sparkles"></i>
           </router-link>
           <router-link
             to="/khuyenMai"
@@ -116,7 +108,7 @@
             exact-active-class="active"
             title="Quản lý Khuyến mãi"
           >
-            <i class="fas fa-shopping-cart"></i>
+            <i class="fas fa-tags"></i>
           </router-link>
           <router-link
             to="/QuanLySanPham"
@@ -124,7 +116,7 @@
             exact-active-class="active"
             title="Quản lý Sản phẩm"
           >
-            <i class="fas fa-box"></i>
+            <i class="fas fa-pump-soap"></i>
           </router-link>
           <router-link
             to="/employees"
@@ -176,27 +168,26 @@
           </router-link>
         </template>
 
-        <div class="menu-title">APPS</div>
+        <div v-if="authStore.isAdmin" class="menu-title">Thống kê</div>
 
         <!-- Thống kê -->
         <router-link
-          v-if="authStore.isAdmin || authStore.isManager"
-          to="/apps/ecommerce"
+          v-if="authStore.isAdmin"
+          to="/thongke"
           class="menu-item"
           exact-active-class="active"
           title="Thống kê"
         >
           <i class="fas fa-store"></i>
         </router-link>
-
-        <!-- User Profile -->
         <router-link
-          to="/apps/profile"
+          v-if="authStore.isAdmin"
+          to="/thongkehoadon"
           class="menu-item"
           exact-active-class="active"
-          title="User Profile"
+          title="Thống kê hóa đơn"
         >
-          <i class="fas fa-user-circle"></i>
+          <i class="fas fa-chart-simple"></i>
         </router-link>
       </div>
     </aside>
@@ -254,6 +245,7 @@ onMounted(() => {
     });
 
     registerSignalREvent("UserAssigned", (user) => {
+      console.log("UserAssigned event received:", user);
       notifications.value.unshift({
         sessionId: user.sessionId,
         type: "assign",
@@ -274,8 +266,9 @@ function toggleNotifications() {
 
 async function Logout() {
   try {
-    authStore.logout();
     await authAPI.logout();
+    authStore.logout();
+
     localStorage.removeItem("accessToken");
     localStorage.removeItem("user-info");
     router.push("/login");

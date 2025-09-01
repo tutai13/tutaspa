@@ -19,11 +19,11 @@
         <p>Phân loại và tổ chức dịch vụ</p>
       </div>
 
-      <div class="menu-card card-gradient-pink" @click="Banggiadichvu">
+      <!-- <div class="menu-card card-gradient-pink" @click="Banggiadichvu">
         <i class="fa fa-money-bill-wave icon"></i>
         <h3>Bảng giá</h3>
         <p>Quản lý giá và khuyến mãi dịch vụ</p>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>

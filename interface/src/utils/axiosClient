@@ -1,10 +1,11 @@
 // src/utils/axiosClient.js
 import axios from "axios";
-import authAPI from "../services/authservice";
+import {authAPI } from "../services/authservice";
+const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 // Tạo một instance của axios với cấu hình sẵn
 const apiClient = axios.create({
-  baseURL: "https://localhost:7183/api", // Địa chỉ API gốc của bạn
+  baseURL:API_BASE_URL, // Địa chỉ API gốc của bạn
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -97,14 +98,15 @@ apiClient.interceptors.response.use(
           try {
             // ✅ Gọi refresh token API
             const response = await authAPI.refreshToken();
+            if (response) {
+              const token = localStorage.getItem("accessToken");
 
-            if (response.accessToken) {
-              localStorage.setItem("accessToken", response.accessToken);
+
               // ✅ Cập nhật header cho request gốc
-              originalRequest.headers.Authorization = `Bearer ${response.accessToken}`;
+              originalRequest.headers.Authorization = `Bearer ${token}`;
 
               // ✅ Xử lý các request đang chờ
-              processQueue(null, response.accessToken);
+              processQueue(null, token);
 
               // ✅ Retry request gốc
               return apiClient(originalRequest);

@@ -10,7 +10,7 @@ const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 // Tạo axios instance
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  credentials: true, // Cho phép gửi cookie với request
+  withCredentials: true, // Cho phép gửi cookie với request
   timeout: 10000, // 10 seconds timeout
   headers: {
     "Content-Type": "application/json",
@@ -97,6 +97,9 @@ export const authAPI = {
     }
   },
 
+
+
+
   sendOTP: async (phoneNumber) => {
     try {
       const response = await apiClient.post(
@@ -131,6 +134,16 @@ export const authAPI = {
     }
   },
 
+  checkexist: async (phoneNumber) => {
+      try {
+        const response = await apiClient.get(`/account/phone/check?phoneNumber=${phoneNumber}`);
+        return response.exists;
+    } 
+      catch (error) {
+      throw error;
+    }
+  },
+
   // Đăng xuất
   logout: async () => {
     try {
@@ -148,16 +161,14 @@ export const authAPI = {
   refreshToken: async () => {
     try {
       const response = await apiClient.post("/account/refresh-token");
-
-      if (response.status == 200) {
-        localStorage.setItem("accessToken", response.accessToken);
-        return true;
-      }
-
-      return false;
+      localStorage.setItem("accessToken", response.accessToken);
+      return true;
+      
     } catch (error) {
+      
       localStorage.removeItem("accessToken");
       throw error;
+
     }
   },
 
@@ -333,47 +344,5 @@ export const apiUtils = {
   },
 };
 
-// Ví dụ sử dụng trong component Vue:
-/*
-import { authAPI, userAPI, genericAPI } from '@/services/api'
 
-export default {
-  methods: {
-    async login() {
-      try {
-        const response = await authAPI.login({
-          phone: this.phone,
-          password: this.password
-        })
-        console.log('Đăng nhập thành công:', response)
-      } catch (error) {
-        console.error('Lỗi đăng nhập:', error)
-      }
-    },
-
-    async getProfile() {
-      try {
-        const user = await userAPI.getCurrentUser()
-        console.log('Thông tin user:', user)
-      } catch (error) {
-        console.error('Lỗi lấy thông tin:', error)
-      }
-    },
-
-    async fetchData() {
-      try {
-        const data = await genericAPI.get('/products', {
-          page: 1,
-          limit: 10
-        })
-        console.log('Dữ liệu:', data)
-      } catch (error) {
-        console.error('Lỗi lấy dữ liệu:', error)
-      }
-    }
-  }
-}
-*/
-
-// Export axios instance nếu cần sử dụng trực tiếp
 export default apiClient;

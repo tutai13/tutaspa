@@ -1,113 +1,117 @@
 <template>
-  <div class="register-container">
-    <div class="register-header">
-      <h1>Đăng ký</h1>
-      <p>Tạo tài khoản mới để bắt đầu!</p>
-    </div>
-
-    <form @submit.prevent="handleRegister">
-      <div class="form-group">
-        <label for="name">Họ và tên</label>
-        <div class="input-wrapper">
-          <i class="fas fa-user input-icon"></i>
-          <input 
-            type="text" 
-            id="name"
-            class="form-control"
-            v-model="form.name"
-            placeholder="Nhập họ và tên"
-            :class="{ 'error': errors.name }"
-          >
-        </div>
-        <transition name="fade">
-          <div v-if="errors.name" class="error-message">
-            <i class="fas fa-exclamation-circle"></i>
-            {{ errors.name }}
-          </div>
-        </transition>
+  <div class="spa-register-wrapper">
+    <div class="spa-register-container">
+      <!-- Header Section -->
+      <div class="register-header">
+        <div class="welcome-icon">🌱</div>
+        <h1 class="register-title">Tham gia cùng chúng tôi</h1>
+        <p class="register-subtitle">Tạo tài khoản mới để bắt đầu hành trình chăm sóc sức khỏe</p>
       </div>
 
-      <div class="form-group">
-        <label for="phone">Số điện thoại</label>
-        <div class="input-wrapper">
-          <i class="fas fa-phone input-icon"></i>
-          <input 
-            type="tel" 
-            id="phone"
-            class="form-control"
-            v-model="form.phone"
-            placeholder="Nhập số điện thoại"
-            :class="{ 'error': errors.phone }"
-            :disabled="otpSent"
-          >
-        </div>
-        <transition name="fade">
-          <div v-if="errors.phone" class="error-message">
-            <i class="fas fa-exclamation-circle"></i>
-            {{ errors.phone }}
+      <!-- Register Form -->
+      <form @submit.prevent="handleRegister" class="register-form">
+        <!-- Name Input -->
+        <div class="form-group">
+          <label for="name" class="form-label">Họ và tên</label>
+          <div class="input-container">
+            <div class="input-icon">👤</div>
+            <input 
+              type="text" 
+              id="name"
+              class="form-input"
+              v-model="form.name"
+              placeholder="Nhập họ và tên"
+              :class="{ 'error': errors.name }"
+            >
           </div>
-        </transition>
-      </div>
+          <transition name="fade">
+            <div v-if="errors.name" class="error-message">
+              <i class="fas fa-exclamation-circle"></i>
+              {{ errors.name }}
+            </div>
+          </transition>
+        </div>
 
-      <div class="form-group">
-        <div class="otp-section">
+        <!-- Phone Input -->
+        <div class="form-group">
+          <label for="phone" class="form-label">Số điện thoại</label>
+          <div class="input-container">
+            <div class="input-icon">📱</div>
+            <input 
+              type="tel" 
+              id="phone"
+              class="form-input"
+              v-model="form.phone"
+              placeholder="Nhập số điện thoại"
+              :class="{ 'error': errors.phone }"
+              :disabled="otpSent"
+            >
+          </div>
+          <transition name="fade">
+            <div v-if="errors.phone" class="error-message">
+              <i class="fas fa-exclamation-circle"></i>
+              {{ errors.phone }}
+            </div>
+          </transition>
+        </div>
+
+        <!-- OTP Section -->
+        <div class="form-group">
           <button 
             type="button"
-            class="send-otp-btn"
+            class="otp-btn"
             @click="sendOTP"
             :disabled="isLoadingOTP || !form.phone || otpSent"
           >
-            <span v-if="isLoadingOTP">
-              <i class="fas fa-spinner fa-spin"></i> Đang gửi...
-            </span>
-            <span v-else-if="otpSent">
-              <i class="fas fa-check"></i> Đã gửi OTP
-            </span>
-            <span v-else>
-              <i class="fas fa-paper-plane"></i> Gửi mã OTP
-            </span>
+            <div v-if="isLoadingOTP" class="btn-content">
+              <span>Đang gửi...</span>
+            </div>
+            <div v-else-if="otpSent" class="btn-content">
+              <span>✅</span>
+              <span>Đã gửi OTP</span>
+            </div>
+            <div v-else class="btn-content">
+              <span>📨</span>
+              <span>Gửi mã OTP</span>
+            </div>
           </button>
 
-          <div class="otp-input-section" v-if="otpSent">
-            <label for="otp">Mã OTP</label>
-            <div class="input-wrapper">
-              <i class="fas fa-shield-alt input-icon"></i>
+          <!-- OTP Input -->
+          <div v-if="otpSent" class="otp-input-section">
+            <label for="otp" class="form-label">Mã OTP</label>
+            <div class="input-container otp-container">
+              <div class="input-icon">🛡️</div>
               <input 
                 type="text" 
                 id="otp"
-                class="form-control"
+                class="form-input"
                 v-model="form.otp"
                 placeholder="Nhập mã OTP (6 số)"
                 :class="{ 'error': errors.otp, 'verified': otpVerified }"
                 maxlength="6"
                 :disabled="otpVerified"
               >
-              <button 
-                type="button"
-                class="resend-btn"
-                @click="resendOTP"
-                :disabled="countdown > 0 || otpVerified"
-                v-if="!otpVerified"
-              >
-                <span v-if="countdown > 0">{{ countdown }}s</span>
-                <span v-else>Gửi lại</span>
-              </button>
-              <button 
-                type="button"
-                class="verify-otp-btn"
-                @click="verifyOTP"
-                :disabled="isVerifyingOTP || !form.otp || otpVerified"
-                v-if="!otpVerified"
-              >
-                <span v-if="isVerifyingOTP">
-                  <i class="fas fa-spinner fa-spin"></i>
-                </span>
-                <span v-else>
-                  <i class="fas fa-check"></i> Xác nhận
-                </span>
-              </button>
-              <div class="verified-badge" v-if="otpVerified">
-                <i class="fas fa-check-circle"></i> Đã xác nhận
+              <div v-if="!otpVerified" class="otp-actions">
+                <button 
+                  type="button"
+                  class="resend-btn"
+                  @click="resendOTP"
+                  :disabled="countdown > 0"
+                >
+                  {{ countdown > 0 ? `${countdown}s` : 'Gửi lại' }}
+                </button>
+                <button 
+                  type="button"
+                  class="verify-btn"
+                  @click="verifyOTP"
+                  :disabled="isVerifyingOTP || !form.otp"
+                >
+                  <div v-if="isVerifyingOTP" class="loading-spinner-small"></div>
+                  <span v-else>✓</span>
+                </button>
+              </div>
+              <div v-if="otpVerified" class="verified-badge">
+                <span>✅ Đã xác nhận</span>
               </div>
             </div>
             <transition name="fade">
@@ -118,78 +122,101 @@
             </transition>
           </div>
         </div>
-      </div>
 
-      <div class="form-group">
-        <label for="password">Mật khẩu</label>
-        <div class="input-wrapper">
-          <i class="fas fa-lock input-icon"></i>
-          <input 
-            :type="showPassword ? 'text' : 'password'"
-            id="password"
-            class="form-control"
-            v-model="form.password"
-            placeholder="Nhập mật khẩu"
-            :class="{ 'error': errors.password }"
-          >
-          <i 
-            :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"
-            class="password-toggle"
-            @click="togglePassword"
-          ></i>
-        </div>
-        <transition name="fade">
-          <div v-if="errors.password" class="error-message">
-            <i class="fas fa-exclamation-circle"></i>
-            {{ errors.password }}
+        <!-- Password Input -->
+        <div class="form-group">
+          <label for="password" class="form-label">Mật khẩu</label>
+          <div class="input-container">
+            <div class="input-icon">🔒</div>
+            <input 
+              :type="showPassword ? 'text' : 'password'"
+              id="password"
+              class="form-input"
+              v-model="form.password"
+              placeholder="Nhập mật khẩu"
+              :class="{ 'error': errors.password }"
+            >
+            <div 
+              class="password-toggle"
+              @click="togglePassword"
+            >
+              {{ showPassword ? '🙈' : '👁️' }}
+            </div>
           </div>
-        </transition>
-      </div>
-
-      <div class="form-group">
-        <label for="confirmPassword">Xác nhận mật khẩu</label>
-        <div class="input-wrapper">
-          <i class="fas fa-lock input-icon"></i>
-          <input 
-            :type="showConfirmPassword ? 'text' : 'password'"
-            id="confirmPassword"
-            class="form-control"
-            v-model="form.confirmPassword"
-            placeholder="Nhập lại mật khẩu"
-            :class="{ 'error': errors.confirmPassword }"
-          >
-          <i 
-            :class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"
-            class="password-toggle"
-            @click="toggleConfirmPassword"
-          ></i>
+          <transition name="fade">
+            <div v-if="errors.password" class="error-message">
+              <i class="fas fa-exclamation-circle"></i>
+              {{ errors.password }}
+            </div>
+          </transition>
         </div>
-        <transition name="fade">
-          <div v-if="errors.confirmPassword" class="error-message">
-            <i class="fas fa-exclamation-circle"></i>
-            {{ errors.confirmPassword }}
+
+        <!-- Confirm Password Input -->
+        <div class="form-group">
+          <label for="confirmPassword" class="form-label">Xác nhận mật khẩu</label>
+          <div class="input-container">
+            <div class="input-icon">🔐</div>
+            <input 
+              :type="showConfirmPassword ? 'text' : 'password'"
+              id="confirmPassword"
+              class="form-input"
+              v-model="form.confirmPassword"
+              placeholder="Nhập lại mật khẩu"
+              :class="{ 'error': errors.confirmPassword }"
+            >
+            <div 
+              class="password-toggle"
+              @click="toggleConfirmPassword"
+            >
+              {{ showConfirmPassword ? '🙈' : '👁️' }}
+            </div>
           </div>
-        </transition>
-      </div>
+          <transition name="fade">
+            <div v-if="errors.confirmPassword" class="error-message">
+              <i class="fas fa-exclamation-circle"></i>
+              {{ errors.confirmPassword }}
+            </div>
+          </transition>
+        </div>
 
-      <button 
-        type="submit" 
-        class="register-btn"
-        :disabled="isLoading || !otpVerified"
-      >
-        <span v-if="isLoading">
-          <i class="fas fa-spinner fa-spin"></i> Đang đăng ký...
-        </span>
-        <span v-else>
-          <i class="fas fa-user-plus"></i> Đăng ký
-        </span>
-      </button>
+        <!-- Register Button -->
+        <button 
+          type="submit" 
+          class="register-btn"
+          :disabled="isLoading || !otpVerified"
+        >
+          <div v-if="isLoading" class="btn-content">
+            <span>Đang đăng ký...</span>
+          </div>
+          <div v-else class="btn-content">
+            <span>✨</span>
+            <span>Đăng ký</span>
+          </div>
+        </button>
 
-      <div class="login-link">
-        <p>Đã có tài khoản?</p>
-        <a href="#" @click.prevent="goToLogin">Đăng nhập ngay</a>
+        <!-- Divider -->
+        <div class="divider">
+          <span>Hoặc</span>
+        </div>
+
+        <!-- Login Link -->
+        <div class="login-section">
+          <p class="login-text">Đã có tài khoản?</p>
+          <a href="#" @click.prevent="goToLogin" class="login-btn-link">
+            <span>🌸</span>
+            <span>Đăng nhập ngay</span>
+          </a>
+        </div>
+      </form>
+
+      <!-- Decorative Elements -->
+      <div class="decorative-elements">
+        <div class="leaf leaf-1">🍃</div>
+        <div class="leaf leaf-2">🌱</div>
+        <div class="leaf leaf-3">🌿</div>
+        <div class="leaf leaf-4">🌾</div>
       </div>
-    </form>
+    </div>
   </div>
 </template>
 
@@ -197,7 +224,7 @@
 import notification from '../notification'
 import { ref, reactive, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { authAPI } from '../services/authservice' // Import API service
+import { authAPI } from '../services/authservice'
 
 // Router instance
 const router = useRouter()
@@ -290,17 +317,21 @@ const sendOTP = async () => {
     errors.phone = 'Số điện thoại không hợp lệ'
     return
   }
+  var exists = await authAPI.checkexist(form.phone)
+  if( exists) {
+    notification.error("Số điện thoại đã được đăng ký. Vui lòng sử dụng số khác.")
+    return
+  }
 
   isLoadingOTP.value = true
   errors.phone = ''
 
   try {
-    // Gọi API gửi OTP
     const result = await authAPI.sendOTP(form.phone)
 
     if (result.code == 106 || result.code == 203) {
       otpSent.value = true
-      otpVerified.value = false // Reset verification status
+      otpVerified.value = false
       startCountdown()
       notification.success("Mã OTP đã được gửi đến số điện thoại của bạn", {
         title: "",
@@ -318,7 +349,6 @@ const sendOTP = async () => {
 }
 
 const verifyOTP = async () => {
-  // Validate OTP first
   if (!form.otp.trim()) {
     errors.otp = 'Vui lòng nhập mã OTP'
     return
@@ -333,7 +363,6 @@ const verifyOTP = async () => {
   errors.otp = ''
 
   try {
-    // Gọi API xác thực OTP
     const result = await authAPI.verifyOTP(form.phone, form.otp)
 
     if (result) {
@@ -356,8 +385,14 @@ const verifyOTP = async () => {
 }
 
 const resendOTP = async () => {
-  otpVerified.value = false // Reset verification status when resending
-  form.otp = '' // Clear OTP input
+  var exists = await authAPI.checkexist(form.phone)
+  if( exists) {
+    notification.error("Số điện thoại đã được đăng ký. Vui lòng sử dụng số khác.")
+    return
+  }
+
+  otpVerified.value = false
+  form.otp = ''
   await sendOTP()
 }
 
@@ -382,7 +417,6 @@ const handleRegister = async () => {
   isLoading.value = true
 
   try {
-    // Gọi API đăng ký thực tế
     const result = await authAPI.register({
       Name: form.name,
       PhoneNumber: form.phone,
@@ -396,7 +430,9 @@ const handleRegister = async () => {
         timer: 2000
       })
       
-      await router.push('/login')
+      setTimeout(() => {
+        router.push('/login')
+      }, 2000)
       return
     }
 
@@ -429,227 +465,353 @@ onUnmounted(() => {
   }
 })
 
-// Emit events (nếu cần thiết cho parent component)
+// Emit events
 const emit = defineEmits(['register-success', 'go-to-login'])
 </script>
 
 <style scoped>
-.register-container {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-  padding: 40px;
-  width: 100%;
-  max-width: 450px;
-  margin: 0 auto;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+.spa-register-wrapper {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f9f5 0%, #e8f5e8 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  position: relative;
+  overflow: hidden;
 }
 
+.spa-register-wrapper::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(107, 168, 107, 0.05) 0%, transparent 70%);
+  animation: float 20s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(30px, -30px) rotate(120deg); }
+  66% { transform: translate(-20px, 20px) rotate(240deg); }
+}
+
+.spa-register-container {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  box-shadow: 
+    0 20px 40px rgba(45, 90, 45, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.2);
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 500px;
+  position: relative;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.spa-register-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #6ba86b, #4a8c4a, #6ba86b);
+  background-size: 200% 100%;
+  animation: gradient 3s ease infinite;
+}
+
+@keyframes gradient {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Header */
 .register-header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 2rem;
 }
 
-.register-header h1 {
-  color: #333;
-  font-size: 28px;
-  font-weight: 600;
-  margin-bottom: 8px;
+.welcome-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  animation: bounce 2s ease-in-out infinite;
 }
 
-.register-header p {
-  color: #666;
-  font-size: 16px;
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-10px); }
+  60% { transform: translateY(-5px); }
+}
+
+.register-title {
+  color: #2d5a2d;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.register-subtitle {
+  color: #5a7a5a;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 0;
+}
+
+/* Form */
+.register-form {
+  position: relative;
 }
 
 .form-group {
-  position: relative;
-  margin-bottom: 25px;
+  margin-bottom: 1.5rem;
 }
 
-.form-group label {
+.form-label {
   display: block;
-  color: #555;
-  font-weight: 500;
-  margin-bottom: 8px;
-  font-size: 14px;
+  color: #2d5a2d;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
 }
 
-.input-wrapper {
+.input-container {
   position: relative;
-}
-
-.form-control {
-  width: 100%;
-  padding: 15px 20px 15px 50px;
-  border: 2px solid #e1e5e9;
-  border-radius: 12px;
-  font-size: 16px;
-  transition: all 0.3s ease;
-  background: #fff;
-}
-
-.form-control:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.form-control.error {
-  border-color: #e74c3c;
-}
-
-.form-control.verified {
-  border-color: #28a745;
-  background-color: #f8fff9;
-}
-
-.form-control:disabled {
-  background-color: #f8f9fa;
-  cursor: not-allowed;
+  display: flex;
+  align-items: center;
 }
 
 .input-icon {
   position: absolute;
-  left: 18px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #999;
-  font-size: 16px;
+  left: 1rem;
+  font-size: 1.2rem;
+  z-index: 1;
+  opacity: 0.7;
+}
+
+.form-input {
+  width: 100%;
+  padding: 1rem 1rem 1rem 3rem;
+  border: 2px solid #e8f5e8;
+  border-radius: 16px;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.8);
+  transition: all 0.3s ease;
+  color: #2d5a2d;
+}
+
+.form-input::placeholder {
+  color: #9db29d;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #6ba86b;
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 0 0 4px rgba(107, 168, 107, 0.1);
+  transform: translateY(-1px);
+}
+
+.form-input.error {
+  border-color: #e74c3c;
+  box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.1);
+}
+
+.form-input.verified {
+  border-color: #27ae60;
+  box-shadow: 0 0 0 4px rgba(39, 174, 96, 0.1);
 }
 
 .password-toggle {
   position: absolute;
-  right: 18px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #999;
+  right: 1rem;
+  font-size: 1.2rem;
   cursor: pointer;
-  font-size: 16px;
-  transition: color 0.3s ease;
+  z-index: 1;
+  padding: 0.25rem;
+  border-radius: 50%;
+  transition: all 0.3s ease;
 }
 
 .password-toggle:hover {
-  color: #667eea;
+  background: rgba(107, 168, 107, 0.1);
+  transform: scale(1.1);
 }
 
-.otp-section {
-  margin-top: 15px;
-}
-
-.send-otp-btn {
+/* OTP Buttons */
+.otp-btn {
   width: 100%;
-  padding: 14px 20px;
-  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
   color: white;
   border: none;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 500;
+  border-radius: 16px;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-bottom: 15px;
+  margin-bottom: 1rem;
+  position: relative;
+  overflow: hidden;
 }
 
-.send-otp-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);
+.otp-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
 }
 
-.send-otp-btn:disabled {
+.otp-btn:hover::before {
+  left: 100%;
+}
+
+.otp-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
+}
+
+.otp-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
   transform: none;
 }
 
 .otp-input-section {
-  margin-top: 15px;
+  margin-top: 1rem;
 }
 
-.otp-input-section label {
-  display: block;
-  color: #555;
-  font-weight: 500;
-  margin-bottom: 8px;
-  font-size: 14px;
+.otp-container {
+  position: relative;
+}
+
+.otp-actions {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
 }
 
 .resend-btn {
-  position: absolute;
-  right: 80px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+  background: #95a5a6;
   color: white;
   border: none;
   border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 12px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
-  min-width: 70px;
 }
 
-.verify-otp-btn {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  min-width: 70px;
+.resend-btn:hover:not(:disabled) {
+  background: #7f8c8d;
 }
 
-.verified-badge {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-  color: white;
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 12px;
-  font-weight: 500;
-  min-width: 100px;
-  text-align: center;
-}
-
-.resend-btn:hover, .verify-otp-btn:hover {
-  transform: translateY(-50%) scale(1.05);
-}
-
-.resend-btn:disabled, .verify-otp-btn:disabled {
+.resend-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.register-btn {
-  width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+.verify-btn {
+  background: #27ae60;
   color: white;
   border: none;
+  border-radius: 8px;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+}
+
+.verify-btn:hover:not(:disabled) {
+  background: #229954;
+  transform: scale(1.05);
+}
+
+.verify-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.verified-badge {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #27ae60;
+  color: white;
   border-radius: 12px;
-  font-size: 16px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.loading-spinner-small {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Register Button */
+.register-btn {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+  color: white;
+  border: none;
+  border-radius: 16px;
+  font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-bottom: 20px;
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.register-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.register-btn:hover::before {
+  left: 100%;
 }
 
 .register-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 10px 25px rgba(243, 156, 18, 0.3);
 }
 
 .register-btn:active {
@@ -662,71 +824,218 @@ const emit = defineEmits(['register-success', 'go-to-login'])
   transform: none;
 }
 
-.login-link {
-  text-align: center;
-  padding-top: 20px;
-  border-top: 1px solid #e1e5e9;
-}
-
-.login-link p {
-  color: #666;
-  font-size: 14px;
-  margin-bottom: 8px;
-}
-
-.login-link a {
-  color: #667eea;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 16px;
-  transition: color 0.3s ease;
-}
-
-.login-link a:hover {
-  color: #764ba2;
-  text-decoration: underline;
-}
-
-.error-message {
-  color: #e74c3c;
-  font-size: 14px;
-  margin-top: 5px;
+.btn-content {
   display: flex;
   align-items: center;
-  gap: 5px;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
-@media (max-width: 480px) {
-  .register-container {
-    padding: 30px 20px;
-    margin: 10px;
-  }
-  
-  .register-header h1 {
-    font-size: 24px;
-  }
-
-  .resend-btn, .verify-otp-btn {
-    font-size: 11px;
-    padding: 6px 8px;
-    min-width: 60px;
-  }
-
-  .resend-btn {
-    right: 70px;
-  }
-
-  .verified-badge {
-    min-width: 90px;
-    font-size: 11px;
-  }
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
 
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Divider */
+.divider {
+  position: relative;
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+.divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #e8f5e8, transparent);
+}
+
+.divider span {
+  background: rgba(255, 255, 255, 0.95);
+  color: #5a7a5a;
+  padding: 0 1rem;
+  font-size: 0.9rem;
+  position: relative;
+}
+
+/* Login Section */
+.login-section {
+  text-align: center;
+}
+
+.login-text {
+  color: #5a7a5a;
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+}
+
+.login-btn-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6ba86b;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.75rem 1.5rem;
+  border: 2px solid #6ba86b;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+  background: rgba(107, 168, 107, 0.05);
+}
+
+.login-btn-link:hover {
+  background: #6ba86b;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(107, 168, 107, 0.3);
+}
+
+/* Error Message */
+.error-message {
+  color: #e74c3c;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(231, 76, 60, 0.05);
+  border-radius: 8px;
+  border-left: 3px solid #e74c3c;
+}
+
+/* Decorative Elements */
+.decorative-elements {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.leaf {
+  position: absolute;
+  font-size: 1.5rem;
+  opacity: 0.3;
+  animation: float-leaf 6s ease-in-out infinite;
+}
+
+.leaf-1 {
+  top: 15%;
+  left: 8%;
+  animation-delay: 0s;
+}
+
+.leaf-2 {
+  top: 45%;
+  right: 12%;
+  animation-delay: 1.5s;
+}
+
+.leaf-3 {
+  bottom: 35%;
+  left: 15%;
+  animation-delay: 3s;
+}
+
+.leaf-4 {
+  top: 70%;
+  right: 25%;
+  animation-delay: 4.5s;
+}
+
+@keyframes float-leaf {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(10px, -10px) rotate(90deg); }
+  50% { transform: translate(-5px, 5px) rotate(180deg); }
+  75% { transform: translate(5px, -5px) rotate(270deg); }
+}
+
+/* Transitions */
 .fade-enter-active, .fade-leave-active {
-  transition: opacity 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .fade-enter-from, .fade-leave-to {
   opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .spa-register-wrapper {
+    padding: 1rem;
+  }
+  
+  .spa-register-container {
+    padding: 2rem 1.5rem;
+    max-width: 100%;
+  }
+  
+  .register-title {
+    font-size: 1.7rem;
+  }
+  
+  .form-input {
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+
+  .otp-actions {
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .resend-btn, .verify-btn {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .spa-register-container {
+    padding: 1.5rem 1rem;
+  }
+  
+  .register-title {
+    font-size: 1.5rem;
+  }
+  
+  .welcome-icon {
+    font-size: 2.5rem;
+  }
+
+  .otp-actions {
+    position: static;
+    transform: none;
+    margin-top: 0.5rem;
+    justify-content: center;
+  }
+
+  .form-input {
+    padding-right: 1rem;
+  }
+
+  .verified-badge {
+    position: static;
+    transform: none;
+    margin-top: 0.5rem;
+    display: inline-flex;
+    justify-content: center;
+  }
 }
 </style>

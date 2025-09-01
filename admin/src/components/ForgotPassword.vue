@@ -164,7 +164,7 @@ import { ref, reactive } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 
-const API_URL = import.meta.env.VITE_BASE_URL + "/auth" // Đổi lại nếu cần
+const API_URL = import.meta.env.VITE_BASE_URL + "/auth" 
 
 const router = useRouter()
 
