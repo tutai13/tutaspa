@@ -26,11 +26,10 @@ TutaSpa là hệ thống quản lý spa toàn diện, hỗ trợ **khách hàng 
 ## ⚙️ Installation Guide
 
 ### 1. Clone project
-```bash
 git clone https://github.com/tutai13/tutaspa
 🔑 Tạo file appsettings.json
 Vì file này được .gitignore, bạn cần tự tạo file appsettings.json trong thư mục backend với cấu trúc sau:
-
+```bash
 {
   "GmailSettings": {
     "GmailAddress": "your_gmail@gmail.com",
