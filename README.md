@@ -71,27 +71,20 @@ Vì file này được .gitignore, bạn cần tự tạo file appsettings.json 
 
 👉 Nhớ thay your_xxx bằng thông tin thật trong môi trường của bạn.
 
-### 2.Frontend Setup (Vue.js)
+### 2.Frontend Setup (Vue.js)  
 cd frontend  
 npm install  
 npm run dev
 
 🗄 Database
-Hệ thống sử dụng SQL Server. 
-
-Connection string chỉnh trong appsettings.json. 
-
-Hãy xóa folder migration tron api, và tạo lại bằng lệnh 
-
-Add-migration init 
-
-Update-database
-
+Hệ thống sử dụng SQL Server.  
+Connection string chỉnh trong appsettings.json.  
+Hãy xóa folder migration tron api, và tạo lại bằng lệnh  
+Add-migration init  
+Update-database  
 📷 Screenshots
-có thể vào hai link này để xem chi tiết 
-
-https://tutaspa.vercel.app/
-
+có thể vào hai link này để xem chi tiết  
+https://tutaspa.vercel.app/  
 https://tutaspaadmin.vercel.app/
 
 <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/08234e41-eef7-4c14-b976-769ef20e9a20" />
