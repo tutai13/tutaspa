@@ -15,7 +15,7 @@ TutaSpa là hệ thống quản lý spa toàn diện, hỗ trợ **khách hàng 
 ---
 
 ## 🛠 Technologies
-- **Backend:** ASP.NET Core Web API (.NET 6), Entity Framework Core, SignalR  
+- **Backend:** ASP.NET Core Web API (.NET 8), Entity Framework Core, SignalR  
 - **Frontend:** Vue.js (Composition API), Axios, Bootstrap  
 - **Database:** SQL Server  
 - **Payment:** PayOS API  
@@ -26,7 +26,7 @@ TutaSpa là hệ thống quản lý spa toàn diện, hỗ trợ **khách hàng 
 ## ⚙️ Installation Guide
 
 ### 1. Clone project
-
+```bash
 git clone https://github.com/tutai13/tutaspa
 🔑 Tạo file appsettings.json
 Vì file này được .gitignore, bạn cần tự tạo file appsettings.json trong thư mục backend với cấu trúc sau:
@@ -67,7 +67,7 @@ Vì file này được .gitignore, bạn cần tự tạo file appsettings.json 
   "AllowedHosts": "*"
 }
 
----
+```
 
 👉 Nhớ thay your_xxx bằng thông tin thật trong môi trường của bạn.
 
