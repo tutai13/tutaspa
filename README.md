@@ -77,10 +77,10 @@ npm install
 npm run dev
 
 🗄 Database
-Hệ thống sử dụng SQL Server.
-Connection string chỉnh trong appsettings.json.
-Hãy xóa folder migration tron api, và tạo lại bằng lệnh
-Add-migration init
+Hệ thống sử dụng SQL Server. 
+Connection string chỉnh trong appsettings.json. 
+Hãy xóa folder migration tron api, và tạo lại bằng lệnh 
+Add-migration init 
 Update-database
 
 📷 Screenshots
