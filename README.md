@@ -1,6 +1,7 @@
 # 🌿 TutaSpa – Spa Management System
 
-TutaSpa là hệ thống quản lý spa toàn diện, hỗ trợ **khách hàng đặt lịch online**, **nhân viên thu ngân tạo hóa đơn & thanh toán**, **tích hợp PayOS cho thanh toán trực tuyến**, và **quản lý hóa đơn – lịch hẹn** cho chủ spa.
+**TutaSpa** là hệ thống quản lý spa toàn diện được phát triển theo mô hình **Team project (7 thành viên)**.  
+Mục tiêu là hỗ trợ **khách hàng đặt lịch online**, **nhân viên thu ngân xử lý thanh toán**, và **chủ spa quản lý hóa đơn & lịch hẹn**.  
 
 ---
 
