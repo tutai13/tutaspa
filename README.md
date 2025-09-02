@@ -97,6 +97,8 @@ https://tutaspaadmin.vercel.app/
 <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/08234e41-eef7-4c14-b976-769ef20e9a20" />
 <img width="1920" height="911" alt="image" src="https://github.com/user-attachments/assets/8f7e7f74-5cef-40b3-b96a-55d1a1225b79" />
 <img width="1916" height="1075" alt="image" src="https://github.com/user-attachments/assets/62c2f007-ce07-4cc8-87a6-ca1366f88b5f" />
+<img width="1791" height="819" alt="image" src="https://github.com/user-attachments/assets/9beae691-eb3d-46a5-95a7-0d9788a0eb7c" />
+
 
 
 
