@@ -55,38 +55,49 @@ namespace API.Services
         {
             try
             {
+                
                 var validResult = await _validator.ValidateAsync(dto);
                 if (!validResult.IsValid)
                     return Fail(string.Join(", ", validResult.Errors));
 
+                
+                var radPass = RandomPass();
+
+                
+                await _mail.SendEmailAsync(
+                    dto.Email,
+                    "Chào mừng đến với Tuta Spa",
+                    $"<h1>Welcome {dto.Name}</h1><p>Tài khoản của bạn đã được tạo.</p><p>Mật khẩu của bạn là: <strong>{radPass}</strong></p>"
+                );
+
+                
                 var user = new User
                 {
                     UserName = dto.Email,
                     Email = dto.Email,
-                    Name = $"{dto.Name}",
+                    Name = dto.Name,
                     PhoneNumber = dto.PhoneNumber,
                     FisrtLogin = true,
                     Address = dto.Address,
                 };
 
-                var radPass = RandomPass();
+                
+                var createResult = await _userManager.CreateAsync(user, radPass);
+                if (!createResult.Succeeded)
+                {
+                    return Fail("Không thể tạo tài khoản nhân viên: " +
+                                string.Join(", ", createResult.Errors.Select(e => e.Description)));
+                }
 
-                await _userManager.CreateAsync(user, radPass);
-
+                
                 if (!await _roleManager.RoleExistsAsync(dto.Role.ToString()))
                 {
                     await _roleManager.CreateAsync(new IdentityRole(dto.Role.ToString()));
                 }
-
                 await _userManager.AddToRoleAsync(user, dto.Role.ToString());
 
-                // Invalidate all employee-related caches
+                
                 await InvalidateEmployeeCaches();
-
-                await _mail.SendEmailAsync(dto.Email, "Chào mừng đến với Tuta Spa",
-                    $"<h1>Welcome {dto.Name}</h1><p>Tài khoản của bạn đã được tạo.</p><p>Mật khẩu của bạn là: <strong>{radPass}</strong></p>");
-
-
 
                 _logger.LogInformation("Employee created successfully with ID: {UserId}", user.Id);
                 return Success("Thêm nhân viên thành công", new { userId = user.Id });
@@ -97,6 +108,7 @@ namespace API.Services
                 return Fail("Lỗi khi thêm nhân viên: " + ex.Message);
             }
         }
+
 
         public async Task<ServiceResponse> UpdateEmployeeAsync(UpdateEmployeeDTO dto)
         {
