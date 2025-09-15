@@ -274,15 +274,26 @@ namespace API.Services
                 if (!valid.IsValid)
                     return Failure(string.Join(", ", valid.Errors));
 
+                var existingEmail = await _userManager.FindByEmailAsync(request.Email);
+                if (existingEmail != null)
+                {
+                    return Failure("Email đã tồn tại, vui lòng dùng email khác.");
+                }
+
+                var existingPhone = await _userManager.FindByNameAsync(request.PhoneNumber);
+                if (existingPhone != null)
+                {
+                    return Failure("Số điện thoại đã tồn tại, vui lòng dùng số khác.");
+                }
 
                 var newUser = new User
                 {
                     PhoneNumber = request.PhoneNumber,
                     UserName = request.PhoneNumber,
+                    Email = request.Email,
                     Name = request.Name,
-                    FisrtLogin = false ,
+                    FisrtLogin = false,
                 };
-
 
                 var result = await _userManager.CreateAsync(newUser, request.Password).ConfigureAwait(false);
 
@@ -299,11 +310,10 @@ namespace API.Services
                     await _roleManager.CreateAsync(userRole);
                 }
 
-
                 await _userManager.AddToRoleAsync(newUser, "User").ConfigureAwait(false);
                 _logger.LogInformation($"Đăng kí thành công {newUser.Id}");
 
-                return Success("Đăng kí thành công", null,null);
+                return Success("Đăng kí thành công", null, null);
             }
             catch (Exception ex)
             {

@@ -97,7 +97,7 @@ builder.Services.AddSignalR();
 
 
 
-builder.Services.AddSingleton<OtpService>();
+//builder.Services.AddSingleton<OtpService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IOTPService, OtpService>();
@@ -207,7 +207,6 @@ app.Use(async (context, next) =>
 });
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
 app.UseRouting();
 
 app.UseCors("AllowVueApp");
