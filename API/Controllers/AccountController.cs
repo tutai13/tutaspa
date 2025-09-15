@@ -162,6 +162,23 @@ namespace API.Controllers
                 return BadRequest(new { message = "Lỗi khi gửi OTP: " + ex.Message });
             }
         }
+        [HttpPost("forgot-password-otp/sendMail/{mail}")]
+        public async Task<IActionResult> ForgotPasswordOTPMail([FromRoute] string mail)
+        {
+
+            try
+            {
+                await _authService.SendForgetPasswordOTP(mail, IAuthService.OTPType.Email);
+                return Ok();
+
+            }
+
+            catch (Exception ex)
+            {
+                _logger.LogError($"Lỗi khi gửi OTP: {ex.Message}");
+                return BadRequest(new { message = "Lỗi khi gửi OTP: " + ex.Message });
+            }
+        }
 
 
         [HttpPost("forgot-password-otp/verifi")]
@@ -170,6 +187,21 @@ namespace API.Controllers
             try
             {
                 var token = await _authService.VerifiOtp(verifi.Email, verifi.Otp, IAuthService.OTPType.Phone);
+                return Ok(new { token = token });
+
+            }
+
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "Xác thực thất bại :" + ex.InnerException?.Message });
+            }
+        }
+        [HttpPost("forgot-password-otp/verifiMail")]
+        public async Task<IActionResult> VerifiForgotPasswordOTPMail([FromBody] VerifiOtp verifi)
+        {
+            try
+            {
+                var token = await _authService.VerifiOtp(verifi.Email, verifi.Otp, IAuthService.OTPType.Email);
                 return Ok(new { token = token });
 
             }
