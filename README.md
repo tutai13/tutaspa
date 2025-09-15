@@ -84,6 +84,8 @@ Add-migration init
 Update-database  
 📷 Screenshots
 có thể vào hai link này để xem chi tiết  
+nếu đăng ký k được thì hãy vào tk này  
+tk: 0327206727 // mk: Xloc2005@
 https://tutaspa.vercel.app/  
 https://tutaspaadmin.vercel.app/
 
