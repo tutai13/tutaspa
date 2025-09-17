@@ -123,6 +123,7 @@ builder.Services.AddScoped<MongoDBInitialCreate>();
 
 //config
 builder.Services.Configure<GmailSettings>(builder.Configuration.GetSection("GmailSettings"));
+builder.Services.Configure<SendGridSettings>(builder.Configuration.GetSection("SendGridSettings"));
 builder.Services.Configure<SmsSettings>(builder.Configuration.GetSection("SmsSettings"));
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
